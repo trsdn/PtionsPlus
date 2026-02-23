@@ -3,9 +3,63 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ptions+ — Mouse Button Remapper for macOS</title>
-<meta name="description" content="A native macOS menu bar app that maps extra mouse buttons to keyboard shortcuts, per-app. Open source. No bloat.">
+
+<!-- Primary Meta -->
+<title>Ptions+ — Open Source Mouse Button Remapper for macOS</title>
+<meta name="description" content="Map extra mouse buttons to keyboard shortcuts per-app on macOS. Native, open-source replacement for bloated vendor software. Supports MX Master, G502, G604, and generic mice.">
+<meta name="keywords" content="macOS mouse remapper, mouse button mapper, MX Master shortcuts, Logitech mouse buttons macOS, mouse button keyboard shortcut, per-app mouse buttons, CGEventTap, macOS menu bar app, open source mouse remapper, mouse button customization mac">
+<meta name="author" content="trsdn">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://trsdn.github.io/PtionsPlus/">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://trsdn.github.io/PtionsPlus/">
+<meta property="og:title" content="Ptions+ — Open Source Mouse Button Remapper for macOS">
+<meta property="og:description" content="Map extra mouse buttons to keyboard shortcuts per-app. Native SwiftUI menu bar app. Supports MX Master, G502, G604, and generic mice.">
+<meta property="og:image" content="https://trsdn.github.io/PtionsPlus/settings-profiles.png">
+<meta property="og:image:width" content="1024">
+<meta property="og:image:height" content="680">
+<meta property="og:site_name" content="Ptions+">
+<meta property="og:locale" content="en_US">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Ptions+ — Open Source Mouse Button Remapper for macOS">
+<meta name="twitter:description" content="Map extra mouse buttons to keyboard shortcuts per-app. Native SwiftUI menu bar app. No bloat, no accounts, no telemetry.">
+<meta name="twitter:image" content="https://trsdn.github.io/PtionsPlus/settings-profiles.png">
+
+<!-- Theme -->
+<meta name="theme-color" content="#6C5CE7">
+<meta name="apple-mobile-web-app-title" content="Ptions+">
+
 <link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="apple-touch-icon" href="icon.svg">
+
+<!-- Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Ptions+",
+  "operatingSystem": "macOS 13+",
+  "applicationCategory": "UtilitiesApplication",
+  "description": "A native macOS menu bar app that maps extra mouse buttons to keyboard shortcuts with per-app profiles. Open-source replacement for bloated vendor software.",
+  "url": "https://trsdn.github.io/PtionsPlus/",
+  "downloadUrl": "https://github.com/trsdn/PtionsPlus/releases",
+  "softwareVersion": "1.0",
+  "license": "https://opensource.org/licenses/MIT",
+  "programmingLanguage": "Swift",
+  "codeRepository": "https://github.com/trsdn/PtionsPlus",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "image": "https://trsdn.github.io/PtionsPlus/settings-profiles.png"
+}
+</script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -712,7 +766,7 @@ body::after {
 <body>
 
 <!-- NAV -->
-<nav>
+<nav aria-label="Main navigation">
   <a href="#" class="nav-brand">
     <img src="icon.svg" alt="Ptions+" width="28" height="28">
     <span>Ptions+</span>
@@ -727,6 +781,8 @@ body::after {
     </a></li>
   </ul>
 </nav>
+
+<main>
 
 <!-- HERO -->
 <section class="hero">
@@ -942,6 +998,8 @@ body::after {
     <p>Ptions+ is an independent, open-source project. It is not affiliated with, endorsed by, or associated with Logitech, Logi, or any of their subsidiaries or products. All product names, trademarks, and registered trademarks mentioned in this project are the property of their respective owners. Mouse model names are used solely for compatibility identification purposes.</p>
   </div>
 </div>
+
+</main>
 
 <!-- FOOTER -->
 <footer>
