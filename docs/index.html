@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ptions+ — Mouse Button Remapper for macOS</title>
+<meta name="description" content="A native macOS menu bar app that maps extra mouse buttons to keyboard shortcuts, per-app. Open source. No bloat.">
+<link rel="icon" type="image/svg+xml" href="../icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root {
+  --bg: #0e0c13;
+  --bg-raised: #16131e;
+  --bg-card: #1c1826;
+  --bg-card-hover: #231e2e;
+  --text: #e8e4f0;
+  --text-dim: #8a839a;
+  --text-faint: #5a5468;
+  --accent-1: #6C5CE7;
+  --accent-2: #E84393;
+  --accent-grad: linear-gradient(135deg, #6C5CE7, #a855d8, #E84393);
+  --accent-grad-h: linear-gradient(90deg, #6C5CE7, #a855d8, #E84393);
+  --mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+  --sans: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  --radius: 12px;
+  --radius-lg: 20px;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* Noise texture overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 256px;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Scroll reveal */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ─── NAV ─── */
+nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  padding: 16px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  background: rgba(14, 12, 19, 0.7);
+  border-bottom: 1px solid rgba(108, 92, 231, 0.08);
+  transition: background 0.3s;
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--text);
+}
+
+.nav-brand img {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+}
+
+.nav-brand span {
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: -0.02em;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  list-style: none;
+}
+
+.nav-links a {
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  transition: color 0.2s;
+}
+
+.nav-links a:hover { color: var(--text); }
+
+.nav-gh {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  background: rgba(108, 92, 231, 0.12);
+  border: 1px solid rgba(108, 92, 231, 0.2);
+  color: var(--text) !important;
+  font-family: var(--mono);
+  font-size: 12px;
+  transition: all 0.2s;
+}
+
+.nav-gh:hover {
+  background: rgba(108, 92, 231, 0.2);
+  border-color: rgba(108, 92, 231, 0.4);
+}
+
+/* ─── HERO ─── */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 120px 24px 80px;
+  position: relative;
+}
+
+/* Gradient orbs */
+.hero::before {
+  content: '';
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(108, 92, 231, 0.12) 0%, transparent 70%);
+  top: 5%;
+  left: -10%;
+  pointer-events: none;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(232, 67, 147, 0.08) 0%, transparent 70%);
+  bottom: 10%;
+  right: -5%;
+  pointer-events: none;
+}
+
+.hero-icon {
+  width: 96px;
+  height: 96px;
+  border-radius: 22px;
+  margin-bottom: 28px;
+  box-shadow:
+    0 0 0 1px rgba(108, 92, 231, 0.2),
+    0 8px 40px rgba(108, 92, 231, 0.15),
+    0 2px 8px rgba(0,0,0,0.3);
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.hero-badges {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  border-radius: 6px;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.badge-macos {
+  background: rgba(255,255,255,0.05);
+  color: var(--text-dim);
+}
+
+.badge-swift {
+  background: rgba(240, 81, 56, 0.1);
+  color: #F05138;
+  border-color: rgba(240, 81, 56, 0.15);
+}
+
+.badge-mit {
+  background: rgba(108, 92, 231, 0.08);
+  color: #a08ef0;
+  border-color: rgba(108, 92, 231, 0.15);
+}
+
+h1 {
+  font-family: var(--sans);
+  font-size: clamp(52px, 8vw, 88px);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  margin-bottom: 16px;
+  position: relative;
+}
+
+h1 .plus {
+  background: var(--accent-grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-sub {
+  font-size: clamp(17px, 2.5vw, 21px);
+  color: var(--text-dim);
+  max-width: 520px;
+  line-height: 1.5;
+  margin-bottom: 36px;
+  font-weight: 300;
+}
+
+.hero-sub strong {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  border: none;
+}
+
+.btn-primary {
+  background: var(--accent-grad);
+  color: white;
+  box-shadow: 0 4px 20px rgba(108, 92, 231, 0.3), 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(108, 92, 231, 0.4), 0 2px 6px rgba(0,0,0,0.3);
+}
+
+.btn-secondary {
+  background: var(--bg-card);
+  color: var(--text);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.btn-secondary:hover {
+  background: var(--bg-card-hover);
+  border-color: rgba(255,255,255,0.14);
+  transform: translateY(-2px);
+}
+
+/* ─── SECTIONS ─── */
+section {
+  padding: 100px 24px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.section-label {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent-1);
+  margin-bottom: 12px;
+}
+
+.section-title {
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  margin-bottom: 16px;
+}
+
+.section-desc {
+  color: var(--text-dim);
+  font-size: 17px;
+  max-width: 600px;
+  line-height: 1.6;
+  font-weight: 300;
+}
+
+/* ─── SCREENSHOTS ─── */
+.screenshots {
+  padding: 60px 24px 100px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.screenshot-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 32px;
+  align-items: center;
+}
+
+.screenshot-card {
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow:
+    0 24px 80px rgba(0,0,0,0.4),
+    0 4px 16px rgba(0,0,0,0.2),
+    0 0 0 1px rgba(108, 92, 231, 0.06);
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s;
+}
+
+.screenshot-card:hover {
+  transform: translateY(-4px) scale(1.005);
+  box-shadow:
+    0 32px 100px rgba(108, 92, 231, 0.15),
+    0 8px 24px rgba(0,0,0,0.3),
+    0 0 0 1px rgba(108, 92, 231, 0.12);
+}
+
+.screenshot-card img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.screenshot-card.small {
+  max-width: 200px;
+}
+
+.screenshot-label {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-faint);
+  text-align: center;
+  margin-top: 12px;
+}
+
+/* ─── FEATURES ─── */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 48px;
+}
+
+.feature-card {
+  padding: 28px 24px;
+  border-radius: var(--radius);
+  background: var(--bg-raised);
+  border: 1px solid rgba(255,255,255,0.04);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.feature-card:hover {
+  background: var(--bg-card);
+  border-color: rgba(108, 92, 231, 0.12);
+  transform: translateY(-2px);
+}
+
+.feature-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  margin-bottom: 16px;
+  background: rgba(108, 92, 231, 0.08);
+  border: 1px solid rgba(108, 92, 231, 0.1);
+}
+
+.feature-card h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  letter-spacing: -0.01em;
+}
+
+.feature-card p {
+  font-size: 14px;
+  color: var(--text-dim);
+  line-height: 1.5;
+  font-weight: 300;
+}
+
+/* ─── MICE ─── */
+.mice-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 48px;
+}
+
+.mice-group {
+  padding: 24px;
+  border-radius: var(--radius);
+  background: var(--bg-raised);
+  border: 1px solid rgba(255,255,255,0.04);
+}
+
+.mice-group h3 {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.mice-group ul {
+  list-style: none;
+}
+
+.mice-group li {
+  font-size: 15px;
+  padding: 5px 0;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mice-group li::before {
+  content: '';
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent-1);
+  opacity: 0.5;
+  flex-shrink: 0;
+}
+
+/* ─── BUILD ─── */
+.build-steps {
+  margin-top: 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.build-step {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.step-num {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(108, 92, 231, 0.1);
+  border: 1px solid rgba(108, 92, 231, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent-1);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.step-content {
+  flex: 1;
+}
+
+.step-content h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.step-content p {
+  font-size: 14px;
+  color: var(--text-dim);
+  margin-bottom: 10px;
+  font-weight: 300;
+}
+
+pre {
+  background: #0a090f;
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 10px;
+  padding: 16px 20px;
+  overflow-x: auto;
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.7;
+  color: #c4bdd4;
+}
+
+pre .comment { color: #5a5468; }
+pre .cmd { color: #a08ef0; }
+
+/* ─── FLOW DIAGRAM ─── */
+.flow {
+  margin-top: 48px;
+  padding: 32px;
+  border-radius: var(--radius-lg);
+  background: var(--bg-raised);
+  border: 1px solid rgba(255,255,255,0.04);
+}
+
+.flow pre {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-dim);
+}
+
+.flow .hl { color: var(--accent-1); }
+.flow .hl2 { color: #E84393; }
+
+/* ─── DISCLAIMER ─── */
+.disclaimer {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px 80px;
+}
+
+.disclaimer-inner {
+  padding: 24px 28px;
+  border-radius: var(--radius);
+  background: rgba(232, 67, 147, 0.03);
+  border: 1px solid rgba(232, 67, 147, 0.08);
+  border-left: 3px solid rgba(232, 67, 147, 0.3);
+}
+
+.disclaimer-inner h3 {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #E84393;
+  margin-bottom: 8px;
+}
+
+.disclaimer-inner p {
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+
+/* ─── FOOTER ─── */
+footer {
+  padding: 40px 24px;
+  text-align: center;
+  border-top: 1px solid rgba(255,255,255,0.04);
+}
+
+.footer-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.footer-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.footer-left img {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  opacity: 0.5;
+}
+
+.footer-left span {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+.footer-right {
+  display: flex;
+  gap: 20px;
+}
+
+.footer-right a {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-faint);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer-right a:hover { color: var(--text-dim); }
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 768px) {
+  nav { padding: 14px 16px; }
+  .nav-links { gap: 16px; }
+  .nav-links .hide-mobile { display: none; }
+
+  .features-grid,
+  .mice-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .screenshot-grid {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .screenshot-card.small {
+    max-width: 160px;
+  }
+
+  .hero { padding: 100px 20px 60px; }
+
+  section { padding: 60px 20px; }
+
+  .build-step { flex-direction: column; gap: 10px; }
+
+  .footer-inner {
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .features-grid { gap: 12px; }
+  .hero-actions { flex-direction: column; align-items: center; }
+  .btn { width: 100%; justify-content: center; max-width: 260px; }
+}
+
+/* Gradient accent line at top */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--accent-grad-h);
+  z-index: 200;
+  opacity: 0.7;
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-brand">
+    <img src="../icon.svg" alt="Ptions+" width="28" height="28">
+    <span>Ptions+</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#features" class="hide-mobile">Features</a></li>
+    <li><a href="#mice" class="hide-mobile">Mice</a></li>
+    <li><a href="#build" class="hide-mobile">Build</a></li>
+    <li><a href="https://github.com/trsdn/PtionsPlus" class="nav-gh" target="_blank" rel="noopener">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      GitHub
+    </a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <img src="../icon.svg" alt="Ptions+" class="hero-icon" width="96" height="96">
+  <div class="hero-badges">
+    <span class="badge badge-macos">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      macOS 13+
+    </span>
+    <span class="badge badge-swift">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M21.985 14.018c.065-.26.107-.53.128-.807.021-.277.021-.555 0-.832a5.76 5.76 0 00-.384-1.522c-.533-1.237-1.522-2.273-2.804-2.804-.065-.021-.128-.043-.192-.065.042-.128.085-.256.107-.384.149-.598.149-1.217 0-1.815a4.84 4.84 0 00-.598-1.366A4.84 4.84 0 0016.877 3.1a3.97 3.97 0 00-1.815 0c-.128.022-.256.064-.384.107-.021-.065-.043-.128-.064-.192C14.08 1.733 13.044.744 11.807.211A5.76 5.76 0 009.285.211C8.048.744 7.012 1.733 6.478 3.015c-.02.064-.042.128-.064.192a3.97 3.97 0 00-.384-.107 3.97 3.97 0 00-1.815 0 4.84 4.84 0 00-1.366.598A4.84 4.84 0 001.526 5.02a3.97 3.97 0 000 1.815c.022.128.064.256.107.384-.065.022-.128.043-.192.065-1.282.53-2.271 1.567-2.804 2.804a5.76 5.76 0 000 3.354c.533 1.237 1.522 2.273 2.804 2.804.064.021.127.043.192.064a3.97 3.97 0 00-.107.384 3.97 3.97 0 000 1.815c.171.49.383.96.598 1.366a4.84 4.84 0 001.323 1.323c.406.214.876.427 1.366.598a3.97 3.97 0 001.815 0c.128-.022.256-.064.384-.107.021.065.043.128.064.192.534 1.282 1.567 2.271 2.804 2.804a5.76 5.76 0 003.354 0c1.237-.533 2.273-1.522 2.804-2.804.021-.064.043-.127.064-.192.128.043.256.085.384.107.598.149 1.217.149 1.815 0a4.84 4.84 0 001.366-.598 4.84 4.84 0 001.323-1.323c.215-.406.427-.876.598-1.366z"/></svg>
+      Swift 5.9
+    </span>
+    <span class="badge badge-mit">MIT</span>
+  </div>
+  <h1>Ptions<span class="plus">+</span></h1>
+  <p class="hero-sub">Map extra mouse buttons to <strong>keyboard shortcuts</strong>, per-app. A native macOS replacement for bloated vendor software.</p>
+  <div class="hero-actions">
+    <a href="https://github.com/trsdn/PtionsPlus/releases" class="btn btn-primary">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Download
+    </a>
+    <a href="https://github.com/trsdn/PtionsPlus" class="btn btn-secondary" target="_blank" rel="noopener">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      View Source
+    </a>
+  </div>
+</section>
+
+<!-- SCREENSHOTS -->
+<div class="screenshots reveal">
+  <div class="screenshot-grid">
+    <div>
+      <div class="screenshot-card">
+        <img src="../screenshots/settings-profiles.png" alt="Ptions+ Settings — Profile Editor" loading="lazy">
+      </div>
+      <p class="screenshot-label">Profile editor with per-app button mappings</p>
+    </div>
+    <div>
+      <div class="screenshot-card small">
+        <img src="../screenshots/menubar-dropdown.png" alt="Ptions+ Menu Bar" loading="lazy">
+      </div>
+      <p class="screenshot-label">Menu bar controls</p>
+    </div>
+  </div>
+  <div class="screenshot-grid" style="margin-top: 32px;">
+    <div>
+      <div class="screenshot-card">
+        <img src="../screenshots/settings-general.png" alt="Ptions+ Settings — General" loading="lazy">
+      </div>
+      <p class="screenshot-label">General settings — mouse model, permissions, launch at login</p>
+    </div>
+    <div></div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="reveal">
+    <p class="section-label">Features</p>
+    <h2 class="section-title">Everything you need.<br>Nothing you don't.</h2>
+    <p class="section-desc">No accounts, no telemetry, no 200 MB runtime. Just button mappings that work.</p>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card reveal">
+      <div class="feature-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a08ef0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <h3>Per-App Profiles</h3>
+      <p>Different button mappings for every app. Safari gets browser nav, Xcode gets build shortcuts.</p>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a08ef0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      </div>
+      <h3>System Actions</h3>
+      <p>Mission Control, App Expose, Show Desktop, Launchpad — triggered directly via CoreDock.</p>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a08ef0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+      <h3>Shortcut Recorder</h3>
+      <p>Click assign, press your key combo. Supports all modifier combinations. Done.</p>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a08ef0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+      </div>
+      <h3>16 Preset Actions</h3>
+      <p>Spotlight, Screenshot Tool, Notification Center, Lock Screen, and more built-in.</p>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a08ef0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
+      </div>
+      <h3>Multi-Mouse Support</h3>
+      <p>MX Master, MX Anywhere, MX Ergo, G502, G604, or generic HID mice. Pick your model.</p>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a08ef0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+      </div>
+      <h3>Debug Monitor</h3>
+      <p>Live view of raw mouse events. See exactly what buttons fire, troubleshoot instantly.</p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section>
+  <div class="reveal">
+    <p class="section-label">Architecture</p>
+    <h2 class="section-title">How it works</h2>
+    <p class="section-desc">A CGEventTap intercepts mouse button events at the HID level. Mapped buttons trigger shortcuts or system actions, then get suppressed.</p>
+  </div>
+  <div class="flow reveal">
+    <pre><span class="hl">Mouse Button Press</span>
+       │
+       ▼
+  <span class="hl">CGEventTap</span> (EventTapService)
+       │
+       ▼
+  <span class="hl">Active App Lookup</span> (ActiveAppMonitor)
+       │
+       ▼
+  <span class="hl">Profile Match</span> (MappingStore)
+       │
+       ├── Has mapping? → <span class="hl2">KeySimulator / CoreDock</span> → Suppress original event
+       │
+       └── No mapping?  → Pass through</pre>
+  </div>
+</section>
+
+<!-- MICE -->
+<section id="mice">
+  <div class="reveal">
+    <p class="section-label">Compatibility</p>
+    <h2 class="section-title">Supported mice</h2>
+    <p class="section-desc">Any mouse that sends <code style="font-family:var(--mono);background:var(--bg-card);padding:2px 7px;border-radius:4px;font-size:14px">otherMouseDown</code> events will work. Pick the closest model or use Generic.</p>
+  </div>
+  <div class="mice-grid reveal">
+    <div class="mice-group">
+      <h3>Logitech MX</h3>
+      <ul>
+        <li>MX Master 3</li>
+        <li>MX Master 3S</li>
+        <li>MX Master 2S</li>
+        <li>MX Anywhere 3</li>
+        <li>MX Ergo</li>
+        <li>MX Vertical</li>
+      </ul>
+    </div>
+    <div class="mice-group">
+      <h3>Logitech G</h3>
+      <ul>
+        <li>G502</li>
+        <li>G604</li>
+      </ul>
+    </div>
+    <div class="mice-group">
+      <h3>Generic</h3>
+      <ul>
+        <li>Generic (5 buttons)</li>
+        <li>Generic (3 buttons)</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- BUILD -->
+<section id="build">
+  <div class="reveal">
+    <p class="section-label">Getting Started</p>
+    <h2 class="section-title">Build from source</h2>
+    <p class="section-desc">Requires Xcode 15+ and macOS 13 Ventura or later. The vendor's companion software must be uninstalled first.</p>
+  </div>
+  <div class="build-steps">
+    <div class="build-step reveal">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <h3>Clone & build</h3>
+        <pre><span class="comment"># Clone the repo</span>
+<span class="cmd">git clone</span> https://github.com/trsdn/PtionsPlus.git && <span class="cmd">cd</span> PtionsPlus
+
+<span class="comment"># Build</span>
+<span class="cmd">xcodebuild</span> -project PtionsPlus.xcodeproj -scheme "Ptions+" -configuration Release build</pre>
+      </div>
+    </div>
+    <div class="build-step reveal">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <h3>Install</h3>
+        <pre><span class="cmd">cp</span> -R ~/Library/Developer/Xcode/DerivedData/PtionsPlus-*/Build/Products/Release/Ptions+.app /Applications/
+<span class="cmd">xattr</span> -cr /Applications/Ptions+.app
+<span class="cmd">open</span> /Applications/Ptions+.app</pre>
+      </div>
+    </div>
+    <div class="build-step reveal">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <h3>Grant accessibility access</h3>
+        <p>System Settings → Privacy & Security → Accessibility → enable Ptions+</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DISCLAIMER -->
+<div class="disclaimer reveal">
+  <div class="disclaimer-inner">
+    <h3>Disclaimer</h3>
+    <p>Ptions+ is an independent, open-source project. It is not affiliated with, endorsed by, or associated with Logitech, Logi, or any of their subsidiaries or products. All product names, trademarks, and registered trademarks mentioned in this project are the property of their respective owners. Mouse model names are used solely for compatibility identification purposes.</p>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-left">
+      <img src="../icon.svg" alt="" width="20" height="20">
+      <span>MIT License</span>
+    </div>
+    <div class="footer-right">
+      <a href="https://github.com/trsdn/PtionsPlus" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/trsdn/PtionsPlus/releases" target="_blank" rel="noopener">Releases</a>
+      <a href="https://github.com/trsdn/PtionsPlus/issues" target="_blank" rel="noopener">Issues</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Scroll reveal with IntersectionObserver
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) {
+      setTimeout(() => {
+        entry.target.classList.add('visible');
+      }, i * 60);
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+reveals.forEach(el => observer.observe(el));
+
+// Stagger feature cards
+document.querySelectorAll('.feature-card.reveal').forEach((card, i) => {
+  card.style.transitionDelay = `${i * 80}ms`;
+});
+
+// Smooth nav background on scroll
+const nav = document.querySelector('nav');
+window.addEventListener('scroll', () => {
+  nav.style.background = window.scrollY > 60
+    ? 'rgba(14, 12, 19, 0.92)'
+    : 'rgba(14, 12, 19, 0.7)';
+}, { passive: true });
+</script>
+
+</body>
+</html>
