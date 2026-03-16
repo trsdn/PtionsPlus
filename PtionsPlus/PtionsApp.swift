@@ -36,11 +36,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let accessibilityChecker = AccessibilityChecker()
     let appMonitor = ActiveAppMonitor()
     lazy var eventTapService = EventTapService(store: store, appMonitor: appMonitor)
+    private let isUITesting = ProcessInfo.processInfo.arguments.contains("--ui-testing")
+    private var uiTestWindow: NSWindow?
 
     private var cancellable: AnyCancellable?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSLog("App launched. Trusted: \(self.accessibilityChecker.isTrusted), Enabled: \(self.store.configuration.isEnabled)")
+
+        if isUITesting {
+            showUITestWindow()
+            return
+        }
 
         appMonitor.start()
 
@@ -66,5 +73,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     NSLog("Event tap running: \(self.eventTapService.isRunning)")
                 }
         }
+    }
+
+    private func showUITestWindow() {
+        let rootView = SettingsView(
+            store: store,
+            eventTapService: eventTapService,
+            accessibilityChecker: accessibilityChecker
+        )
+
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 900, height: 620),
+            styleMask: [.titled, .closable, .miniaturizable, .resizable],
+            backing: .buffered,
+            defer: false
+        )
+        window.title = "Ptions+ UI Tests"
+        window.center()
+        window.contentView = NSHostingView(rootView: rootView)
+        window.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+        uiTestWindow = window
     }
 }

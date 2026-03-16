@@ -7,17 +7,20 @@ final class AccessibilityChecker: ObservableObject {
     @Published var isTrusted: Bool = false
 
     private var timer: Timer?
+    private let isUITesting = ProcessInfo.processInfo.arguments.contains("--ui-testing")
 
     init() {
-        isTrusted = AXIsProcessTrusted()
+        isTrusted = isUITesting ? true : AXIsProcessTrusted()
     }
 
     func promptIfNeeded() {
+        guard !isUITesting else { return }
         let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue(): true] as CFDictionary
         isTrusted = AXIsProcessTrustedWithOptions(options)
     }
 
     func startPolling() {
+        guard !isUITesting else { return }
         timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             let trusted = AXIsProcessTrusted()
@@ -35,6 +38,7 @@ final class AccessibilityChecker: ObservableObject {
     }
 
     func openAccessibilitySettings() {
+        guard !isUITesting else { return }
         promptIfNeeded()
 
         let urls = [

@@ -25,6 +25,7 @@ struct ProfileEditorView: View {
                     Text(profile.name)
                         .font(.title2)
                         .bold()
+                        .accessibilityIdentifier("profile.title")
                     if let bid = profile.bundleIdentifier {
                         Text(bid)
                             .font(.caption)
@@ -63,6 +64,7 @@ struct ProfileEditorView: View {
         }
         .formStyle(.grouped)
         .padding()
+        .accessibilityIdentifier("profile.editor")
         .alert(
             "Override App-Specific Mappings?",
             isPresented: Binding(
@@ -252,6 +254,7 @@ private struct ButtonMappingRow: View {
                         ))
                         .labelsHidden()
                         .toggleStyle(.switch)
+                        .accessibilityIdentifier("mapping.override.\(button.rawValue)")
                     }
                 }
 
@@ -265,11 +268,14 @@ private struct ButtonMappingRow: View {
                         ))
                         .labelsHidden()
                         .toggleStyle(.switch)
+                        .accessibilityIdentifier("mapping.pushToTalk.\(button.rawValue)")
                     }
                 }
             }
         }
         .padding(.vertical, 6)
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("mapping.row.\(button.rawValue)")
     }
 
     @ViewBuilder

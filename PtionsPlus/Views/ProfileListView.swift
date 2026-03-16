@@ -10,6 +10,7 @@ struct ProfileListView: View {
             Section("Default") {
                 ForEach(store.configuration.profiles.filter { $0.isDefault }) { profile in
                     Label(profile.name, systemImage: "globe")
+                        .accessibilityIdentifier("profile.default.\(profile.id.uuidString)")
                         .tag(profile.id)
                 }
             }
@@ -17,6 +18,7 @@ struct ProfileListView: View {
             Section("App-Specific") {
                 ForEach(store.configuration.profiles.filter { !$0.isDefault }) { profile in
                     Label(profile.name, systemImage: "app")
+                        .accessibilityIdentifier("profile.app.\(profile.id.uuidString)")
                         .tag(profile.id)
                         .contextMenu {
                             Button("Delete", role: .destructive) {

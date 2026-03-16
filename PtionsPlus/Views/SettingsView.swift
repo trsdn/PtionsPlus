@@ -18,6 +18,7 @@ struct SettingsView: View {
                 .tabItem { Label("General", systemImage: "gear") }
         }
         .frame(minWidth: 550, minHeight: 400)
+        .accessibilityIdentifier("settings.root")
     }
 }
 
@@ -29,6 +30,7 @@ private struct ProfilesTab: View {
         NavigationSplitView(columnVisibility: .constant(.all)) {
             ProfileListView(store: store, selectedProfileId: $selectedProfileId)
                 .navigationSplitViewColumnWidth(min: 200, ideal: 220, max: 300)
+                .accessibilityIdentifier("profiles.sidebar")
         } detail: {
             if let id = selectedProfileId,
                let profile = store.configuration.profiles.first(where: { $0.id == id }) {
@@ -113,5 +115,6 @@ private struct GeneralTab: View {
         }
         .formStyle(.grouped)
         .padding()
+        .accessibilityIdentifier("general.form")
     }
 }

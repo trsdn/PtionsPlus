@@ -26,7 +26,28 @@
 		A1B2C3D4E5F600010000010A /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F600010000020A /* Constants.swift */; };
 		A1B2C3D4E5F600010000010B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F600010000020B /* Assets.xcassets */; };
 		A1B2C3D4E5F600010000010C /* MouseDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F600010000020E /* MouseDetector.swift */; };
+		B1C2D3E4F5A6000200000101 /* MappingStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1C2D3E4F5A6000200000202 /* MappingStoreTests.swift */; };
+		B1C2D3E4F5A6000200000102 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B1C2D3E4F5A6000200000203 /* XCTest.framework */; };
+		C1D2E3F4A5B6000300000101 /* PtionsPlusUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1D2E3F4A5B6000300000202 /* PtionsPlusUITests.swift */; };
+		C1D2E3F4A5B6000300000102 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B1C2D3E4F5A6000200000203 /* XCTest.framework */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		B1C2D3E4F5A6000200000601 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A1B2C3D4E5F6000100000A00 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A1B2C3D4E5F6000100000600;
+			remoteInfo = "Ptions+";
+		};
+		C1D2E3F4A5B6000300000601 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A1B2C3D4E5F6000100000A00 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A1B2C3D4E5F6000100000600;
+			remoteInfo = "Ptions+";
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		A1B2C3D4E5F6000100000300 /* Ptions+.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Ptions+.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -51,6 +72,11 @@
 		A1B2C3D4E5F600010000020C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A1B2C3D4E5F600010000020D /* PtionsPlus.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PtionsPlus.entitlements; sourceTree = "<group>"; };
 		A1B2C3D4E5F600010000020E /* MouseDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MouseDetector.swift; sourceTree = "<group>"; };
+		B1C2D3E4F5A6000200000201 /* PtionsPlusTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PtionsPlusTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B1C2D3E4F5A6000200000202 /* MappingStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MappingStoreTests.swift; sourceTree = "<group>"; };
+		B1C2D3E4F5A6000200000203 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Platforms/MacOSX.platform/Developer/Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
+		C1D2E3F4A5B6000300000201 /* PtionsPlusUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PtionsPlusUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		C1D2E3F4A5B6000300000202 /* PtionsPlusUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PtionsPlusUITests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,6 +87,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B1C2D3E4F5A6000200000401 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B1C2D3E4F5A6000200000102 /* XCTest.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C1D2E3F4A5B6000300000401 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C1D2E3F4A5B6000300000102 /* XCTest.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -68,6 +110,8 @@
 			isa = PBXGroup;
 			children = (
 				A1B2C3D4E5F6000100000501 /* PtionsPlus */,
+				B1C2D3E4F5A6000200000301 /* PtionsPlusTests */,
+				C1D2E3F4A5B6000300000301 /* PtionsPlusUITests */,
 				A1B2C3D4E5F6000100000502 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -76,6 +120,8 @@
 			isa = PBXGroup;
 			children = (
 				A1B2C3D4E5F6000100000300 /* Ptions+.app */,
+				B1C2D3E4F5A6000200000201 /* PtionsPlusTests.xctest */,
+				C1D2E3F4A5B6000300000201 /* PtionsPlusUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -140,6 +186,22 @@
 			path = Utilities;
 			sourceTree = "<group>";
 		};
+		B1C2D3E4F5A6000200000301 /* PtionsPlusTests */ = {
+			isa = PBXGroup;
+			children = (
+				B1C2D3E4F5A6000200000202 /* MappingStoreTests.swift */,
+			);
+			path = PtionsPlusTests;
+			sourceTree = "<group>";
+		};
+		C1D2E3F4A5B6000300000301 /* PtionsPlusUITests */ = {
+			isa = PBXGroup;
+			children = (
+				C1D2E3F4A5B6000300000202 /* PtionsPlusUITests.swift */,
+			);
+			path = PtionsPlusUITests;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -160,6 +222,42 @@
 			productReference = A1B2C3D4E5F6000100000300 /* Ptions+.app */;
 			productType = "com.apple.product-type.application";
 		};
+		B1C2D3E4F5A6000200000501 /* PtionsPlusTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B1C2D3E4F5A6000200000901 /* Build configuration list for PBXNativeTarget "PtionsPlusTests" */;
+			buildPhases = (
+				B1C2D3E4F5A6000200000403 /* Sources */,
+				B1C2D3E4F5A6000200000401 /* Frameworks */,
+				B1C2D3E4F5A6000200000402 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B1C2D3E4F5A6000200000701 /* PBXTargetDependency */,
+			);
+			name = PtionsPlusTests;
+			productName = PtionsPlusTests;
+			productReference = B1C2D3E4F5A6000200000201 /* PtionsPlusTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		C1D2E3F4A5B6000300000501 /* PtionsPlusUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C1D2E3F4A5B6000300000901 /* Build configuration list for PBXNativeTarget "PtionsPlusUITests" */;
+			buildPhases = (
+				C1D2E3F4A5B6000300000403 /* Sources */,
+				C1D2E3F4A5B6000300000401 /* Frameworks */,
+				C1D2E3F4A5B6000300000402 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				C1D2E3F4A5B6000300000701 /* PBXTargetDependency */,
+			);
+			name = PtionsPlusUITests;
+			productName = PtionsPlusUITests;
+			productReference = C1D2E3F4A5B6000300000201 /* PtionsPlusUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -173,6 +271,14 @@
 				TargetAttributes = {
 					A1B2C3D4E5F6000100000600 = {
 						CreatedOnToolsVersion = 15.0;
+					};
+					B1C2D3E4F5A6000200000501 = {
+						CreatedOnToolsVersion = 15.0;
+						TestTargetID = A1B2C3D4E5F6000100000600;
+					};
+					C1D2E3F4A5B6000300000501 = {
+						CreatedOnToolsVersion = 15.0;
+						TestTargetID = A1B2C3D4E5F6000100000600;
 					};
 				};
 			};
@@ -190,6 +296,8 @@
 			projectRoot = "";
 			targets = (
 				A1B2C3D4E5F6000100000600 /* PtionsPlus */,
+				B1C2D3E4F5A6000200000501 /* PtionsPlusTests */,
+				C1D2E3F4A5B6000300000501 /* PtionsPlusUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -200,6 +308,20 @@
 			buildActionMask = 2147483647;
 			files = (
 				A1B2C3D4E5F600010000010B /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B1C2D3E4F5A6000200000402 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C1D2E3F4A5B6000300000402 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -231,7 +353,36 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B1C2D3E4F5A6000200000403 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B1C2D3E4F5A6000200000101 /* MappingStoreTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C1D2E3F4A5B6000300000403 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C1D2E3F4A5B6000300000101 /* PtionsPlusUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		B1C2D3E4F5A6000200000701 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A1B2C3D4E5F6000100000600 /* PtionsPlus */;
+			targetProxy = B1C2D3E4F5A6000200000601 /* PBXContainerItemProxy */;
+		};
+		C1D2E3F4A5B6000300000701 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A1B2C3D4E5F6000100000600 /* PtionsPlus */;
+			targetProxy = C1D2E3F4A5B6000300000601 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		A1B2C3D4E5F6000100000C00 /* Debug */ = {
@@ -404,6 +555,86 @@
 			};
 			name = Release;
 		};
+		B1C2D3E4F5A6000200000801 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.torsten.PtionsPlusTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Ptions+.app/Contents/MacOS/Ptions+";
+				TEST_TARGET_NAME = "Ptions+";
+			};
+			name = Debug;
+		};
+		B1C2D3E4F5A6000200000802 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.torsten.PtionsPlusTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Ptions+.app/Contents/MacOS/Ptions+";
+				TEST_TARGET_NAME = "Ptions+";
+			};
+			name = Release;
+		};
+		C1D2E3F4A5B6000300000801 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.torsten.PtionsPlusUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = "Ptions+";
+			};
+			name = Debug;
+		};
+		C1D2E3F4A5B6000300000802 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.torsten.PtionsPlusUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = "Ptions+";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -421,6 +652,24 @@
 			buildConfigurations = (
 				A1B2C3D4E5F6000100000D00 /* Debug */,
 				A1B2C3D4E5F6000100000D01 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B1C2D3E4F5A6000200000901 /* Build configuration list for PBXNativeTarget "PtionsPlusTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B1C2D3E4F5A6000200000801 /* Debug */,
+				B1C2D3E4F5A6000200000802 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C1D2E3F4A5B6000300000901 /* Build configuration list for PBXNativeTarget "PtionsPlusUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C1D2E3F4A5B6000300000801 /* Debug */,
+				C1D2E3F4A5B6000300000802 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

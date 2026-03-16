@@ -20,6 +20,34 @@
                ReferencedContainer = "container:PtionsPlus.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "B1C2D3E4F5A6000200000501"
+               BuildableName = "PtionsPlusTests.xctest"
+               BlueprintName = "PtionsPlusTests"
+               ReferencedContainer = "container:PtionsPlus.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "C1D2E3F4A5B6000300000501"
+               BuildableName = "PtionsPlusUITests.xctest"
+               BlueprintName = "PtionsPlusUITests"
+               ReferencedContainer = "container:PtionsPlus.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
@@ -28,6 +56,37 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES"
       shouldAutocreateTestPlan = "YES">
+      <Testables>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "B1C2D3E4F5A6000200000501"
+               BuildableName = "PtionsPlusTests.xctest"
+               BlueprintName = "PtionsPlusTests"
+               ReferencedContainer = "container:PtionsPlus.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "C1D2E3F4A5B6000300000501"
+               BuildableName = "PtionsPlusUITests.xctest"
+               BlueprintName = "PtionsPlusUITests"
+               ReferencedContainer = "container:PtionsPlus.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+      </Testables>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "A1B2C3D4E5F6000100000600"
+            BuildableName = "Ptions+.app"
+            BlueprintName = "Ptions+"
+            ReferencedContainer = "container:PtionsPlus.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Debug"

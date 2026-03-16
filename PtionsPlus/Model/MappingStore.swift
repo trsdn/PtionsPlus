@@ -9,17 +9,33 @@ final class MappingStore: ObservableObject {
     static let shared = MappingStore()
 
     private init() {
+        configURL = Self.defaultConfigURL()
+        configuration = Self.loadConfiguration(from: configURL)
+    }
+
+    init(configuration: AppConfiguration, configURL: URL) {
+        self.configuration = configuration
+        self.configURL = configURL
+    }
+
+    private static func defaultConfigURL() -> URL {
+        let processInfo = ProcessInfo.processInfo
+        if let overridePath = processInfo.environment["PTIONS_CONFIG_URL"], !overridePath.isEmpty {
+            return URL(fileURLWithPath: overridePath)
+        }
+
         let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
         let logiDir = appSupport.appendingPathComponent("Ptions+", isDirectory: true)
         try? FileManager.default.createDirectory(at: logiDir, withIntermediateDirectories: true)
-        configURL = logiDir.appendingPathComponent("config.json")
+        return logiDir.appendingPathComponent("config.json")
+    }
 
-        if let data = try? Data(contentsOf: configURL),
+    private static func loadConfiguration(from url: URL) -> AppConfiguration {
+        if let data = try? Data(contentsOf: url),
            let config = try? JSONDecoder().decode(AppConfiguration.self, from: data) {
-            configuration = config
-        } else {
-            configuration = .empty
+            return config
         }
+        return .empty
     }
 
     func save() {
