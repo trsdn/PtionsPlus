@@ -11,7 +11,7 @@ xcodebuild -project PtionsPlus.xcodeproj -scheme "Ptions+" -configuration Debug 
 # Bump version for the next release
 ./scripts/bump-version.sh patch  # or: minor, major
 
-# Build a signed Developer ID release archive + notarization ZIP
+# Build a signed Developer ID release archive, notarization ZIP, and DMG
 bash scripts/sign-release.sh
 
 # Optional local overrides live in .release.env (ignored by git)

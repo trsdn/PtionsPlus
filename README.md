@@ -105,7 +105,11 @@ CODE_SIGN_IDENTITY="Developer ID Application: Your Name"
 NOTARY_PROFILE="your-notary-profile"
 ```
 
-The signed app ends up in `build/PtionsPlus.xcarchive/Products/Applications/Ptions+.app` and the GitHub upload artifact in `dist/Ptions+.zip`.
+The release scripts now produce three artifacts:
+
+- `build/PtionsPlus.xcarchive/Products/Applications/Ptions+.app`
+- `dist/Ptions+.zip`
+- `dist/Ptions+.dmg`
 
 ### Deploy Current Build
 
