@@ -44,8 +44,6 @@ private struct ProfilesTab: View {
 private struct GeneralTab: View {
     @ObservedObject var store: MappingStore
     @ObservedObject var accessibilityChecker: AccessibilityChecker
-    @State private var pendingGlobalButton: MouseButton?
-    @State private var pendingConflictCount = 0
 
     private var modelCategories: [(String, [MouseModel])] {
         let grouped = Dictionary(grouping: MouseModel.allCases, by: \.category)
@@ -92,38 +90,6 @@ private struct GeneralTab: View {
                 }
             }
 
-            Section("Global Buttons") {
-                Text("Global buttons always use the Default profile mapping in every app.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-
-                ForEach(store.configuration.mouseModel.availableButtons) { button in
-                    Toggle(isOn: Binding(
-                        get: { store.isGlobalButton(button) },
-                        set: { isEnabled in
-                            if isEnabled {
-                                let conflictCount = store.globalOverrideConflictCount(for: button)
-                                if conflictCount > 0 {
-                                    pendingGlobalButton = button
-                                    pendingConflictCount = conflictCount
-                                } else {
-                                    store.setGlobalButton(button, enabled: true)
-                                }
-                            } else {
-                                store.setGlobalButton(button, enabled: false)
-                            }
-                        }
-                    )) {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(button.displayName(for: store.configuration.mouseModel))
-                            Text(store.defaultProfile.mappings.first(where: { $0.button == button })?.displayString ?? "Not assigned")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                }
-            }
-
             Section("Startup") {
                 Toggle(isOn: Binding(
                     get: { store.configuration.launchAtLogin },
@@ -147,27 +113,5 @@ private struct GeneralTab: View {
         }
         .formStyle(.grouped)
         .padding()
-        .alert(
-            "Override App-Specific Mappings?",
-            isPresented: Binding(
-                get: { pendingGlobalButton != nil },
-                set: { isPresented in
-                    if !isPresented {
-                        pendingGlobalButton = nil
-                        pendingConflictCount = 0
-                    }
-                }
-            ),
-            presenting: pendingGlobalButton
-        ) { button in
-            Button("Cancel", role: .cancel) {}
-            Button("Use Global Mapping") {
-                store.setGlobalButton(button, enabled: true)
-                pendingGlobalButton = nil
-                pendingConflictCount = 0
-            }
-        } message: { button in
-            Text("\(button.displayName(for: store.configuration.mouseModel)) is already configured in \(pendingConflictCount) app profile(s). Enabling a global mapping will make those profiles use the Default mapping for this button until you turn the global override off.")
-        }
     }
 }
