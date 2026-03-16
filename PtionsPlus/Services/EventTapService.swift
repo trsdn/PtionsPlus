@@ -98,7 +98,7 @@ final class EventTapService: ObservableObject {
         let profile = store.profileFor(bundleIdentifier: bid)
         NSLog("[Ptions+] Button \(buttonNumber) \(isDown ? "DOWN" : "UP") | App: \(bid ?? "nil") | Profile: \(profile.name) | Mappings: \(profile.mappings.count)")
 
-        guard let mapping = profile.mappings.first(where: { $0.button == mouseButton }),
+                guard let mapping = store.mapping(for: mouseButton, in: profile),
               mapping.isActive else {
             NSLog("[Ptions+] No mapping for button \(buttonNumber)")
             return Unmanaged.passUnretained(event)

@@ -2,6 +2,7 @@ import Foundation
 import CoreGraphics
 
 enum MouseModel: String, Codable, CaseIterable, Identifiable {
+    case mxMaster4 = "mx_master_4"
     case mxMaster3 = "mx_master_3"
     case mxMaster3s = "mx_master_3s"
     case mxMaster2s = "mx_master_2s"
@@ -17,6 +18,7 @@ enum MouseModel: String, Codable, CaseIterable, Identifiable {
 
     var displayName: String {
         switch self {
+        case .mxMaster4: return "MX Master 4"
         case .mxMaster3: return "MX Master 3"
         case .mxMaster3s: return "MX Master 3S"
         case .mxMaster2s: return "MX Master 2S"
@@ -32,7 +34,7 @@ enum MouseModel: String, Codable, CaseIterable, Identifiable {
 
     var category: String {
         switch self {
-        case .mxMaster3, .mxMaster3s, .mxMaster2s, .mxAnywhere3, .mxErgo, .mxVertical:
+        case .mxMaster4, .mxMaster3, .mxMaster3s, .mxMaster2s, .mxAnywhere3, .mxErgo, .mxVertical:
             return "Logitech MX"
         case .g502, .g604:
             return "Logitech G"
@@ -43,6 +45,8 @@ enum MouseModel: String, Codable, CaseIterable, Identifiable {
 
     var availableButtons: [MouseButton] {
         switch self {
+        case .mxMaster4:
+            return [.middle, .back, .forward, .button5, .button6]
         case .mxMaster3, .mxMaster3s, .mxMaster2s:
             return [.middle, .back, .forward, .button5]
         case .mxAnywhere3:
@@ -64,8 +68,10 @@ enum MouseModel: String, Codable, CaseIterable, Identifiable {
 
     var buttonNames: [MouseButton: String] {
         switch self {
+        case .mxMaster4:
+            return [.middle: "Middle Click", .back: "Thumb Back", .forward: "Thumb Forward", .button5: "Front Thumb", .button6: "Thumb Gesture"]
         case .mxMaster3, .mxMaster3s, .mxMaster2s:
-            return [.middle: "Middle Click", .back: "Back", .forward: "Forward", .button5: "Thumb Button"]
+            return [.middle: "Middle Click", .back: "Thumb Back", .forward: "Thumb Forward", .button5: "Thumb Gesture"]
         case .g502:
             return [.middle: "Middle Click", .back: "Back", .forward: "Forward",
                     .button5: "G4", .button6: "G5", .button7: "G7", .button8: "G8"]
@@ -273,6 +279,38 @@ struct AppConfiguration: Codable {
     var isEnabled: Bool = true
     var launchAtLogin: Bool = false
     var mouseModel: MouseModel = .mxMaster3
+    var globalButtons: [MouseButton] = []
+
+    enum CodingKeys: String, CodingKey {
+        case profiles
+        case isEnabled
+        case launchAtLogin
+        case mouseModel
+        case globalButtons
+    }
+
+    init(
+        profiles: [AppProfile],
+        isEnabled: Bool = true,
+        launchAtLogin: Bool = false,
+        mouseModel: MouseModel = .mxMaster3,
+        globalButtons: [MouseButton] = []
+    ) {
+        self.profiles = profiles
+        self.isEnabled = isEnabled
+        self.launchAtLogin = launchAtLogin
+        self.mouseModel = mouseModel
+        self.globalButtons = globalButtons
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        profiles = try container.decode([AppProfile].self, forKey: .profiles)
+        isEnabled = try container.decodeIfPresent(Bool.self, forKey: .isEnabled) ?? true
+        launchAtLogin = try container.decodeIfPresent(Bool.self, forKey: .launchAtLogin) ?? false
+        mouseModel = try container.decodeIfPresent(MouseModel.self, forKey: .mouseModel) ?? .mxMaster3
+        globalButtons = try container.decodeIfPresent([MouseButton].self, forKey: .globalButtons) ?? []
+    }
 
     static var empty: AppConfiguration {
         AppConfiguration(profiles: [AppProfile.makeDefault()])

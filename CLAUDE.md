@@ -8,6 +8,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # Build
 xcodebuild -project PtionsPlus.xcodeproj -scheme "Ptions+" -configuration Debug build
 
+# Build a signed Developer ID release archive + notarization ZIP
+bash scripts/sign-release.sh
+
+# Optional local overrides live in .release.env (ignored by git)
+
+# Notarize and staple the signed release app
+# One-time setup:
+# xcrun notarytool store-credentials "PtionsPlus" --apple-id "your@email.com" --team-id "G69Z5BNY97" --password "app-specific-password"
+bash scripts/notarize.sh
+
 # Deploy to /Applications and restart (use deploy.sh)
 bash deploy.sh
 

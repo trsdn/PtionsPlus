@@ -32,9 +32,18 @@ struct ProfileEditorView: View {
 
             Section("Button Mappings") {
                 ForEach(store.configuration.mouseModel.availableButtons) { button in
+                    let isGlobalOverride = !profile.isDefault && store.isGlobalButton(button)
+                    let effectiveMapping = store.mapping(for: button, in: profile)
+
                     HStack {
                         Text(button.displayName(for: store.configuration.mouseModel))
                             .frame(width: 120, alignment: .leading)
+
+                        if store.isGlobalButton(button) {
+                            Text("Global")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
 
                         Spacer()
 
@@ -47,47 +56,53 @@ struct ProfileEditorView: View {
                             }
                             .frame(width: 200, height: 30)
                         } else {
-                            let mapping = profile.mappings.first(where: { $0.button == button })
-
-                            if mapping?.isActive == true {
-                                Text(mapping!.displayString)
+                            if effectiveMapping?.isActive == true {
+                                Text(effectiveMapping!.displayString)
                                     .padding(.horizontal, 8)
                                     .padding(.vertical, 4)
                                     .background(.quaternary)
                                     .cornerRadius(6)
 
-                                Button(role: .destructive) {
-                                    store.updateMapping(profileId: profile.id, button: button)
-                                } label: {
-                                    Image(systemName: "xmark.circle.fill")
-                                        .foregroundStyle(.secondary)
+                                if !isGlobalOverride {
+                                    Button(role: .destructive) {
+                                        store.updateMapping(profileId: profile.id, button: button)
+                                    } label: {
+                                        Image(systemName: "xmark.circle.fill")
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    .buttonStyle(.plain)
                                 }
-                                .buttonStyle(.plain)
                             } else {
                                 Text("Not assigned")
                                     .foregroundStyle(.secondary)
                             }
 
-                            Menu {
-                                ForEach(actionCategories, id: \.0) { category, actions in
-                                    Section(category) {
-                                        ForEach(actions) { action in
-                                            Button(action.displayName) {
-                                                store.updateMapping(profileId: profile.id, button: button, systemAction: action)
+                            if isGlobalOverride {
+                                Text("Inherited from Default")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            } else {
+                                Menu {
+                                    ForEach(actionCategories, id: \.0) { category, actions in
+                                        Section(category) {
+                                            ForEach(actions) { action in
+                                                Button(action.displayName) {
+                                                    store.updateMapping(profileId: profile.id, button: button, systemAction: action)
+                                                }
                                             }
                                         }
                                     }
-                                }
-                                Section {
-                                    Button("Record Custom Shortcut...") {
-                                        recordingButton = button
+                                    Section {
+                                        Button("Record Custom Shortcut...") {
+                                            recordingButton = button
+                                        }
                                     }
+                                } label: {
+                                    Text("Assign")
                                 }
-                            } label: {
-                                Text("Assign")
+                                .menuStyle(.borderedButton)
+                                .fixedSize()
                             }
-                            .menuStyle(.borderedButton)
-                            .fixedSize()
                         }
                     }
                     .padding(.vertical, 2)

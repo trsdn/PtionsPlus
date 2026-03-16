@@ -18,6 +18,8 @@ xcuserdata/
 
 # Deploy script (local only)
 deploy.sh
+.release.env
+dist/
 
 # Claude Code
 .claude/

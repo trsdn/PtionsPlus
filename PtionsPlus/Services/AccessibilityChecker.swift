@@ -35,7 +35,19 @@ final class AccessibilityChecker: ObservableObject {
     }
 
     func openAccessibilitySettings() {
-        let url = URL(string: "x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension.Privacy_Accessibility")!
-        NSWorkspace.shared.open(url)
+        promptIfNeeded()
+
+        let urls = [
+            "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility",
+            "x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension.Privacy_Accessibility"
+        ].compactMap(URL.init(string:))
+
+        for url in urls {
+            if NSWorkspace.shared.open(url) {
+                return
+            }
+        }
+
+        NSWorkspace.shared.open(URL(fileURLWithPath: "/System/Applications/System Settings.app"))
     }
 }

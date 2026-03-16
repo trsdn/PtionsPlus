@@ -34,7 +34,7 @@ You have a mouse with extra buttons. The vendor's companion app is 200 MB, phone
 
 **16 preset actions** — Spotlight, Screenshot Tool, Notification Center, Lock Screen, and more.
 
-**Multi-mouse support** — MX Master 3/3S/2S, MX Anywhere 3, MX Ergo, MX Vertical, G502, G604, or generic 3/5-button mice.
+**Multi-mouse support** — MX Master 4/3/3S/2S, MX Anywhere 3, MX Ergo, MX Vertical, G502, G604, or generic 3/5-button mice.
 
 **Launch at login** — Native `SMAppService` integration.
 
@@ -44,8 +44,9 @@ You have a mouse with extra buttons. The vendor's companion app is 200 MB, phone
 
 | Logitech MX | Logitech G | Generic |
 |:---|:---|:---|
-| MX Master 3 | G502 | Generic (5 buttons) |
-| MX Master 3S | G604 | Generic (3 buttons) |
+| MX Master 4 | G502 | Generic (5 buttons) |
+| MX Master 3 | G604 | Generic (3 buttons) |
+| MX Master 3S | | |
 | MX Master 2S | | |
 | MX Anywhere 3 | | |
 | MX Ergo | | |
@@ -74,6 +75,51 @@ Copy the built app to `/Applications`:
 cp -R ~/Library/Developer/Xcode/DerivedData/PtionsPlus-*/Build/Products/Release/Ptions+.app /Applications/
 xattr -cr /Applications/Ptions+.app
 open /Applications/Ptions+.app
+```
+
+### Signed Release Build
+
+Build a Developer ID signed archive and notarization ZIP:
+
+The Team ID is not secret, so keeping a project default in the repo is fine. For portability, the release scripts also load an optional local override file at `.release.env`.
+
+```bash
+bash scripts/sign-release.sh
+```
+
+Example local overrides:
+
+```bash
+cp .release.env.example .release.env
+```
+
+To notarize and staple the app, first store credentials once:
+
+```bash
+xcrun notarytool store-credentials "PtionsPlus" \
+     --apple-id "your@email.com" \
+     --team-id "G69Z5BNY97" \
+     --password "app-specific-password"
+```
+
+Then submit and staple:
+
+```bash
+bash scripts/notarize.sh
+```
+
+If you already have a working `notarytool` keychain profile from another project, reuse it like this:
+
+```bash
+NOTARY_PROFILE="OpenWritr" bash scripts/notarize.sh
+```
+
+The same values can live in `.release.env` instead:
+
+```bash
+TEAM_ID="G69Z5BNY97"
+CODE_SIGN_IDENTITY="Developer ID Application: Torsten Mahr (G69Z5BNY97)"
+NOTARY_PROFILE="OpenWritr"
 ```
 
 ### Grant Accessibility Access

@@ -71,4 +71,36 @@ final class MappingStore: ObservableObject {
         }
         save()
     }
+
+    func isGlobalButton(_ button: MouseButton) -> Bool {
+        configuration.globalButtons.contains(button)
+    }
+
+    func setGlobalButton(_ button: MouseButton, enabled: Bool) {
+        if enabled {
+            if !configuration.globalButtons.contains(button) {
+                configuration.globalButtons.append(button)
+                configuration.globalButtons.sort { $0.rawValue < $1.rawValue }
+            }
+        } else {
+            configuration.globalButtons.removeAll { $0 == button }
+        }
+        save()
+    }
+
+    func globalOverrideConflictCount(for button: MouseButton) -> Int {
+        configuration.profiles
+            .filter { !$0.isDefault }
+            .filter {
+                $0.mappings.first(where: { $0.button == button })?.isActive == true
+            }
+            .count
+    }
+
+    func mapping(for button: MouseButton, in profile: AppProfile) -> ButtonMapping? {
+        if !profile.isDefault && isGlobalButton(button) {
+            return defaultProfile.mappings.first(where: { $0.button == button })
+        }
+        return profile.mappings.first(where: { $0.button == button })
+    }
 }
