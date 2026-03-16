@@ -37,6 +37,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let appMonitor = ActiveAppMonitor()
     lazy var eventTapService = EventTapService(store: store, appMonitor: appMonitor)
     private let isUITesting = ProcessInfo.processInfo.arguments.contains("--ui-testing")
+    private let isRunningTests = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
     private var uiTestWindow: NSWindow?
 
     private var cancellable: AnyCancellable?
@@ -46,6 +47,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         if isUITesting {
             showUITestWindow()
+            return
+        }
+
+        guard !isRunningTests else {
             return
         }
 

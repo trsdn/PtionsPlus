@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.3 - 2026-03-16
+
+- Added a proper XCTest target with regression coverage for config compatibility and effective mapping behavior.
+- Added a macOS UI test target with stable smoke tests that launch the settings UI in an isolated test mode.
+- Added test-only app startup hooks so UI automation can run without Accessibility prompts or event-tap side effects.
+
 ## 1.1.2 - 2026-03-16
 
 - Added Fn / Globe shortcut support across recording, display, and shortcut simulation.
