@@ -79,47 +79,40 @@ open /Applications/Ptions+.app
 
 ### Signed Release Build
 
-Build a Developer ID signed archive and notarization ZIP:
+The release flow is three commands: bump version, sign, notarize.
 
-The Team ID is not secret, so keeping a project default in the repo is fine. For portability, the release scripts also load an optional local override file at `.release.env`.
-
-```bash
-bash scripts/sign-release.sh
-```
-
-Example local overrides:
+First create your local release config:
 
 ```bash
 cp .release.env.example .release.env
 ```
 
-To notarize and staple the app, first store credentials once:
-
 ```bash
+./scripts/bump-version.sh patch   # or: minor, major
+bash scripts/sign-release.sh
 xcrun notarytool store-credentials "PtionsPlus" \
      --apple-id "your@email.com" \
-     --team-id "G69Z5BNY97" \
+     --team-id "YOUR_TEAM_ID" \
      --password "app-specific-password"
-```
-
-Then submit and staple:
-
-```bash
 bash scripts/notarize.sh
 ```
 
-If you already have a working `notarytool` keychain profile from another project, reuse it like this:
+If you already have a working `notarytool` keychain profile from another project, set it in `.release.env` or inline:
 
 ```bash
-NOTARY_PROFILE="OpenWritr" bash scripts/notarize.sh
+TEAM_ID="YOUR_TEAM_ID"
+CODE_SIGN_IDENTITY="Developer ID Application: Your Name"
+NOTARY_PROFILE="your-notary-profile"
 ```
 
-The same values can live in `.release.env` instead:
+The signed app ends up in `build/PtionsPlus.xcarchive/Products/Applications/Ptions+.app` and the GitHub upload artifact in `dist/Ptions+.zip`.
+
+### Deploy Current Build
+
+Copy the current built app to `/Applications` and relaunch it:
 
 ```bash
-TEAM_ID="G69Z5BNY97"
-CODE_SIGN_IDENTITY="Developer ID Application: Torsten Mahr (G69Z5BNY97)"
-NOTARY_PROFILE="OpenWritr"
+bash scripts/deploy.sh
 ```
 
 ### Grant Accessibility Access

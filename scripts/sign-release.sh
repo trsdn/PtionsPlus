@@ -9,13 +9,26 @@ APP_PATH="$ARCHIVE_PATH/Products/Applications/Ptions+.app"
 ZIP_PATH="$PROJECT_DIR/dist/Ptions+.zip"
 
 if [ -f "$ENV_FILE" ]; then
+  echo "Loading release config from $ENV_FILE"
   set -a
   . "$ENV_FILE"
   set +a
+else
+  echo "No release env file found at $ENV_FILE, using current shell environment"
 fi
 
-TEAM_ID="${TEAM_ID:-G69Z5BNY97}"
-IDENTITY="${CODE_SIGN_IDENTITY:-Developer ID Application: Torsten Mahr ($TEAM_ID)}"
+TEAM_ID="${TEAM_ID:-}"
+IDENTITY="${CODE_SIGN_IDENTITY:-}"
+
+if [ -z "$TEAM_ID" ]; then
+  echo "Error: TEAM_ID is not set. Configure it in $ENV_FILE or export TEAM_ID."
+  exit 1
+fi
+
+if [ -z "$IDENTITY" ]; then
+  echo "Error: CODE_SIGN_IDENTITY is not set. Configure it in $ENV_FILE or export CODE_SIGN_IDENTITY."
+  exit 1
+fi
 
 cd "$PROJECT_DIR"
 mkdir -p build dist

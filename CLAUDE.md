@@ -8,6 +8,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # Build
 xcodebuild -project PtionsPlus.xcodeproj -scheme "Ptions+" -configuration Debug build
 
+# Bump version for the next release
+./scripts/bump-version.sh patch  # or: minor, major
+
 # Build a signed Developer ID release archive + notarization ZIP
 bash scripts/sign-release.sh
 
@@ -15,11 +18,11 @@ bash scripts/sign-release.sh
 
 # Notarize and staple the signed release app
 # One-time setup:
-# xcrun notarytool store-credentials "PtionsPlus" --apple-id "your@email.com" --team-id "G69Z5BNY97" --password "app-specific-password"
+# xcrun notarytool store-credentials "PtionsPlus" --apple-id "your@email.com" --team-id "YOUR_TEAM_ID" --password "app-specific-password"
 bash scripts/notarize.sh
 
-# Deploy to /Applications and restart (use deploy.sh)
-bash deploy.sh
+# Deploy the current built app to /Applications and restart
+bash scripts/deploy.sh
 
 # Reset config (forces fresh defaults)
 rm -f ~/Library/Application\ Support/Ptions+/config.json
@@ -29,7 +32,7 @@ No tests exist yet. No linter configured.
 
 ## What This Is
 
-**Ptions+** is a macOS menu bar app that intercepts extra mouse buttons (MX Master 3) via CGEventTap and triggers configurable keyboard shortcuts per-app. It replaces Logitech Options+ which doesn't work reliably.
+**Ptions+** is a macOS menu bar app that intercepts extra mouse buttons (MX Master 4/3 family and others) via CGEventTap and triggers configurable keyboard shortcuts per-app. It replaces Logitech Options+ which doesn't work reliably.
 
 The Xcode project is "PtionsPlus.xcodeproj", source folder is "PtionsPlus/", product name is "Ptions+".
 
