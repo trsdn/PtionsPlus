@@ -15,20 +15,96 @@ enum SystemAction: String {
 
 enum KeySimulator {
     static func simulateShortcut(_ shortcut: KeyboardShortcut) {
-        let source = CGEventSource(stateID: .hidSystemState)
+        pressShortcut(shortcut)
+        releaseShortcut(shortcut)
+    }
 
-        guard let keyDown = CGEvent(keyboardEventSource: source, virtualKey: shortcut.keyCode, keyDown: true),
-              let keyUp = CGEvent(keyboardEventSource: source, virtualKey: shortcut.keyCode, keyDown: false) else {
+    static func pressShortcut(_ shortcut: KeyboardShortcut) {
+        if postStandaloneModifierShortcut(shortcut, keyDown: true) {
+            return
+        }
+
+        let source = CGEventSource(stateID: .hidSystemState)
+        postModifierEvents(for: shortcut.modifiers, keyDown: true, source: source)
+        postKeyEvent(shortcut, keyDown: true, source: source)
+    }
+
+    static func releaseShortcut(_ shortcut: KeyboardShortcut) {
+        if postStandaloneModifierShortcut(shortcut, keyDown: false) {
+            return
+        }
+
+        let source = CGEventSource(stateID: .hidSystemState)
+        postKeyEvent(shortcut, keyDown: false, source: source)
+        postModifierEvents(for: shortcut.modifiers, keyDown: false, source: source)
+    }
+
+    private static func postStandaloneModifierShortcut(_ shortcut: KeyboardShortcut, keyDown: Bool) -> Bool {
+        guard shortcut.modifiers.isEmpty,
+              let modifier = standaloneModifier(for: shortcut.keyCode),
+              let event = CGEvent(keyboardEventSource: CGEventSource(stateID: .hidSystemState), virtualKey: modifier.keyCode, keyDown: keyDown) else {
+            return false
+        }
+
+        event.flags = keyDown ? modifier.flag : []
+        event.post(tap: .cghidEventTap)
+        return true
+    }
+
+    private static func standaloneModifier(for keyCode: UInt16) -> (keyCode: CGKeyCode, flag: CGEventFlags)? {
+        switch keyCode {
+        case UInt16(kVK_Function):
+            return (CGKeyCode(kVK_Function), .maskSecondaryFn)
+        case UInt16(kVK_Command):
+            return (CGKeyCode(kVK_Command), .maskCommand)
+        case UInt16(kVK_Option):
+            return (CGKeyCode(kVK_Option), .maskAlternate)
+        case UInt16(kVK_Control):
+            return (CGKeyCode(kVK_Control), .maskControl)
+        case UInt16(kVK_Shift):
+            return (CGKeyCode(kVK_Shift), .maskShift)
+        default:
+            return nil
+        }
+    }
+
+    private static func postKeyEvent(_ shortcut: KeyboardShortcut, keyDown: Bool, source: CGEventSource?) {
+        guard let keyEvent = CGEvent(keyboardEventSource: source, virtualKey: shortcut.keyCode, keyDown: keyDown) else {
             NSLog("[Ptions+] Failed to create CGEvent for keyCode \(shortcut.keyCode)")
             return
         }
 
-        let flags = shortcut.modifiers.cgEventFlags
-        keyDown.flags = flags
-        keyUp.flags = flags
+        keyEvent.flags = shortcut.modifiers.cgEventFlags
+        keyEvent.post(tap: .cghidEventTap)
+    }
 
-        keyDown.post(tap: .cgAnnotatedSessionEventTap)
-        keyUp.post(tap: .cgAnnotatedSessionEventTap)
+    private static func postModifierEvents(for modifiers: KeyboardShortcut.ModifierFlags, keyDown: Bool, source: CGEventSource?) {
+        let modifierSteps: [(enabled: Bool, keyCode: CGKeyCode, flag: CGEventFlags)] = [
+            (modifiers.function, CGKeyCode(kVK_Function), .maskSecondaryFn),
+            (modifiers.control, CGKeyCode(kVK_Control), .maskControl),
+            (modifiers.option, CGKeyCode(kVK_Option), .maskAlternate),
+            (modifiers.shift, CGKeyCode(kVK_Shift), .maskShift),
+            (modifiers.command, CGKeyCode(kVK_Command), .maskCommand),
+        ]
+
+        let steps = keyDown ? modifierSteps : modifierSteps.reversed()
+        var activeFlags = keyDown ? CGEventFlags() : modifiers.cgEventFlags
+
+        for step in steps where step.enabled {
+            if keyDown {
+                activeFlags.insert(step.flag)
+            } else {
+                activeFlags.remove(step.flag)
+            }
+
+            guard let modifierEvent = CGEvent(keyboardEventSource: source, virtualKey: step.keyCode, keyDown: keyDown) else {
+                NSLog("[Ptions+] Failed to create modifier CGEvent for keyCode \(step.keyCode)")
+                continue
+            }
+
+            modifierEvent.flags = activeFlags
+            modifierEvent.post(tap: .cghidEventTap)
+        }
     }
 
     static func performSystemAction(_ action: SystemAction) {
@@ -57,9 +133,7 @@ enum KeySimulator {
     private static func shortcutForPreset(_ preset: PresetAction) -> KeyboardShortcut {
         switch preset {
         case .notificationCenter:
-            // Click on date in menu bar - simulate via Fn+N (macOS Ventura+) won't work reliably
-            // Use the notification center toggle via script instead
-            return KeyboardShortcut(keyCode: UInt16(kVK_ANSI_N), modifiers: .init(command: true, shift: true))
+            return KeyboardShortcut(keyCode: UInt16(kVK_ANSI_N), modifiers: .init(function: true))
         case .spotlight:
             return KeyboardShortcut(keyCode: UInt16(kVK_Space), modifiers: .init(command: true))
         case .screenshotTool:

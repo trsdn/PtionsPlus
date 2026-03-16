@@ -63,12 +63,29 @@ final class MappingStore: ObservableObject {
         if let mappingIdx = configuration.profiles[profileIdx].mappings.firstIndex(where: { $0.button == button }) {
             configuration.profiles[profileIdx].mappings[mappingIdx].shortcut = shortcut
             configuration.profiles[profileIdx].mappings[mappingIdx].systemAction = systemAction
+            if shortcut == nil {
+                configuration.profiles[profileIdx].mappings[mappingIdx].holdWhilePressed = false
+            }
         } else {
             var mapping = ButtonMapping(button: button)
             mapping.shortcut = shortcut
             mapping.systemAction = systemAction
+            if shortcut == nil {
+                mapping.holdWhilePressed = false
+            }
             configuration.profiles[profileIdx].mappings.append(mapping)
         }
+        save()
+    }
+
+    func setHoldWhilePressed(profileId: UUID, button: MouseButton, enabled: Bool) {
+        guard let profileIdx = configuration.profiles.firstIndex(where: { $0.id == profileId }),
+              let mappingIdx = configuration.profiles[profileIdx].mappings.firstIndex(where: { $0.button == button }),
+              configuration.profiles[profileIdx].mappings[mappingIdx].shortcut != nil else {
+            return
+        }
+
+        configuration.profiles[profileIdx].mappings[mappingIdx].holdWhilePressed = enabled
         save()
     }
 

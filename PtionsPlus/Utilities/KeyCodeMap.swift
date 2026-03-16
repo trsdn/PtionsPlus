@@ -63,6 +63,7 @@ enum KeyCodeMap {
         UInt16(kVK_RightArrow): "\u{2192}",
         UInt16(kVK_DownArrow): "\u{2193}",
         UInt16(kVK_UpArrow): "\u{2191}",
+        UInt16(kVK_Function): "Fn",
         UInt16(kVK_F1): "F1",
         UInt16(kVK_F2): "F2",
         UInt16(kVK_F3): "F3",

@@ -20,6 +20,7 @@ final class EventTapService: ObservableObject {
 
     private let store: MappingStore
     private let appMonitor: ActiveAppMonitor
+    private var activeHeldShortcuts: [MouseButton: KeyboardShortcut] = [:]
 
     var onEvent: ((MouseButtonEvent) -> Void)?
 
@@ -94,6 +95,12 @@ final class EventTapService: ObservableObject {
             return Unmanaged.passUnretained(event)
         }
 
+        if !isDown, let heldShortcut = activeHeldShortcuts.removeValue(forKey: mouseButton) {
+            NSLog("[Ptions+] Releasing held shortcut: \(heldShortcut.displayString)")
+            KeySimulator.releaseShortcut(heldShortcut)
+            return nil
+        }
+
         let bid = appMonitor.activeBundleIdentifier
         let profile = store.profileFor(bundleIdentifier: bid)
         NSLog("[Ptions+] Button \(buttonNumber) \(isDown ? "DOWN" : "UP") | App: \(bid ?? "nil") | Profile: \(profile.name) | Mappings: \(profile.mappings.count)")
@@ -109,8 +116,14 @@ final class EventTapService: ObservableObject {
                 NSLog("[Ptions+] Action: \(action.displayName)")
                 KeySimulator.performPresetAction(action)
             } else if let shortcut = mapping.shortcut {
-                NSLog("[Ptions+] Shortcut: \(shortcut.displayString)")
-                KeySimulator.simulateShortcut(shortcut)
+                if mapping.holdWhilePressed {
+                    NSLog("[Ptions+] Hold shortcut down: \(shortcut.displayString)")
+                    activeHeldShortcuts[mouseButton] = shortcut
+                    KeySimulator.pressShortcut(shortcut)
+                } else {
+                    NSLog("[Ptions+] Shortcut: \(shortcut.displayString)")
+                    KeySimulator.simulateShortcut(shortcut)
+                }
             }
         }
 

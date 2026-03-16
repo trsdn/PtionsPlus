@@ -128,6 +128,38 @@ struct KeyboardShortcut: Codable, Equatable {
         var option: Bool = false
         var control: Bool = false
         var shift: Bool = false
+        var function: Bool = false
+
+        enum CodingKeys: String, CodingKey {
+            case command
+            case option
+            case control
+            case shift
+            case function
+        }
+
+        init(
+            command: Bool = false,
+            option: Bool = false,
+            control: Bool = false,
+            shift: Bool = false,
+            function: Bool = false
+        ) {
+            self.command = command
+            self.option = option
+            self.control = control
+            self.shift = shift
+            self.function = function
+        }
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            command = try container.decodeIfPresent(Bool.self, forKey: .command) ?? false
+            option = try container.decodeIfPresent(Bool.self, forKey: .option) ?? false
+            control = try container.decodeIfPresent(Bool.self, forKey: .control) ?? false
+            shift = try container.decodeIfPresent(Bool.self, forKey: .shift) ?? false
+            function = try container.decodeIfPresent(Bool.self, forKey: .function) ?? false
+        }
 
         var cgEventFlags: CGEventFlags {
             var flags = CGEventFlags()
@@ -135,11 +167,13 @@ struct KeyboardShortcut: Codable, Equatable {
             if option { flags.insert(.maskAlternate) }
             if control { flags.insert(.maskControl) }
             if shift { flags.insert(.maskShift) }
+            if function { flags.insert(.maskSecondaryFn) }
             return flags
         }
 
         var displayComponents: [String] {
             var parts: [String] = []
+            if function { parts.append("Fn") }
             if control { parts.append("\u{2303}") }
             if option { parts.append("\u{2325}") }
             if shift { parts.append("\u{21E7}") }
@@ -148,7 +182,7 @@ struct KeyboardShortcut: Codable, Equatable {
         }
 
         var isEmpty: Bool {
-            !command && !option && !control && !shift
+            !command && !option && !control && !shift && !function
         }
     }
 
@@ -233,6 +267,32 @@ struct ButtonMapping: Codable, Identifiable {
     var button: MouseButton
     var shortcut: KeyboardShortcut?
     var systemAction: PresetAction?
+    var holdWhilePressed: Bool = false
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case button
+        case shortcut
+        case systemAction
+        case holdWhilePressed
+    }
+
+    init(id: UUID = UUID(), button: MouseButton, shortcut: KeyboardShortcut? = nil, systemAction: PresetAction? = nil, holdWhilePressed: Bool = false) {
+        self.id = id
+        self.button = button
+        self.shortcut = shortcut
+        self.systemAction = systemAction
+        self.holdWhilePressed = holdWhilePressed
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
+        button = try container.decode(MouseButton.self, forKey: .button)
+        shortcut = try container.decodeIfPresent(KeyboardShortcut.self, forKey: .shortcut)
+        systemAction = try container.decodeIfPresent(PresetAction.self, forKey: .systemAction)
+        holdWhilePressed = try container.decodeIfPresent(Bool.self, forKey: .holdWhilePressed) ?? false
+    }
 
     var isActive: Bool {
         shortcut != nil || systemAction != nil

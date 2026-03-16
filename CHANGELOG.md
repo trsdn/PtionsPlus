@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.2 - 2026-03-16
+
+- Added Fn / Globe shortcut support across recording, display, and shortcut simulation.
+- Added Push-to-Talk mode for shortcut mappings so shortcuts can stay pressed while the mouse button is held.
+- Fixed backward compatibility for saved configs after adding new shortcut and mapping fields.
+- Refined the Profile editor layout so assigned values, actions, badges, and toggles are clearer and more consistent.
+
 ## 1.1.1 - 2026-03-16
 
 - Moved the global override control from General settings into the Default profile, directly next to each button mapping.
