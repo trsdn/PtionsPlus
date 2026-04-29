@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Added a GitHub Actions release workflow for Developer ID signing, notarization, stapling, checksum generation, and release asset upload.
+- Added CI notarization support via `APPLE_ID`, `APPLE_TEAM_ID`, and `APPLE_APP_PASSWORD` in addition to local `NOTARY_PROFILE`.
+
 ## 1.1.3 - 2026-03-16
 
 - Added a proper XCTest target with regression coverage for config compatibility and effective mapping behavior.

@@ -110,6 +110,10 @@ The release scripts now produce three artifacts:
 - `build/PtionsPlus.xcarchive/Products/Applications/Ptions+.app`
 - `dist/Ptions+.zip`
 - `dist/Ptions+.dmg`
+- `dist/Ptions+.dmg.sha256`
+
+The GitHub release workflow builds signed, notarized artifacts on `v*` tags. Configure these repository secrets first:
+`MACOS_CERTIFICATE`, `MACOS_CERTIFICATE_PWD`, `APPLE_ID`, `APPLE_TEAM_ID`, and `APPLE_APP_PASSWORD`.
 
 ### Deploy Current Build
 

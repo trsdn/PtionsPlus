@@ -38,14 +38,33 @@ if ! echo "$FLAGS" | grep -q "runtime"; then
 fi
 
 echo "Submitting to Apple notarization service..."
-xcrun notarytool submit "$ZIP" \
-    --keychain-profile "$KEYCHAIN_PROFILE" \
-    --wait
+if [[ -n "${NOTARY_PROFILE:-}" ]]; then
+    xcrun notarytool submit "$ZIP" \
+        --keychain-profile "$KEYCHAIN_PROFILE" \
+        --wait
+elif [[ -n "${APPLE_ID:-}" && -n "${APPLE_TEAM_ID:-}" && -n "${APPLE_APP_PASSWORD:-}" ]]; then
+    xcrun notarytool submit "$ZIP" \
+        --apple-id "$APPLE_ID" \
+        --team-id "$APPLE_TEAM_ID" \
+        --password "$APPLE_APP_PASSWORD" \
+        --wait
+else
+    echo "Error: set NOTARY_PROFILE or APPLE_ID, APPLE_TEAM_ID, and APPLE_APP_PASSWORD."
+    exit 1
+fi
 
 echo "Submitting DMG to Apple notarization service..."
-xcrun notarytool submit "$DMG" \
-    --keychain-profile "$KEYCHAIN_PROFILE" \
-    --wait
+if [[ -n "${NOTARY_PROFILE:-}" ]]; then
+    xcrun notarytool submit "$DMG" \
+        --keychain-profile "$KEYCHAIN_PROFILE" \
+        --wait
+else
+    xcrun notarytool submit "$DMG" \
+        --apple-id "$APPLE_ID" \
+        --team-id "$APPLE_TEAM_ID" \
+        --password "$APPLE_APP_PASSWORD" \
+        --wait
+fi
 
 echo "Stapling notarization ticket..."
 xcrun stapler staple "$APP"
@@ -54,5 +73,6 @@ xcrun stapler staple "$DMG"
 echo "Verifying Gatekeeper assessment..."
 spctl --assess --type execute --verbose "$APP" 2>&1
 spctl --assess --type open --context context:primary-signature --verbose "$DMG" 2>&1
+shasum -a 256 "$DMG" > "$DMG.sha256"
 
 echo "Done. Ptions+.app and Ptions+.dmg are notarized and stapled."

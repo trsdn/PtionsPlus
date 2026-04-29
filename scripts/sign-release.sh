@@ -39,6 +39,7 @@ rm -rf "$ARCHIVE_PATH"
 rm -rf "$DMG_STAGING_PATH"
 rm -f "$ZIP_PATH"
 rm -f "$DMG_PATH"
+rm -f "$DMG_PATH.sha256"
 
 echo "Building signed release archive..."
 xcodebuild \
@@ -74,7 +75,10 @@ codesign --force --sign "$IDENTITY" --timestamp "$DMG_PATH"
 
 echo "Verifying DMG signature..."
 codesign -dv --verbose=4 "$DMG_PATH" 2>&1 | tail -n 20
+hdiutil verify "$DMG_PATH"
+shasum -a 256 "$DMG_PATH" > "$DMG_PATH.sha256"
 
 echo "Created: $APP_PATH"
 echo "Created: $ZIP_PATH"
 echo "Created: $DMG_PATH"
+echo "Created: $DMG_PATH.sha256"
