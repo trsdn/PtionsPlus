@@ -58,7 +58,7 @@ jobs:
       RELEASE_TAG: ${{ needs.metadata.outputs.tag }}
     steps:
       - name: Checkout
-        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: ${{ needs.metadata.outputs.tag }}
           fetch-depth: 0
@@ -126,7 +126,7 @@ jobs:
           fi
 
       - name: Upload verified release assets
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: PtionsPlus-release-assets
           path: |
@@ -145,7 +145,7 @@ jobs:
       contents: write
     steps:
       - name: Download verified assets
-        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
           name: PtionsPlus-release-assets
           path: release-assets
