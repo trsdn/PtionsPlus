@@ -51,10 +51,7 @@ struct PermissionGuideView: View {
         .padding(40)
         .frame(width: 450)
         .onAppear {
-            accessibilityChecker.startPolling()
-        }
-        .onDisappear {
-            accessibilityChecker.stopPolling()
+            accessibilityChecker.startMonitoring()
         }
     }
 }

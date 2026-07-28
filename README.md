@@ -28,13 +28,13 @@ You have a mouse with extra buttons. The vendor's companion app is 200 MB, phone
 
 **Per-app profiles** — Different mappings for every app. Safari gets browser navigation, Xcode gets build shortcuts, everything else gets your defaults.
 
-**System actions** — Mission Control, App Expose, Show Desktop, Launchpad — triggered via CoreDock, no keyboard shortcut workarounds.
+**System actions** — Mission Control, App Expose, Show Desktop, and Launchpad use a dynamically detected CoreDock integration with graceful fallback when unavailable.
 
 **Shortcut recorder** — Click "Assign", press your key combo. Supports all modifier combinations.
 
-**16 preset actions** — Spotlight, Screenshot Tool, Notification Center, Lock Screen, and more.
+**16 preset actions** — Spotlight, Screenshot Tool, Notification Center, Lock Screen, and more. Logical shortcuts adapt to the active keyboard layout.
 
-**Multi-mouse support** — MX Master 4/3/3S/2S, MX Anywhere 3, MX Ergo, MX Vertical, G502, G604, or generic 3/5-button mice.
+**Supported mouse models** — Manually select MX Master 4/3/3S/2S, MX Anywhere 3, MX Ergo, MX Vertical, G502, G604, or a generic 3/5-button model.
 
 **Launch at login** — Native `SMAppService` integration.
 
@@ -84,7 +84,7 @@ The release flow is three commands: bump version, sign, notarize.
 First create your local release config:
 
 ```bash
-cp .release.env.example .release.env
+scripts/setup-notarization.sh --gui
 ```
 
 ```bash
@@ -105,23 +105,21 @@ CODE_SIGN_IDENTITY="Developer ID Application: Your Name"
 NOTARY_PROFILE="your-notary-profile"
 ```
 
-The release scripts now produce three artifacts:
+The release scripts produce four outputs:
 
 - `build/PtionsPlus.xcarchive/Products/Applications/Ptions+.app`
 - `dist/Ptions+.zip`
 - `dist/Ptions+.dmg`
 - `dist/Ptions+.dmg.sha256`
 
-The GitHub release workflow builds signed, notarized artifacts on `v*` tags. Configure these repository secrets first:
-`MACOS_CERTIFICATE`, `MACOS_CERTIFICATE_PWD`, `APPLE_ID`, `APPLE_TEAM_ID`, and `APPLE_APP_PASSWORD`.
-
-### Deploy Current Build
-
-Copy the current built app to `/Applications` and relaunch it:
+The final ZIP and DMG are rebuilt from the stapled app and verified before upload. Verify a downloaded DMG with:
 
 ```bash
-bash scripts/deploy.sh
+shasum -a 256 -c Ptions+.dmg.sha256
 ```
+
+The GitHub release workflow builds signed, notarized artifacts on `v*` tags. Configure these repository secrets first:
+`MACOS_CERTIFICATE`, `MACOS_CERTIFICATE_PWD`, `APPLE_ID`, `APPLE_TEAM_ID`, and `APPLE_APP_PASSWORD`.
 
 ### Grant Accessibility Access
 
@@ -143,12 +141,12 @@ Mouse Button Press
        ▼
   Profile Match (MappingStore)
        │
-       ├── Has mapping? → KeySimulator / CoreDock → Suppress original event
+       ├── Has mapping? → Coordinated input / available system action → Suppress event pair
        │
        └── No mapping?  → Pass through
 ```
 
-A `CGEventTap` at the HID system level intercepts `otherMouseDown` / `otherMouseUp` events. Mapped buttons either simulate a keyboard shortcut via `CGEvent` posting or trigger a system action through CoreDock, then suppress the original mouse event.
+A session-level `CGEventTap` intercepts `otherMouseDown` / `otherMouseUp` events. A deterministic state machine keeps each down/up suppression decision paired, coordinates held shortcuts, and passes unsupported model buttons through. Mapped buttons either simulate a keyboard shortcut via `CGEvent` posting or trigger an available system action.
 
 ## Configuration
 
@@ -166,6 +164,20 @@ rm ~/Library/Application\ Support/Ptions+/config.json
 
 The app regenerates default config on next launch.
 
+Configuration writes are validated and atomic. If the file is corrupt or semantically invalid, Ptions+ preserves it, blocks interception, and offers an explicit backed-up repair or reset.
+
+## Testing
+
+```bash
+xcodebuild -project PtionsPlus.xcodeproj -scheme "Ptions+" \
+  -configuration Debug -destination "platform=macOS" \
+  CODE_SIGNING_ALLOWED=NO test -only-testing:PtionsPlusTests
+
+xcodebuild -project PtionsPlus.xcodeproj -scheme "Ptions+" \
+  -configuration Debug -destination "platform=macOS" \
+  test -only-testing:PtionsPlusUITests
+```
+
 ## Project Structure
 
 ```
@@ -173,13 +185,17 @@ PtionsPlus/
 ├── PtionsApp.swift              # Entry point, AppDelegate, lifecycle
 ├── Model/
 │   ├── ButtonMapping.swift      # Data models: profiles, mappings, mice
-│   └── MappingStore.swift       # JSON persistence, profile lookup
+│   ├── MappingStore.swift       # Transactional state and profile lookup
+│   └── ConfigurationPersistence.swift
 ├── Services/
-│   ├── EventTapService.swift    # CGEventTap — intercept mouse buttons
-│   ├── KeySimulator.swift       # CGEvent posting + CoreDock actions
+│   ├── EventTapService.swift    # CGEventTap lifecycle and diagnostics
+│   ├── EventStateMachine.swift  # Paired mouse-event decisions
+│   ├── KeySimulator.swift       # Coordinated CGEvent and preset execution
+│   ├── RuntimeServiceCoordinator.swift
+│   ├── LaunchAtLoginService.swift
+│   ├── ApplicationDiscoveryService.swift
 │   ├── ActiveAppMonitor.swift   # Tracks frontmost app bundle ID
-│   ├── AccessibilityChecker.swift
-│   └── MouseDetector.swift
+│   └── AccessibilityChecker.swift
 ├── Views/
 │   ├── MenuBarView.swift        # Menu bar dropdown
 │   ├── SettingsView.swift       # Settings window (tabbed)

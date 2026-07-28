@@ -1,66 +1,102 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Repository guidance for Ptions+, a macOS 13+ menu bar app that maps extra mouse buttons to per-app keyboard shortcuts.
 
-## Build & Deploy
+## Build, Test, and Release
 
 ```bash
-# Build
-xcodebuild -project PtionsPlus.xcodeproj -scheme "Ptions+" -configuration Debug build
+# Debug build
+xcodebuild -project PtionsPlus.xcodeproj -scheme "Ptions+" \
+  -configuration Debug CODE_SIGNING_ALLOWED=NO build
 
-# Bump version for the next release
+# Unit tests
+xcodebuild -project PtionsPlus.xcodeproj -scheme "Ptions+" \
+  -configuration Debug -destination "platform=macOS" \
+  CODE_SIGNING_ALLOWED=NO test -only-testing:PtionsPlusTests
+
+# UI smoke tests
+xcodebuild -project PtionsPlus.xcodeproj -scheme "Ptions+" \
+  -configuration Debug -destination "platform=macOS" \
+  test -only-testing:PtionsPlusUITests
+
+# Static analysis
+xcodebuild -project PtionsPlus.xcodeproj -scheme "Ptions+" \
+  -configuration Debug CODE_SIGNING_ALLOWED=NO analyze
+
+# Bump version and website metadata
 ./scripts/bump-version.sh patch  # or: minor, major
 
-# Build a signed Developer ID release archive, notarization ZIP, and DMG
+# Build signed archive, notarize/staple, and create verified ZIP/DMG
+scripts/setup-notarization.sh --gui
 bash scripts/sign-release.sh
-
-# Optional local overrides live in .release.env (ignored by git)
-
-# Notarize and staple the signed release app
-# One-time setup:
-# xcrun notarytool store-credentials "PtionsPlus" --apple-id "your@email.com" --team-id "YOUR_TEAM_ID" --password "app-specific-password"
 bash scripts/notarize.sh
 
-# Deploy the current built app to /Applications and restart
-bash scripts/deploy.sh
-
-# Reset config (forces fresh defaults)
-rm -f ~/Library/Application\ Support/Ptions+/config.json
+# Documentation and shell checks
+bash scripts/check-documentation.sh
+bash -n scripts/*.sh
 ```
 
-No tests exist yet. No linter configured.
-
-## What This Is
-
-**Ptions+** is a macOS menu bar app that intercepts extra mouse buttons (MX Master 4/3 family and others) via CGEventTap and triggers configurable keyboard shortcuts per-app. It replaces Logitech Options+ which doesn't work reliably.
-
-The Xcode project is "PtionsPlus.xcodeproj", source folder is "PtionsPlus/", product name is "Ptions+".
+Local release overrides live in `.release.env` and are ignored by git.
 
 ## Architecture
 
-**AppDelegate** owns all services and injects them into SwiftUI views. Lifecycle: AppDelegate creates services → starts ActiveAppMonitor → checks accessibility → starts EventTapService when trusted.
+`AppDelegate` owns the shared services and starts `ActiveAppMonitor`, lifetime Accessibility monitoring, and `RuntimeServiceCoordinator`.
 
-**Core event flow:** Mouse button press → `EventTapService` (CGEventTap callback) → looks up `MappingStore.profileFor(bundleIdentifier:)` using `ActiveAppMonitor.activeBundleIdentifier` → finds matching `ButtonMapping` → `KeySimulator.simulateShortcut()` → returns `nil` to suppress original mouse event.
+Runtime invariant:
 
-**MappingStore** is a singleton (`MappingStore.shared`) with JSON persistence at `~/Library/Application Support/Ptions+/config.json`. Data model: `AppConfiguration` → `[AppProfile]` → `[ButtonMapping]` → `KeyboardShortcut?`. Profiles with `bundleIdentifier == nil` are the default fallback.
+```text
+configuration usable AND Enabled AND Accessibility trusted
+    -> EventTapService running
+otherwise
+    -> EventTapService stopped and held synthetic input released
+```
 
-**ShortcutRecorderView** uses `NSViewRepresentable` wrapping a custom `NSView` that overrides both `keyDown` and `performKeyEquivalent` — necessary because SwiftUI intercepts modifier-key combinations. System shortcuts like Ctrl+↑ (Mission Control) can't be recorded; use `PresetShortcut` enum instead.
+Core event flow:
 
-## Key Constraints
+```text
+CGEventTap
+  -> EventTapService translates the event
+  -> EventStateMachine resolves the mapping and preserves down/up state
+  -> SystemEventActionExecutor coordinates keyboard state or preset actions
+  -> suppress or pass through using the original down-event decision
+```
 
-- **No App Sandbox** — CGEventTap and CGEvent posting require it. Entitlements explicitly set `com.apple.security.app-sandbox = false`.
-- **Accessibility permission required** — `AXIsProcessTrusted()` must return true. AccessibilityChecker polls every 1s until granted.
-- **LSUIElement = YES** — No dock icon, menu bar only.
-- **macOS 13+ (Ventura)** — MenuBarExtra, SMAppService require it. Note: `Environment(\.openSettings)` is macOS 14+ only; we use `openWindow(id:)` instead.
-- **Logi Options+ must be uninstalled** — Otherwise it captures the mouse buttons first.
-- **System shortcuts can't be recorded** — macOS intercepts them before the app. Use `PresetShortcut` for Mission Control (⌃↑), App Exposé (⌃↓).
+Important components:
+
+- `MappingStore` publishes only configurations that were validated and atomically persisted.
+- `ConfigurationRepository` distinguishes missing, corrupt, unsupported, invalid, and unwritable configuration states.
+- `EventStateMachine` owns paired press state and held shortcut release.
+- `KeyboardStateCoordinator` reference-counts overlapping keys and modifiers.
+- `CoreDockClient` resolves the private Dock symbol dynamically; unavailable actions fail safely.
+- `KeyboardLayoutResolver` maps logical preset characters through the active input source.
+- `LaunchAtLoginViewModel` uses `SMAppService.mainApp.status` as its source of truth.
+- `ApplicationDiscoveryService` scans installed apps off the main thread and retains manual selection.
+
+## Constraints
+
+- The App Sandbox must remain disabled because global event interception and posting require Accessibility privileges.
+- `LSUIElement = YES`; there is no Dock icon.
+- macOS 13 is the deployment target.
+- Logi Options+ or other software that captures the same buttons must be disabled.
+- Mouse model selection is manual. Buttons outside the selected model remain saved but are inactive.
+- Recorded custom shortcuts store physical key codes. Semantic presets resolve logical characters for the active keyboard layout.
+- Spotlight and Notification Center presets use the documented default macOS shortcut; users with reassigned shortcuts should record a custom shortcut.
+
+## Persistence
+
+Configuration is stored at:
+
+```text
+~/Library/Application Support/Ptions+/config.json
+```
+
+Never silently replace an unreadable file. Recovery actions create a timestamped backup before repair or reset.
 
 ## MX Master 3 Button Numbers
 
-| Button | Number | Notes |
-|--------|--------|-------|
-| Middle Click | 2 | otherMouseDown/Up |
-| Back | 3 | otherMouseDown/Up |
-| Forward | 4 | otherMouseDown/Up |
-| Thumb/Gesture | 5 | Default: Mission Control |
-| Button 6 | 6 | otherMouseDown/Up |
+| Button | Number |
+|--------|--------|
+| Middle Click | 2 |
+| Back | 3 |
+| Forward | 4 |
+| Thumb/Gesture | 5 |

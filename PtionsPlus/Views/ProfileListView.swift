@@ -40,15 +40,18 @@ struct ProfileListView: View {
             }
         }
         .sheet(isPresented: $showingAppPicker) {
-            AppPickerView { bundleId, appName in
+            AppPickerView(
+                configuredBundleIdentifiers: Set(store.configuration.profiles.compactMap(\.bundleIdentifier))
+            ) { bundleId, appName in
                 let profile = AppProfile(
                     name: appName,
                     bundleIdentifier: bundleId,
                     mappings: MouseButton.allCases.map { ButtonMapping(button: $0) }
                 )
-                store.addProfile(profile)
-                selectedProfileId = profile.id
-                showingAppPicker = false
+                if store.addProfile(profile) {
+                    selectedProfileId = profile.id
+                    showingAppPicker = false
+                }
             }
         }
         .onAppear {

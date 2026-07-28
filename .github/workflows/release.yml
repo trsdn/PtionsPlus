@@ -12,14 +12,17 @@ on:
         type: string
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  macos-dmg:
-    name: Build signed and notarized DMG
-    runs-on: macos-latest
+  metadata:
+    name: Resolve release metadata
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.release.outputs.tag }}
+      version: ${{ steps.release.outputs.version }}
     steps:
-      - name: Resolve release metadata
+      - name: Resolve tag
         id: release
         shell: bash
         run: |
@@ -29,14 +32,40 @@ jobs:
           else
             tag="${GITHUB_REF_NAME}"
           fi
+          if [[ ! "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Invalid release tag: $tag"
+            exit 1
+          fi
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
           echo "version=${tag#v}" >> "$GITHUB_OUTPUT"
 
+  tests:
+    name: Test release commit
+    needs: metadata
+    uses: ./.github/workflows/ci.yml
+    with:
+      ref: ${{ needs.metadata.outputs.tag }}
+
+  sign:
+    name: Build, sign, notarize, and verify
+    needs:
+      - metadata
+      - tests
+    runs-on: macos-latest
+    permissions:
+      contents: read
+    env:
+      RELEASE_TAG: ${{ needs.metadata.outputs.tag }}
+    steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: ${{ steps.release.outputs.tag }}
+          ref: ${{ needs.metadata.outputs.tag }}
           fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify version metadata
+        run: scripts/verify-version.sh --tag "$RELEASE_TAG"
 
       - name: Import Developer ID certificate
         shell: bash
@@ -50,12 +79,15 @@ jobs:
             exit 1
           fi
 
-          cert_file="$(mktemp /tmp/ptionsplus-cert.XXXXXX.p12)"
+          cert_file="$(mktemp /tmp/ptionsplus-cert.XXXXXX)"
           keychain_file="/tmp/ptionsplus-build-${{ github.run_id }}.keychain-db"
           keychain_password="$(openssl rand -base64 32)"
+          echo "KEYCHAIN_FILE=$keychain_file" >> "$GITHUB_ENV"
 
           echo "$MACOS_CERTIFICATE" | base64 --decode > "$cert_file"
-          curl -sL "https://www.apple.com/certificateauthority/DeveloperIDG2CA.cer" -o /tmp/DeveloperIDG2CA.cer
+          curl --fail --silent --show-error --location \
+            "https://www.apple.com/certificateauthority/DeveloperIDG2CA.cer" \
+            --output /tmp/DeveloperIDG2CA.cer
 
           security create-keychain -p "$keychain_password" "$keychain_file"
           security set-keychain-settings -lut 21600 "$keychain_file"
@@ -73,25 +105,17 @@ jobs:
 
           echo "CODE_SIGN_IDENTITY=$identity" >> "$GITHUB_ENV"
           echo "TEAM_ID=${{ secrets.APPLE_TEAM_ID }}" >> "$GITHUB_ENV"
-          echo "KEYCHAIN_FILE=$keychain_file" >> "$GITHUB_ENV"
           rm -f "$cert_file" /tmp/DeveloperIDG2CA.cer
 
-      - name: Build signed ZIP and DMG
-        shell: bash
-        run: |
-          set -euo pipefail
-          chmod +x scripts/*.sh
-          scripts/sign-release.sh
+      - name: Build signed archive
+        run: scripts/sign-release.sh
 
-      - name: Notarize app and DMG
-        shell: bash
+      - name: Notarize and create final artifacts
         env:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
-        run: |
-          set -euo pipefail
-          scripts/notarize.sh
+        run: scripts/notarize.sh
 
       - name: Cleanup keychain
         if: always()
@@ -101,28 +125,46 @@ jobs:
             security delete-keychain "$KEYCHAIN_FILE" 2>/dev/null || true
           fi
 
-      - name: Upload workflow artifact
-        uses: actions/upload-artifact@v4
+      - name: Upload verified release assets
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: PtionsPlus-macos-dmg
+          name: PtionsPlus-release-assets
           path: |
             dist/Ptions+.dmg
             dist/Ptions+.dmg.sha256
             dist/Ptions+.zip
+          if-no-files-found: error
+
+  publish:
+    name: Publish GitHub Release
+    needs:
+      - metadata
+      - sign
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download verified assets
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: PtionsPlus-release-assets
+          path: release-assets
 
       - name: Attach assets to GitHub Release
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ steps.release.outputs.tag }}
-          RELEASE_VERSION: ${{ steps.release.outputs.version }}
+          RELEASE_TAG: ${{ needs.metadata.outputs.tag }}
+          RELEASE_VERSION: ${{ needs.metadata.outputs.version }}
         run: |
           set -euo pipefail
           if ! gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
-            gh release create "$RELEASE_TAG" --title "Ptions+ ${RELEASE_VERSION}" --notes "Signed and notarized macOS release artifacts."
+            gh release create "$RELEASE_TAG" \
+              --title "Ptions+ ${RELEASE_VERSION}" \
+              --notes "Signed, notarized, stapled, and verified macOS release artifacts."
           fi
           gh release upload "$RELEASE_TAG" \
-            "dist/Ptions+.dmg" \
-            "dist/Ptions+.dmg.sha256" \
-            "dist/Ptions+.zip" \
+            "release-assets/Ptions+.dmg" \
+            "release-assets/Ptions+.dmg.sha256" \
+            "release-assets/Ptions+.zip" \
             --clobber

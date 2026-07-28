@@ -3,8 +3,14 @@ import Combine
 import AppKit
 import ApplicationServices
 
-final class AccessibilityChecker: ObservableObject {
-    @Published var isTrusted: Bool = false
+protocol AccessibilityChecking: AnyObject {
+    var isTrusted: Bool { get }
+    var trustPublisher: AnyPublisher<Bool, Never> { get }
+    func promptIfNeeded()
+}
+
+final class AccessibilityChecker: ObservableObject, AccessibilityChecking {
+    @Published private(set) var isTrusted: Bool = false
 
     private var timer: Timer?
     private let isTesting = ProcessInfo.processInfo.arguments.contains("--ui-testing") || ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
@@ -13,26 +19,26 @@ final class AccessibilityChecker: ObservableObject {
         isTrusted = isTesting ? true : AXIsProcessTrusted()
     }
 
+    var trustPublisher: AnyPublisher<Bool, Never> {
+        $isTrusted.eraseToAnyPublisher()
+    }
+
     func promptIfNeeded() {
         guard !isTesting else { return }
         let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue(): true] as CFDictionary
         isTrusted = AXIsProcessTrustedWithOptions(options)
     }
 
-    func startPolling() {
+    func startMonitoring() {
         guard !isTesting else { return }
         timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
-            let trusted = AXIsProcessTrusted()
-            if trusted != self?.isTrusted {
-                DispatchQueue.main.async {
-                    self?.isTrusted = trusted
-                }
-            }
+            self?.refreshTrust()
         }
+        refreshTrust()
     }
 
-    func stopPolling() {
+    func stopMonitoring() {
         timer?.invalidate()
         timer = nil
     }
@@ -53,5 +59,12 @@ final class AccessibilityChecker: ObservableObject {
         }
 
         NSWorkspace.shared.open(URL(fileURLWithPath: "/System/Applications/System Settings.app"))
+    }
+
+    private func refreshTrust() {
+        let trusted = AXIsProcessTrusted()
+        if trusted != isTrusted {
+            isTrusted = trusted
+        }
     }
 }

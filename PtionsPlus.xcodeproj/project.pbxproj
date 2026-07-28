@@ -25,11 +25,16 @@
 		A1B2C3D4E5F6000100000109 /* KeyCodeMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000100000209 /* KeyCodeMap.swift */; };
 		A1B2C3D4E5F600010000010A /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F600010000020A /* Constants.swift */; };
 		A1B2C3D4E5F600010000010B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F600010000020B /* Assets.xcassets */; };
-		A1B2C3D4E5F600010000010C /* MouseDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F600010000020E /* MouseDetector.swift */; };
 		B1C2D3E4F5A6000200000101 /* MappingStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1C2D3E4F5A6000200000202 /* MappingStoreTests.swift */; };
 		B1C2D3E4F5A6000200000102 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B1C2D3E4F5A6000200000203 /* XCTest.framework */; };
 		C1D2E3F4A5B6000300000101 /* PtionsPlusUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1D2E3F4A5B6000300000202 /* PtionsPlusUITests.swift */; };
 		C1D2E3F4A5B6000300000102 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B1C2D3E4F5A6000200000203 /* XCTest.framework */; };
+		D1E2F3A4B5C6000400000101 /* ConfigurationPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1E2F3A4B5C6000400000201 /* ConfigurationPersistence.swift */; };
+		D1E2F3A4B5C6000400000102 /* EventStateMachine.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1E2F3A4B5C6000400000202 /* EventStateMachine.swift */; };
+		D1E2F3A4B5C6000400000103 /* RuntimeServiceCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1E2F3A4B5C6000400000203 /* RuntimeServiceCoordinator.swift */; };
+		D1E2F3A4B5C6000400000104 /* LaunchAtLoginService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1E2F3A4B5C6000400000204 /* LaunchAtLoginService.swift */; };
+		D1E2F3A4B5C6000400000105 /* ApplicationDiscoveryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1E2F3A4B5C6000400000205 /* ApplicationDiscoveryService.swift */; };
+		D1E2F3A4B5C6000400000106 /* RuntimeServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1E2F3A4B5C6000400000206 /* RuntimeServiceTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -71,12 +76,17 @@
 		A1B2C3D4E5F600010000020B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A1B2C3D4E5F600010000020C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A1B2C3D4E5F600010000020D /* PtionsPlus.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PtionsPlus.entitlements; sourceTree = "<group>"; };
-		A1B2C3D4E5F600010000020E /* MouseDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MouseDetector.swift; sourceTree = "<group>"; };
 		B1C2D3E4F5A6000200000201 /* PtionsPlusTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PtionsPlusTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B1C2D3E4F5A6000200000202 /* MappingStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MappingStoreTests.swift; sourceTree = "<group>"; };
 		B1C2D3E4F5A6000200000203 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Platforms/MacOSX.platform/Developer/Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		C1D2E3F4A5B6000300000201 /* PtionsPlusUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PtionsPlusUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C1D2E3F4A5B6000300000202 /* PtionsPlusUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PtionsPlusUITests.swift; sourceTree = "<group>"; };
+		D1E2F3A4B5C6000400000201 /* ConfigurationPersistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurationPersistence.swift; sourceTree = "<group>"; };
+		D1E2F3A4B5C6000400000202 /* EventStateMachine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventStateMachine.swift; sourceTree = "<group>"; };
+		D1E2F3A4B5C6000400000203 /* RuntimeServiceCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuntimeServiceCoordinator.swift; sourceTree = "<group>"; };
+		D1E2F3A4B5C6000400000204 /* LaunchAtLoginService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchAtLoginService.swift; sourceTree = "<group>"; };
+		D1E2F3A4B5C6000400000205 /* ApplicationDiscoveryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationDiscoveryService.swift; sourceTree = "<group>"; };
+		D1E2F3A4B5C6000400000206 /* RuntimeServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuntimeServiceTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -146,6 +156,7 @@
 			children = (
 				A1B2C3D4E5F60001000002BB /* ButtonMapping.swift */,
 				A1B2C3D4E5F60001000002CC /* MappingStore.swift */,
+				D1E2F3A4B5C6000400000201 /* ConfigurationPersistence.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -157,7 +168,10 @@
 				A1B2C3D4E5F60001000002EE /* KeySimulator.swift */,
 				A1B2C3D4E5F60001000002FF /* ActiveAppMonitor.swift */,
 				A1B2C3D4E5F6000100000200 /* AccessibilityChecker.swift */,
-				A1B2C3D4E5F600010000020E /* MouseDetector.swift */,
+				D1E2F3A4B5C6000400000202 /* EventStateMachine.swift */,
+				D1E2F3A4B5C6000400000203 /* RuntimeServiceCoordinator.swift */,
+				D1E2F3A4B5C6000400000204 /* LaunchAtLoginService.swift */,
+				D1E2F3A4B5C6000400000205 /* ApplicationDiscoveryService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -190,6 +204,7 @@
 			isa = PBXGroup;
 			children = (
 				B1C2D3E4F5A6000200000202 /* MappingStoreTests.swift */,
+				D1E2F3A4B5C6000400000206 /* RuntimeServiceTests.swift */,
 			);
 			path = PtionsPlusTests;
 			sourceTree = "<group>";
@@ -349,7 +364,11 @@
 				A1B2C3D4E5F6000100000108 /* PermissionGuideView.swift in Sources */,
 				A1B2C3D4E5F6000100000109 /* KeyCodeMap.swift in Sources */,
 				A1B2C3D4E5F600010000010A /* Constants.swift in Sources */,
-				A1B2C3D4E5F600010000010C /* MouseDetector.swift in Sources */,
+				D1E2F3A4B5C6000400000101 /* ConfigurationPersistence.swift in Sources */,
+				D1E2F3A4B5C6000400000102 /* EventStateMachine.swift in Sources */,
+				D1E2F3A4B5C6000400000103 /* RuntimeServiceCoordinator.swift in Sources */,
+				D1E2F3A4B5C6000400000104 /* LaunchAtLoginService.swift in Sources */,
+				D1E2F3A4B5C6000400000105 /* ApplicationDiscoveryService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -358,6 +377,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B1C2D3E4F5A6000200000101 /* MappingStoreTests.swift in Sources */,
+				D1E2F3A4B5C6000400000106 /* RuntimeServiceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -505,11 +525,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = PtionsPlus/PtionsPlus.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = PtionsPlus/Info.plist;
@@ -520,7 +539,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.1.3;
+				MARKETING_VERSION = 1.1.4;
 				PRODUCT_BUNDLE_IDENTIFIER = com.torsten.Ptions-Plus;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -532,11 +551,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = PtionsPlus/PtionsPlus.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = PtionsPlus/Info.plist;
@@ -547,7 +565,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.1.3;
+				MARKETING_VERSION = 1.1.4;
 				PRODUCT_BUNDLE_IDENTIFIER = com.torsten.Ptions-Plus;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;

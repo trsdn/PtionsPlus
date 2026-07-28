@@ -116,6 +116,11 @@ private struct ButtonMappingRow: View {
 
     private var mappingStatusText: String {
         guard let effectiveMapping, effectiveMapping.isActive else { return "Not assigned" }
+        if let action = effectiveMapping.systemAction,
+           action.isDockAction,
+           !CoreDockClient.shared.isAvailable {
+            return "\(action.displayName) (Unavailable)"
+        }
         return effectiveMapping.displayString
     }
 
@@ -133,6 +138,15 @@ private struct ButtonMappingRow: View {
 
         if effectiveMapping.shortcut != nil {
             return effectiveMapping.holdWhilePressed ? "Shortcut stays pressed while the mouse button is down." : "Shortcut runs when you press the mouse button."
+        }
+
+        if let action = effectiveMapping.systemAction {
+            if action.isDockAction && !CoreDockClient.shared.isAvailable {
+                return "This macOS action is unavailable on the current system."
+            }
+            if action.usesDefaultSystemShortcut {
+                return "Uses the default macOS shortcut. Record a custom shortcut if you reassigned it."
+            }
         }
 
         return "Preset action runs when you press the mouse button."
@@ -178,6 +192,7 @@ private struct ButtonMappingRow: View {
                                             Button(action.displayName) {
                                                 store.updateMapping(profileId: profile.id, button: button, systemAction: action)
                                             }
+                                            .disabled(action.isDockAction && !CoreDockClient.shared.isAvailable)
                                         }
                                     }
                                 }

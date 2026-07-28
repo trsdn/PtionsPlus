@@ -6,10 +6,8 @@ PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 ENV_FILE="${RELEASE_ENV_FILE:-$PROJECT_DIR/.release.env}"
 ARCHIVE_PATH="$PROJECT_DIR/build/PtionsPlus.xcarchive"
 APP_PATH="$ARCHIVE_PATH/Products/Applications/Ptions+.app"
-ZIP_PATH="$PROJECT_DIR/dist/Ptions+.zip"
-DMG_PATH="$PROJECT_DIR/dist/Ptions+.dmg"
-DMG_STAGING_PATH="$PROJECT_DIR/build/dmg-staging"
-DMG_VOLUME_NAME="Ptions+"
+NOTARIZATION_DIR="$PROJECT_DIR/build/notarization"
+SUBMISSION_ZIP="$NOTARIZATION_DIR/Ptions+-submission.zip"
 
 if [ -f "$ENV_FILE" ]; then
   echo "Loading release config from $ENV_FILE"
@@ -34,12 +32,16 @@ if [ -z "$IDENTITY" ]; then
 fi
 
 cd "$PROJECT_DIR"
-mkdir -p build dist
-rm -rf "$ARCHIVE_PATH"
-rm -rf "$DMG_STAGING_PATH"
-rm -f "$ZIP_PATH"
-rm -f "$DMG_PATH"
-rm -f "$DMG_PATH.sha256"
+mkdir -p build "$NOTARIZATION_DIR" dist
+rm -rf "$ARCHIVE_PATH" "$NOTARIZATION_DIR"
+mkdir -p "$NOTARIZATION_DIR"
+rm -f dist/Ptions+.zip dist/Ptions+.dmg dist/Ptions+.dmg.sha256
+
+if [ -n "${RELEASE_TAG:-}" ]; then
+  scripts/verify-version.sh --tag "$RELEASE_TAG"
+else
+  scripts/verify-version.sh
+fi
 
 echo "Building signed release archive..."
 xcodebuild \
@@ -53,32 +55,18 @@ xcodebuild \
   CODE_SIGN_IDENTITY="$IDENTITY" \
   OTHER_CODE_SIGN_FLAGS="--timestamp"
 
-echo "Verifying signature..."
+echo "Verifying archive signature and version..."
+codesign --verify --deep --strict --verbose=2 "$APP_PATH"
 codesign -dv --verbose=4 "$APP_PATH" 2>&1 | tail -n 20
+if [ -n "${RELEASE_TAG:-}" ]; then
+  scripts/verify-version.sh --tag "$RELEASE_TAG" --app "$APP_PATH"
+else
+  scripts/verify-version.sh --app "$APP_PATH"
+fi
 
-echo "Creating notarization ZIP..."
-ditto -c -k --keepParent "$APP_PATH" "$ZIP_PATH"
+echo "Creating temporary app notarization submission..."
+ditto -c -k --keepParent "$APP_PATH" "$SUBMISSION_ZIP"
 
-echo "Creating signed DMG..."
-mkdir -p "$DMG_STAGING_PATH"
-cp -R "$APP_PATH" "$DMG_STAGING_PATH/"
-ln -s /Applications "$DMG_STAGING_PATH/Applications"
-
-hdiutil create \
-  -volname "$DMG_VOLUME_NAME" \
-  -srcfolder "$DMG_STAGING_PATH" \
-  -ov \
-  -format UDZO \
-  "$DMG_PATH"
-
-codesign --force --sign "$IDENTITY" --timestamp "$DMG_PATH"
-
-echo "Verifying DMG signature..."
-codesign -dv --verbose=4 "$DMG_PATH" 2>&1 | tail -n 20
-hdiutil verify "$DMG_PATH"
-shasum -a 256 "$DMG_PATH" > "$DMG_PATH.sha256"
-
-echo "Created: $APP_PATH"
-echo "Created: $ZIP_PATH"
-echo "Created: $DMG_PATH"
-echo "Created: $DMG_PATH.sha256"
+echo "Created signed archive: $APP_PATH"
+echo "Created notarization submission: $SUBMISSION_ZIP"
+echo "Run scripts/notarize.sh to create final distributable artifacts."

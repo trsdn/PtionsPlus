@@ -1,6 +1,6 @@
-import Foundation
-import CoreGraphics
 import Combine
+import CoreGraphics
+import Foundation
 import os
 
 private let logger = Logger(subsystem: "com.torsten.Ptions-Plus", category: "EventTap")
@@ -11,30 +11,57 @@ struct MouseButtonEvent {
     let timestamp: Date
 }
 
-final class EventTapService: ObservableObject {
-    @Published var isRunning = false
-    @Published var lastEvent: MouseButtonEvent?
+enum EventTapStatus: Equatable {
+    case stopped
+    case running
+    case recovering
+    case permissionDenied
+    case failed(String)
+}
 
+final class EventDiagnosticsSubscription {
+    private var cancellation: (() -> Void)?
+
+    init(cancellation: @escaping () -> Void) {
+        self.cancellation = cancellation
+    }
+
+    func cancel() {
+        cancellation?()
+        cancellation = nil
+    }
+
+    deinit {
+        cancel()
+    }
+}
+
+protocol EventTapBackend: AnyObject {
+    var isEnabled: Bool { get }
+    func start(userInfo: UnsafeMutableRawPointer) -> Bool
+    func enable() -> Bool
+    func stop()
+}
+
+final class SystemEventTapBackend: EventTapBackend {
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
 
-    private let store: MappingStore
-    private let appMonitor: ActiveAppMonitor
-    private var activeHeldShortcuts: [MouseButton: KeyboardShortcut] = [:]
-
-    var onEvent: ((MouseButtonEvent) -> Void)?
-
-    init(store: MappingStore, appMonitor: ActiveAppMonitor) {
-        self.store = store
-        self.appMonitor = appMonitor
+    var isEnabled: Bool {
+        guard let eventTap else {
+            return false
+        }
+        return CGEvent.tapIsEnabled(tap: eventTap)
     }
 
-    func start() {
-        guard eventTap == nil else { return }
+    func start(userInfo: UnsafeMutableRawPointer) -> Bool {
+        if eventTap != nil {
+            return enable()
+        }
 
-        let eventMask: CGEventMask = (1 << CGEventType.otherMouseDown.rawValue) | (1 << CGEventType.otherMouseUp.rawValue)
-
-        let userInfo = Unmanaged.passUnretained(self).toOpaque()
+        let eventMask: CGEventMask =
+            (1 << CGEventType.otherMouseDown.rawValue) |
+            (1 << CGEventType.otherMouseUp.rawValue)
 
         guard let tap = CGEvent.tapCreate(
             tap: .cgSessionEventTap,
@@ -44,35 +71,130 @@ final class EventTapService: ObservableObject {
             callback: eventTapCallback,
             userInfo: userInfo
         ) else {
-            NSLog("[Ptions+] Failed to create event tap. Is Accessibility enabled?")
-            return
+            return false
         }
 
+        let source = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0)
         eventTap = tap
-        runLoopSource = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0)
-        CFRunLoopAddSource(CFRunLoopGetMain(), runLoopSource, .commonModes)
+        runLoopSource = source
+        CFRunLoopAddSource(CFRunLoopGetMain(), source, .commonModes)
         CGEvent.tapEnable(tap: tap, enable: true)
-        isRunning = true
-        NSLog("[Ptions+] Event tap created and enabled successfully")
+        return CGEvent.tapIsEnabled(tap: tap)
+    }
+
+    func enable() -> Bool {
+        guard let eventTap else {
+            return false
+        }
+        CGEvent.tapEnable(tap: eventTap, enable: true)
+        return CGEvent.tapIsEnabled(tap: eventTap)
     }
 
     func stop() {
-        if let tap = eventTap {
-            CGEvent.tapEnable(tap: tap, enable: false)
-            if let source = runLoopSource {
-                CFRunLoopRemoveSource(CFRunLoopGetMain(), source, .commonModes)
+        if let eventTap {
+            CGEvent.tapEnable(tap: eventTap, enable: false)
+            if let runLoopSource {
+                CFRunLoopRemoveSource(CFRunLoopGetMain(), runLoopSource, .commonModes)
             }
+            CFMachPortInvalidate(eventTap)
         }
         eventTap = nil
         runLoopSource = nil
-        isRunning = false
+    }
+}
+
+final class EventTapService: ObservableObject {
+    @Published private(set) var isRunning = false
+    @Published private(set) var status: EventTapStatus = .stopped
+
+    private let appMonitor: ActiveAppMonitor
+    private let eventStateMachine: EventStateMachine
+    private let backend: EventTapBackend
+    private var diagnosticsSubscribers: [UUID: (MouseButtonEvent) -> Void] = [:]
+
+    init(
+        store: MappingStore,
+        appMonitor: ActiveAppMonitor,
+        actionExecutor: EventActionExecuting = SystemEventActionExecutor(),
+        backend: EventTapBackend = SystemEventTapBackend()
+    ) {
+        self.appMonitor = appMonitor
+        eventStateMachine = EventStateMachine(
+            mappingResolver: store,
+            actionExecutor: actionExecutor
+        )
+        self.backend = backend
     }
 
-    fileprivate func handleEvent(_ proxy: CGEventTapProxy, _ type: CGEventType, _ event: CGEvent) -> Unmanaged<CGEvent>? {
-        if type == .tapDisabledByTimeout {
-            if let tap = eventTap {
-                CGEvent.tapEnable(tap: tap, enable: true)
-            }
+    @discardableResult
+    func start() -> Bool {
+        if backend.isEnabled {
+            updateStatus(.running)
+            return true
+        }
+
+        let userInfo = Unmanaged.passUnretained(self).toOpaque()
+        guard backend.start(userInfo: userInfo) else {
+            logger.error("Failed to create or enable the event tap")
+            updateStatus(.failed("Could not start mouse interception."))
+            return false
+        }
+
+        logger.info("Event tap started")
+        updateStatus(.running)
+        return true
+    }
+
+    func stop() {
+        eventStateMachine.stop()
+        backend.stop()
+        updateStatus(.stopped)
+        logger.info("Event tap stopped")
+    }
+
+    func markPermissionDenied() {
+        eventStateMachine.stop()
+        backend.stop()
+        updateStatus(.permissionDenied)
+    }
+
+    func subscribeToDiagnostics(
+        _ subscriber: @escaping (MouseButtonEvent) -> Void
+    ) -> EventDiagnosticsSubscription {
+        let id = UUID()
+        diagnosticsSubscribers[id] = subscriber
+        return EventDiagnosticsSubscription { [weak self] in
+            self?.diagnosticsSubscribers.removeValue(forKey: id)
+        }
+    }
+
+    func recoverFromDisabledTap() {
+        eventStateMachine.stop()
+        updateStatus(.recovering)
+        if backend.enable() {
+            updateStatus(.running)
+            logger.info("Event tap re-enabled")
+            return
+        }
+
+        backend.stop()
+        let userInfo = Unmanaged.passUnretained(self).toOpaque()
+        if backend.start(userInfo: userInfo) {
+            updateStatus(.running)
+            logger.info("Event tap recreated")
+        } else {
+            updateStatus(.failed("Mouse interception stopped and could not be recovered."))
+            logger.error("Event tap recovery failed")
+        }
+    }
+
+    fileprivate func handleEvent(
+        _ proxy: CGEventTapProxy,
+        _ type: CGEventType,
+        _ event: CGEvent
+    ) -> Unmanaged<CGEvent>? {
+        if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
+            recoverFromDisabledTap()
             return Unmanaged.passUnretained(event)
         }
 
@@ -82,52 +204,59 @@ final class EventTapService: ObservableObject {
 
         let buttonNumber = event.getIntegerValueField(.mouseEventButtonNumber)
         let isDown = type == .otherMouseDown
+        deliverDiagnostic(MouseButtonEvent(
+            buttonNumber: buttonNumber,
+            isDown: isDown,
+            timestamp: Date()
+        ))
 
-        let mouseEvent = MouseButtonEvent(buttonNumber: buttonNumber, isDown: isDown, timestamp: Date())
-
-        DispatchQueue.main.async {
-            self.lastEvent = mouseEvent
-            self.onEvent?(mouseEvent)
-        }
-
-        guard let mouseButton = MouseButton(rawValue: Int(buttonNumber)) else {
-            NSLog("[Ptions+] Unknown button number: \(buttonNumber)")
+        guard let button = MouseButton(rawValue: Int(buttonNumber)) else {
             return Unmanaged.passUnretained(event)
         }
 
-        if !isDown, let heldShortcut = activeHeldShortcuts.removeValue(forKey: mouseButton) {
-            NSLog("[Ptions+] Releasing held shortcut: \(heldShortcut.displayString)")
-            KeySimulator.releaseShortcut(heldShortcut)
+        let disposition = processMouseButton(
+            button: button,
+            isDown: isDown,
+            bundleIdentifier: appMonitor.activeBundleIdentifier
+        )
+        switch disposition {
+        case .passThrough:
+            return Unmanaged.passUnretained(event)
+        case .suppress:
             return nil
         }
+    }
 
-        let bid = appMonitor.activeBundleIdentifier
-        let profile = store.profileFor(bundleIdentifier: bid)
-        NSLog("[Ptions+] Button \(buttonNumber) \(isDown ? "DOWN" : "UP") | App: \(bid ?? "nil") | Profile: \(profile.name) | Mappings: \(profile.mappings.count)")
+    private func updateStatus(_ status: EventTapStatus) {
+        self.status = status
+        isRunning = status == .running
+    }
 
-                guard let mapping = store.mapping(for: mouseButton, in: profile),
-              mapping.isActive else {
-            NSLog("[Ptions+] No mapping for button \(buttonNumber)")
-            return Unmanaged.passUnretained(event)
+    func processMouseButton(
+        button: MouseButton,
+        isDown: Bool,
+        bundleIdentifier: String?
+    ) -> EventDisposition {
+        eventStateMachine.handle(
+            button: button,
+            isDown: isDown,
+            bundleIdentifier: bundleIdentifier
+        )
+    }
+
+    func deliverDiagnostic(_ event: MouseButtonEvent) {
+        guard !diagnosticsSubscribers.isEmpty else {
+            return
         }
 
-        if isDown {
-            if let action = mapping.systemAction {
-                NSLog("[Ptions+] Action: \(action.displayName)")
-                KeySimulator.performPresetAction(action)
-            } else if let shortcut = mapping.shortcut {
-                if mapping.holdWhilePressed {
-                    NSLog("[Ptions+] Hold shortcut down: \(shortcut.displayString)")
-                    activeHeldShortcuts[mouseButton] = shortcut
-                    KeySimulator.pressShortcut(shortcut)
-                } else {
-                    NSLog("[Ptions+] Shortcut: \(shortcut.displayString)")
-                    KeySimulator.simulateShortcut(shortcut)
-                }
+        let subscribers = Array(diagnosticsSubscribers.values)
+        if Thread.isMainThread {
+            subscribers.forEach { $0(event) }
+        } else {
+            DispatchQueue.main.async {
+                subscribers.forEach { $0(event) }
             }
         }
-
-        return nil
     }
 }
 
@@ -137,7 +266,7 @@ private func eventTapCallback(
     event: CGEvent,
     userInfo: UnsafeMutableRawPointer?
 ) -> Unmanaged<CGEvent>? {
-    guard let userInfo = userInfo else {
+    guard let userInfo else {
         return Unmanaged.passUnretained(event)
     }
     let service = Unmanaged<EventTapService>.fromOpaque(userInfo).takeUnretainedValue()

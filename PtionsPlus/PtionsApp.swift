@@ -1,5 +1,4 @@
 import SwiftUI
-import Combine
 import os
 
 private let logger = Logger(subsystem: "com.torsten.Ptions-Plus", category: "App")
@@ -36,14 +35,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let accessibilityChecker = AccessibilityChecker()
     let appMonitor = ActiveAppMonitor()
     lazy var eventTapService = EventTapService(store: store, appMonitor: appMonitor)
+    lazy var runtimeCoordinator = RuntimeServiceCoordinator(
+        store: store,
+        accessibilityChecker: accessibilityChecker,
+        eventTapService: eventTapService
+    )
     private let isUITesting = ProcessInfo.processInfo.arguments.contains("--ui-testing")
     private let isRunningTests = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
     private var uiTestWindow: NSWindow?
 
-    private var cancellable: AnyCancellable?
-
     func applicationDidFinishLaunching(_ notification: Notification) {
-        NSLog("App launched. Trusted: \(self.accessibilityChecker.isTrusted), Enabled: \(self.store.configuration.isEnabled)")
+        logger.info("App launched. Trusted: \(self.accessibilityChecker.isTrusted, privacy: .public), enabled: \(self.store.configuration.isEnabled, privacy: .public)")
 
         if isUITesting {
             showUITestWindow()
@@ -55,29 +57,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         appMonitor.start()
+        accessibilityChecker.startMonitoring()
+        runtimeCoordinator.start()
+    }
 
-        // Always try to start if trusted
-        if accessibilityChecker.isTrusted {
-            NSLog("Accessibility trusted, starting event tap")
-            eventTapService.start()
-            NSLog("Event tap running: \(self.eventTapService.isRunning)")
-        } else {
-            NSLog("Not trusted, prompting...")
-            accessibilityChecker.promptIfNeeded()
-            accessibilityChecker.startPolling()
-
-            cancellable = accessibilityChecker.$isTrusted
-                .removeDuplicates()
-                .filter { $0 }
-                .first()
-                .sink { [weak self] _ in
-                    guard let self else { return }
-                    NSLog("Accessibility granted! Starting event tap")
-                    self.accessibilityChecker.stopPolling()
-                    self.eventTapService.start()
-                    NSLog("Event tap running: \(self.eventTapService.isRunning)")
-                }
-        }
+    func applicationWillTerminate(_ notification: Notification) {
+        runtimeCoordinator.stop()
+        accessibilityChecker.stopMonitoring()
+        appMonitor.stop()
     }
 
     private func showUITestWindow() {

@@ -251,10 +251,19 @@ enum PresetAction: String, CaseIterable, Identifiable, Codable {
         }
     }
 
-    /// True if handled via CoreDockSendNotification, false if via keyboard shortcut
+    /// True if handled through the optional Dock action bridge.
     var isDockAction: Bool {
         switch self {
         case .missionControl, .appExpose, .showDesktop, .launchpad:
+            return true
+        default:
+            return false
+        }
+    }
+
+    var usesDefaultSystemShortcut: Bool {
+        switch self {
+        case .notificationCenter, .spotlight, .screenshotTool:
             return true
         default:
             return false
@@ -315,6 +324,28 @@ struct AppProfile: Codable, Identifiable {
     var bundleIdentifier: String?
     var mappings: [ButtonMapping]
 
+    enum CodingKeys: String, CodingKey {
+        case id
+        case name
+        case bundleIdentifier
+        case mappings
+    }
+
+    init(id: UUID = UUID(), name: String, bundleIdentifier: String?, mappings: [ButtonMapping]) {
+        self.id = id
+        self.name = name
+        self.bundleIdentifier = bundleIdentifier
+        self.mappings = mappings
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
+        name = try container.decode(String.self, forKey: .name)
+        bundleIdentifier = try container.decodeIfPresent(String.self, forKey: .bundleIdentifier)
+        mappings = try container.decodeIfPresent([ButtonMapping].self, forKey: .mappings) ?? []
+    }
+
     var isDefault: Bool {
         bundleIdentifier == nil
     }
@@ -335,39 +366,41 @@ struct AppProfile: Codable, Identifiable {
 }
 
 struct AppConfiguration: Codable {
+    static let currentSchemaVersion = 3
+
+    var schemaVersion: Int = currentSchemaVersion
     var profiles: [AppProfile]
     var isEnabled: Bool = true
-    var launchAtLogin: Bool = false
     var mouseModel: MouseModel = .mxMaster3
     var globalButtons: [MouseButton] = []
 
     enum CodingKeys: String, CodingKey {
+        case schemaVersion
         case profiles
         case isEnabled
-        case launchAtLogin
         case mouseModel
         case globalButtons
     }
 
     init(
+        schemaVersion: Int = AppConfiguration.currentSchemaVersion,
         profiles: [AppProfile],
         isEnabled: Bool = true,
-        launchAtLogin: Bool = false,
         mouseModel: MouseModel = .mxMaster3,
         globalButtons: [MouseButton] = []
     ) {
+        self.schemaVersion = schemaVersion
         self.profiles = profiles
         self.isEnabled = isEnabled
-        self.launchAtLogin = launchAtLogin
         self.mouseModel = mouseModel
         self.globalButtons = globalButtons
     }
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
+        schemaVersion = try container.decodeIfPresent(Int.self, forKey: .schemaVersion) ?? 1
         profiles = try container.decode([AppProfile].self, forKey: .profiles)
         isEnabled = try container.decodeIfPresent(Bool.self, forKey: .isEnabled) ?? true
-        launchAtLogin = try container.decodeIfPresent(Bool.self, forKey: .launchAtLogin) ?? false
         mouseModel = try container.decodeIfPresent(MouseModel.self, forKey: .mouseModel) ?? .mxMaster3
         globalButtons = try container.decodeIfPresent([MouseButton].self, forKey: .globalButtons) ?? []
     }

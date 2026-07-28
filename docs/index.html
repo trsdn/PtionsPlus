@@ -47,7 +47,7 @@
   "description": "A native macOS menu bar app that maps extra mouse buttons to keyboard shortcuts with per-app profiles. Open-source replacement for bloated vendor software.",
   "url": "https://trsdn.github.io/PtionsPlus/",
   "downloadUrl": "https://github.com/trsdn/PtionsPlus/releases",
-  "softwareVersion": "1.0",
+  "softwareVersion": "1.1.4",
   "license": "https://opensource.org/licenses/MIT",
   "programmingLanguage": "Swift",
   "codeRepository": "https://github.com/trsdn/PtionsPlus",
@@ -859,7 +859,7 @@ body::after {
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a08ef0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
       </div>
       <h3>System Actions</h3>
-      <p>Mission Control, App Expose, Show Desktop, Launchpad — triggered directly via CoreDock.</p>
+      <p>Mission Control, App Expose, Show Desktop, and Launchpad use a dynamically detected macOS integration.</p>
     </div>
     <div class="feature-card reveal">
       <div class="feature-icon">
@@ -879,8 +879,8 @@ body::after {
       <div class="feature-icon">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a08ef0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
       </div>
-      <h3>Multi-Mouse Support</h3>
-      <p>MX Master, MX Anywhere, MX Ergo, G502, G604, or generic HID mice. Pick your model.</p>
+      <h3>Supported Mouse Models</h3>
+      <p>Manually select MX Master, MX Anywhere, MX Ergo, G502, G604, or a generic HID model.</p>
     </div>
     <div class="feature-card reveal">
       <div class="feature-icon">
@@ -897,7 +897,7 @@ body::after {
   <div class="reveal">
     <p class="section-label">Architecture</p>
     <h2 class="section-title">How it works</h2>
-    <p class="section-desc">A CGEventTap intercepts mouse button events at the HID level. Mapped buttons trigger shortcuts or system actions, then get suppressed.</p>
+    <p class="section-desc">A session event tap feeds a deterministic state machine that keeps mouse down/up decisions paired and safely coordinates held shortcuts.</p>
   </div>
   <div class="flow reveal">
     <pre><span class="hl">Mouse Button Press</span>
@@ -906,12 +906,15 @@ body::after {
   <span class="hl">CGEventTap</span> (EventTapService)
        │
        ▼
+  <span class="hl">Press State</span> (EventStateMachine)
+       │
+       ▼
   <span class="hl">Active App Lookup</span> (ActiveAppMonitor)
        │
        ▼
   <span class="hl">Profile Match</span> (MappingStore)
        │
-       ├── Has mapping? → <span class="hl2">KeySimulator / CoreDock</span> → Suppress original event
+       ├── Has mapping? → <span class="hl2">Coordinated input / system action</span> → Suppress event pair
        │
        └── No mapping?  → Pass through</pre>
   </div>
@@ -928,6 +931,7 @@ body::after {
     <div class="mice-group">
       <h3>Logitech MX</h3>
       <ul>
+        <li>MX Master 4</li>
         <li>MX Master 3</li>
         <li>MX Master 3S</li>
         <li>MX Master 2S</li>

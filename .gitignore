@@ -16,8 +16,6 @@ xcuserdata/
 .AppleDouble
 .LSOverride
 
-# Deploy script (local only)
-deploy.sh
 .release.env
 dist/
 

@@ -31,8 +31,18 @@ final class ConfigurationCompatibilityTests: XCTestCase {
 
         XCTAssertEqual(configuration.mouseModel, .mxMaster3)
         XCTAssertEqual(configuration.globalButtons, [])
-        XCTAssertFalse(configuration.launchAtLogin)
         XCTAssertTrue(configuration.isEnabled)
+        XCTAssertEqual(configuration.schemaVersion, 1)
+    }
+
+    func testAppProfileDecodeDefaultsMissingIdentifiersAndMappings() throws {
+        let data = Data(#"{"name":"Mail","bundleIdentifier":"com.apple.mail"}"#.utf8)
+
+        let profile = try JSONDecoder().decode(AppProfile.self, from: data)
+
+        XCTAssertEqual(profile.name, "Mail")
+        XCTAssertEqual(profile.bundleIdentifier, "com.apple.mail")
+        XCTAssertTrue(profile.mappings.isEmpty)
     }
 }
 
@@ -109,12 +119,182 @@ final class MappingStoreTests: XCTestCase {
         XCTAssertFalse(mapping.holdWhilePressed)
     }
 
+    func testAddProfileRejectsDuplicateBundleIdentifier() {
+        let existing = AppProfile(
+            name: "Mail",
+            bundleIdentifier: "com.apple.mail",
+            mappings: []
+        )
+        let duplicate = AppProfile(
+            name: "Mail Copy",
+            bundleIdentifier: "com.apple.mail",
+            mappings: []
+        )
+        let store = makeStore(configuration: AppConfiguration(
+            profiles: [AppProfile.makeDefault(), existing]
+        ))
+
+        XCTAssertFalse(store.addProfile(duplicate))
+        XCTAssertEqual(store.configuration.profiles.count, 2)
+    }
+
+    func testCorruptConfigurationIsNotOverwrittenByMutation() throws {
+        let url = makeTempURL()
+        let originalData = Data(#"{"profiles":["#.utf8)
+        try originalData.write(to: url)
+
+        let store = MappingStore(configURL: url)
+        let profile = AppProfile(name: "Mail", bundleIdentifier: "com.apple.mail", mappings: [])
+
+        guard case .loadFailed = store.persistenceState else {
+            return XCTFail("Expected load failure")
+        }
+        XCTAssertFalse(store.addProfile(profile))
+        XCTAssertEqual(try Data(contentsOf: url), originalData)
+    }
+
+    func testFutureSchemaIsRejectedWithoutOverwritingFile() throws {
+        let url = makeTempURL()
+        let data = Data(#"{"schemaVersion":999,"profiles":[]}"#.utf8)
+        try data.write(to: url)
+
+        let store = MappingStore(configURL: url)
+
+        guard case .loadFailed(let message) = store.persistenceState else {
+            return XCTFail("Expected load failure")
+        }
+        XCTAssertTrue(message.contains("unsupported schema version 999"))
+        XCTAssertEqual(try Data(contentsOf: url), data)
+    }
+
+    func testInvalidConfigurationRequiresExplicitRepairAndCreatesBackup() throws {
+        let url = makeTempURL()
+        let defaultProfile = AppProfile.makeDefault()
+        let first = AppProfile(name: "Mail", bundleIdentifier: "com.apple.mail", mappings: [])
+        let second = AppProfile(name: "Mail Duplicate", bundleIdentifier: "com.apple.mail", mappings: [])
+        let invalidConfiguration = AppConfiguration(profiles: [defaultProfile, first, second])
+        let originalData = try JSONEncoder().encode(invalidConfiguration)
+        try originalData.write(to: url)
+
+        let store = MappingStore(configURL: url)
+
+        guard case .needsRecovery(let messages) = store.persistenceState else {
+            return XCTFail("Expected recovery state")
+        }
+        XCTAssertTrue(messages.contains(where: { $0.contains("unique bundle identifiers") }))
+        XCTAssertTrue(store.applyProposedRepair())
+        XCTAssertEqual(store.configuration.profiles.filter { $0.bundleIdentifier == "com.apple.mail" }.count, 1)
+
+        let backups = try FileManager.default.contentsOfDirectory(
+            at: url.deletingLastPathComponent(),
+            includingPropertiesForKeys: nil
+        ).filter { $0.lastPathComponent.hasPrefix("\(url.lastPathComponent).backup-") }
+        XCTAssertEqual(backups.count, 1)
+        XCTAssertEqual(try Data(contentsOf: backups[0]), originalData)
+        tempURLs.append(backups[0])
+    }
+
+    func testMissingDefaultProfileRequiresRecovery() throws {
+        let url = makeTempURL()
+        let appProfile = AppProfile(name: "Mail", bundleIdentifier: "com.apple.mail", mappings: [])
+        let invalidConfiguration = AppConfiguration(profiles: [appProfile])
+        try JSONEncoder().encode(invalidConfiguration).write(to: url)
+
+        let store = MappingStore(configURL: url)
+
+        guard case .needsRecovery = store.persistenceState else {
+            return XCTFail("Expected recovery state")
+        }
+        XCTAssertFalse(store.isConfigurationUsable)
+        XCTAssertTrue(store.applyProposedRepair())
+        XCTAssertEqual(store.configuration.profiles.filter(\.isDefault).count, 1)
+    }
+
+    func testFailedWriteKeepsPublishedConfigurationUnchanged() throws {
+        let directoryURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        try FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true)
+        tempURLs.append(directoryURL)
+
+        let store = MappingStore(
+            configuration: AppConfiguration.empty,
+            configURL: directoryURL
+        )
+        let profile = AppProfile(name: "Mail", bundleIdentifier: "com.apple.mail", mappings: [])
+
+        XCTAssertFalse(store.addProfile(profile))
+        XCTAssertEqual(store.configuration.profiles.count, 1)
+        guard case .writeFailed = store.persistenceState else {
+            return XCTFail("Expected write failure")
+        }
+    }
+
+    func testMouseModelChangeKeepsHiddenMappingsDormantAndRestorable() {
+        var defaultProfile = AppProfile.makeDefault()
+        let index = tryUnwrap(defaultProfile.mappings.firstIndex { $0.button == .button6 })
+        defaultProfile.mappings[index].systemAction = .copy
+        let store = makeStore(configuration: AppConfiguration(
+            profiles: [defaultProfile],
+            mouseModel: .mxMaster4,
+            globalButtons: [.button6]
+        ))
+
+        let impact = store.modelChangeImpact(to: .generic3)
+
+        XCTAssertEqual(impact.hiddenButtons, [.button5, .button6])
+        XCTAssertEqual(impact.activeMappingCount, 2)
+        XCTAssertEqual(impact.globalOverrideCount, 1)
+        XCTAssertTrue(store.setMouseModel(.generic3))
+        XCTAssertFalse(store.isButtonAvailable(.button6))
+        XCTAssertNotNil(store.defaultProfile.mappings.first { $0.button == .button6 }?.systemAction)
+
+        XCTAssertTrue(store.setMouseModel(.mxMaster4))
+        XCTAssertTrue(store.isButtonAvailable(.button6))
+        XCTAssertEqual(
+            store.defaultProfile.mappings.first { $0.button == .button6 }?.systemAction,
+            .copy
+        )
+    }
+
+    func testResetRefusesToReplaceFileThatCannotBeBackedUp() throws {
+        let url = makeTempURL()
+        let originalData = Data("unreadable configuration".utf8)
+        try originalData.write(to: url)
+        try FileManager.default.setAttributes(
+            [.posixPermissions: 0o000],
+            ofItemAtPath: url.path
+        )
+        defer {
+            try? FileManager.default.setAttributes(
+                [.posixPermissions: 0o600],
+                ofItemAtPath: url.path
+            )
+        }
+
+        let store = MappingStore(configURL: url)
+        guard case .loadFailed = store.persistenceState else {
+            return XCTFail("Expected load failure")
+        }
+
+        XCTAssertFalse(store.resetConfiguration())
+        try FileManager.default.setAttributes(
+            [.posixPermissions: 0o600],
+            ofItemAtPath: url.path
+        )
+        XCTAssertEqual(try Data(contentsOf: url), originalData)
+    }
+
     private func makeStore(configuration: AppConfiguration) -> MappingStore {
-        let url = FileManager.default.temporaryDirectory
-            .appendingPathComponent(UUID().uuidString)
-            .appendingPathExtension("json")
-        tempURLs.append(url)
+        let url = makeTempURL()
         return MappingStore(configuration: configuration, configURL: url)
+    }
+
+    private func makeTempURL() -> URL {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        tempURLs.append(directory)
+        return directory.appendingPathComponent("config.json")
     }
 
     private func tryUnwrap<T>(_ value: T?, file: StaticString = #filePath, line: UInt = #line) -> T {

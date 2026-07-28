@@ -13,13 +13,7 @@ struct MenuBarView: View {
             Toggle(isOn: Binding(
                 get: { store.configuration.isEnabled },
                 set: { newValue in
-                    store.configuration.isEnabled = newValue
-                    store.save()
-                    if newValue {
-                        eventTapService.start()
-                    } else {
-                        eventTapService.stop()
-                    }
+                    store.setEnabled(newValue)
                 }
             )) {
                 Text("Enabled")
@@ -44,6 +38,23 @@ struct MenuBarView: View {
                 .foregroundStyle(.red)
             }
 
+            if store.configuration.isEnabled {
+                Label(eventTapStatusText, systemImage: eventTapStatusIcon)
+                    .font(.caption)
+                    .foregroundStyle(eventTapService.isRunning ? Color.secondary : Color.red)
+                if case .failed = eventTapService.status {
+                    Button("Retry Mouse Interception") {
+                        eventTapService.start()
+                    }
+                }
+            }
+
+            if !store.isConfigurationUsable {
+                Divider()
+                Label("Configuration needs attention", systemImage: "exclamationmark.triangle.fill")
+                .foregroundStyle(.red)
+            }
+
             Divider()
 
             Button("Settings...") {
@@ -57,5 +68,19 @@ struct MenuBarView: View {
             .keyboardShortcut("q", modifiers: .command)
         }
         .padding(4)
+    }
+
+    private var eventTapStatusText: String {
+        switch eventTapService.status {
+        case .stopped: return "Mouse interception stopped"
+        case .running: return "Mouse interception active"
+        case .recovering: return "Recovering mouse interception"
+        case .permissionDenied: return "Accessibility access required"
+        case .failed(let message): return message
+        }
+    }
+
+    private var eventTapStatusIcon: String {
+        eventTapService.isRunning ? "checkmark.circle.fill" : "exclamationmark.triangle.fill"
     }
 }

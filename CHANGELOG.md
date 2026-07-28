@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+## 1.1.4 - 2026-07-28
+
+- Added schema-aware, validated, transactional configuration persistence with explicit backed-up recovery.
+- Added deterministic mouse event state handling, balanced Push-to-Talk input, and event-tap recovery.
+- Added lifetime Accessibility reconciliation that respects the persisted Enabled state.
+- Added keyboard-layout-aware presets and graceful dynamic CoreDock availability.
+- Added authoritative `SMAppService` launch-at-login status and asynchronous installed-app discovery.
+- Added bounded Debug diagnostics, model-gated mappings, and removed unused mouse detection code.
+- Added pull-request CI, pinned Actions, exact-version release gates, and separated release publication permissions.
+- Reworked notarization so final ZIP and DMG artifacts contain the stapled app and have portable checksums.
+- Added comprehensive unit coverage for persistence, runtime state, input coordination, services, and discovery.
 - Added a GitHub Actions release workflow for Developer ID signing, notarization, stapling, checksum generation, and release asset upload.
 - Added CI notarization support via `APPLE_ID`, `APPLE_TEAM_ID`, and `APPLE_APP_PASSWORD` in addition to local `NOTARY_PROFILE`.
 

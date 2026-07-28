@@ -1,26 +1,74 @@
 import SwiftUI
 
+struct DebugEvent: Identifiable {
+    private static let formatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm:ss.SSS"
+        return formatter
+    }()
+
+    let id = UUID()
+    let timestamp: Date
+    let buttonNumber: Int64
+    let isDown: Bool
+
+    var displayString: String {
+        let direction = isDown ? "DOWN" : "UP"
+        let buttonName = MouseButton(rawValue: Int(buttonNumber))?.displayName
+            ?? "Button \(buttonNumber)"
+        return "[\(Self.formatter.string(from: timestamp))] \(buttonName) \(direction)"
+    }
+}
+
+final class DebugMonitorModel: ObservableObject {
+    static let capacity = 500
+
+    @Published private(set) var events: [DebugEvent] = []
+
+    private let eventTapService: EventTapService
+    private var subscription: EventDiagnosticsSubscription?
+
+    init(eventTapService: EventTapService) {
+        self.eventTapService = eventTapService
+    }
+
+    func start() {
+        guard subscription == nil else {
+            return
+        }
+        subscription = eventTapService.subscribeToDiagnostics { [weak self] mouseEvent in
+            self?.append(mouseEvent)
+        }
+    }
+
+    func stop() {
+        subscription?.cancel()
+        subscription = nil
+    }
+
+    func clear() {
+        events.removeAll()
+    }
+
+    private func append(_ mouseEvent: MouseButtonEvent) {
+        events.append(DebugEvent(
+            timestamp: mouseEvent.timestamp,
+            buttonNumber: mouseEvent.buttonNumber,
+            isDown: mouseEvent.isDown
+        ))
+        if events.count > Self.capacity {
+            events.removeFirst(events.count - Self.capacity)
+        }
+    }
+}
+
 struct DebugMonitorView: View {
-    @ObservedObject var eventTapService: EventTapService
-    @State private var events: [DebugEvent] = []
+    @ObservedObject private var eventTapService: EventTapService
+    @StateObject private var model: DebugMonitorModel
 
-    struct DebugEvent: Identifiable {
-        let id = UUID()
-        let timestamp: Date
-        let buttonNumber: Int64
-        let isDown: Bool
-
-        var displayString: String {
-            let direction = isDown ? "DOWN" : "UP"
-            let buttonName = MouseButton(rawValue: Int(buttonNumber))?.displayName ?? "Button \(buttonNumber)"
-            return "[\(timeString)] \(buttonName) \(direction)"
-        }
-
-        private var timeString: String {
-            let f = DateFormatter()
-            f.dateFormat = "HH:mm:ss.SSS"
-            return f.string(from: timestamp)
-        }
+    init(eventTapService: EventTapService) {
+        self.eventTapService = eventTapService
+        _model = StateObject(wrappedValue: DebugMonitorModel(eventTapService: eventTapService))
     }
 
     var body: some View {
@@ -32,33 +80,26 @@ struct DebugMonitorView: View {
                 Text(eventTapService.isRunning ? "Event Tap Active" : "Event Tap Inactive")
                     .font(.caption)
                 Spacer()
-                Button("Clear") { events.removeAll() }
+                Button("Clear") { model.clear() }
                     .buttonStyle(.bordered)
                     .controlSize(.small)
             }
 
             ScrollViewReader { proxy in
-                List(events) { event in
+                List(model.events) { event in
                     Text(event.displayString)
                         .font(.system(.body, design: .monospaced))
                         .id(event.id)
                 }
-                .onChange(of: events.count) { _ in
-                    if let last = events.last {
+                .onChange(of: model.events.count) { _ in
+                    if let last = model.events.last {
                         proxy.scrollTo(last.id, anchor: .bottom)
                     }
                 }
             }
         }
         .padding()
-        .onAppear {
-            eventTapService.onEvent = { mouseEvent in
-                events.append(DebugEvent(
-                    timestamp: mouseEvent.timestamp,
-                    buttonNumber: mouseEvent.buttonNumber,
-                    isDown: mouseEvent.isDown
-                ))
-            }
-        }
+        .onAppear { model.start() }
+        .onDisappear { model.stop() }
     }
 }

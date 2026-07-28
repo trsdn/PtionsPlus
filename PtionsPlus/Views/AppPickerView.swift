@@ -1,30 +1,58 @@
 import SwiftUI
 
-struct AppPickerView: View {
-    var onSelect: (_ bundleIdentifier: String, _ appName: String) -> Void
+private final class AppPickerViewModel: ObservableObject {
+    @Published private(set) var apps: [AppInfo] = []
+    @Published private(set) var isLoading = false
+    @Published private(set) var errorMessage: String?
 
-    @Environment(\.dismiss) private var dismiss
-    @State private var searchText = ""
-    @State private var apps: [AppInfo] = []
+    private let discoveryService: ApplicationDiscoveryService
+    private var discoveryTask: ApplicationDiscoveryTask?
+    private var generation = UUID()
 
-    struct AppInfo: Identifiable, Hashable {
-        let id: String
-        let name: String
-        let bundleIdentifier: String
-        let icon: NSImage?
+    init(discoveryService: ApplicationDiscoveryService = ApplicationDiscoveryService()) {
+        self.discoveryService = discoveryService
+    }
 
-        func hash(into hasher: inout Hasher) {
-            hasher.combine(bundleIdentifier)
-        }
-
-        static func == (lhs: AppInfo, rhs: AppInfo) -> Bool {
-            lhs.bundleIdentifier == rhs.bundleIdentifier
+    func load() {
+        stop()
+        isLoading = true
+        errorMessage = nil
+        let currentGeneration = UUID()
+        generation = currentGeneration
+        discoveryTask = discoveryService.discover { [weak self] result in
+            guard let self, self.generation == currentGeneration else {
+                return
+            }
+            self.isLoading = false
+            switch result {
+            case .success(let apps):
+                self.apps = apps
+            case .failure(let error):
+                self.errorMessage = error.localizedDescription
+            }
         }
     }
 
-    var filteredApps: [AppInfo] {
-        if searchText.isEmpty { return apps }
-        return apps.filter {
+    func stop() {
+        discoveryTask?.cancel()
+        discoveryTask = nil
+        generation = UUID()
+        isLoading = false
+    }
+}
+
+struct AppPickerView: View {
+    let configuredBundleIdentifiers: Set<String>
+    var onSelect: (_ bundleIdentifier: String, _ appName: String) -> Void
+
+    @Environment(\.dismiss) private var dismiss
+    @StateObject private var model = AppPickerViewModel()
+    @State private var searchText = ""
+    @State private var manualSelectionError: String?
+
+    private var filteredApps: [AppInfo] {
+        if searchText.isEmpty { return model.apps }
+        return model.apps.filter {
             $0.name.localizedCaseInsensitiveContains(searchText) ||
             $0.bundleIdentifier.localizedCaseInsensitiveContains(searchText)
         }
@@ -36,6 +64,7 @@ struct AppPickerView: View {
                 Text("Select Application")
                     .font(.headline)
                 Spacer()
+                Button("Choose App...") { chooseApplication() }
                 Button("Cancel") { dismiss() }
                     .keyboardShortcut(.cancelAction)
             }
@@ -45,7 +74,25 @@ struct AppPickerView: View {
                 .textFieldStyle(.roundedBorder)
                 .padding(.horizontal)
 
+            if model.isLoading {
+                ProgressView("Finding applications...")
+                    .padding()
+            }
+
+            if let errorMessage = model.errorMessage ?? manualSelectionError {
+                HStack {
+                    Text(errorMessage)
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                    Spacer()
+                    Button("Retry") { model.load() }
+                }
+                .padding(.horizontal)
+                .padding(.top, 8)
+            }
+
             List(filteredApps) { app in
+                let isConfigured = configuredBundleIdentifiers.contains(app.bundleIdentifier)
                 Button {
                     onSelect(app.bundleIdentifier, app.name)
                 } label: {
@@ -61,44 +108,43 @@ struct AppPickerView: View {
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
+                        Spacer()
+                        if isConfigured {
+                            Text("Configured")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
                     }
                 }
                 .buttonStyle(.plain)
+                .disabled(isConfigured)
             }
         }
-        .frame(width: 400, height: 500)
-        .onAppear { loadApps() }
+        .frame(width: 460, height: 520)
+        .onAppear { model.load() }
+        .onDisappear { model.stop() }
     }
 
-    private func loadApps() {
-        var seen = Set<String>()
-        var result: [AppInfo] = []
+    private func chooseApplication() {
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = [.application]
+        panel.allowsMultipleSelection = false
+        panel.canChooseDirectories = false
+        panel.canChooseFiles = true
 
-        // Running apps
-        for app in NSWorkspace.shared.runningApplications {
-            guard let bid = app.bundleIdentifier,
-                  let name = app.localizedName,
-                  !bid.isEmpty,
-                  !seen.contains(bid) else { continue }
-            seen.insert(bid)
-            result.append(AppInfo(id: bid, name: name, bundleIdentifier: bid, icon: app.icon))
+        guard panel.runModal() == .OK,
+              let url = panel.url else {
+            return
         }
-
-        // /Applications
-        let fm = FileManager.default
-        if let items = try? fm.contentsOfDirectory(atPath: "/Applications") {
-            for item in items where item.hasSuffix(".app") {
-                let path = "/Applications/\(item)"
-                guard let bundle = Bundle(path: path),
-                      let bid = bundle.bundleIdentifier,
-                      !seen.contains(bid) else { continue }
-                seen.insert(bid)
-                let name = item.replacingOccurrences(of: ".app", with: "")
-                let icon = NSWorkspace.shared.icon(forFile: path)
-                result.append(AppInfo(id: bid, name: name, bundleIdentifier: bid, icon: icon))
-            }
+        guard let app = ApplicationDiscoveryService.appInfo(for: url) else {
+            manualSelectionError = "The selected application has no bundle identifier."
+            return
         }
-
-        apps = result.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        guard !configuredBundleIdentifiers.contains(app.bundleIdentifier) else {
+            manualSelectionError = "\(app.name) already has a profile."
+            return
+        }
+        manualSelectionError = nil
+        onSelect(app.bundleIdentifier, app.name)
     }
 }

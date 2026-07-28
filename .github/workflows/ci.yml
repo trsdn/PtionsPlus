@@ -1,0 +1,106 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_call:
+    inputs:
+      ref:
+        description: Git ref to test
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+env:
+  TEST_REF: ${{ inputs.ref || github.sha }}
+
+jobs:
+  build-and-unit:
+    name: Build, analyze, and unit tests
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ env.TEST_REF }}
+          persist-credentials: false
+
+      - name: Prepare results directory
+        run: mkdir -p TestResults
+
+      - name: Run unit tests
+        run: |
+          xcodebuild \
+            -project PtionsPlus.xcodeproj \
+            -scheme "Ptions+" \
+            -configuration Debug \
+            -destination "platform=macOS" \
+            -resultBundlePath TestResults/UnitTests.xcresult \
+            CODE_SIGNING_ALLOWED=NO \
+            test \
+            -only-testing:PtionsPlusTests
+
+      - name: Build Release
+        run: |
+          xcodebuild \
+            -project PtionsPlus.xcodeproj \
+            -scheme "Ptions+" \
+            -configuration Release \
+            -destination "platform=macOS" \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Analyze
+        run: |
+          xcodebuild \
+            -project PtionsPlus.xcodeproj \
+            -scheme "Ptions+" \
+            -configuration Debug \
+            -destination "platform=macOS" \
+            CODE_SIGNING_ALLOWED=NO \
+            analyze
+
+      - name: Upload failed results
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: build-unit-results
+          path: TestResults
+          if-no-files-found: ignore
+
+  ui-tests:
+    name: UI smoke tests
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ env.TEST_REF }}
+          persist-credentials: false
+
+      - name: Prepare results directory
+        run: mkdir -p TestResults
+
+      - name: Run UI tests
+        run: |
+          xcodebuild \
+            -project PtionsPlus.xcodeproj \
+            -scheme "Ptions+" \
+            -configuration Debug \
+            -destination "platform=macOS" \
+            -resultBundlePath TestResults/UITests.xcresult \
+            test \
+            -only-testing:PtionsPlusUITests
+
+      - name: Upload failed results
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: ui-test-results
+          path: TestResults
+          if-no-files-found: ignore
