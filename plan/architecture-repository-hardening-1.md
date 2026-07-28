@@ -100,9 +100,9 @@ This plan implements GitHub issues [#1 through #24](https://github.com/trsdn/Pti
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
 | TASK-001 | Add `.github/workflows/ci.yml` with `pull_request`, `push` to `main`, and `workflow_call`; run Debug unit tests, Release build, analyze, and a separate UI-smoke job using `-only-testing`. | Yes | 2026-07-26 |
-| TASK-002 | Upload failed `.xcresult` bundles with `actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02`; do not cache DerivedData. | Yes | 2026-07-26 |
+| TASK-002 | Upload failed `.xcresult` bundles with the reviewed full SHA for `actions/upload-artifact@v5`; do not cache DerivedData. | Yes | 2026-07-26 |
 | TASK-003 | Refactor `.github/workflows/release.yml` so tests use the resolved tag ref and signing has `needs: tests`; move GitHub Release creation/upload into a separate publication job with `contents: write`. | Yes | 2026-07-26 |
-| TASK-004 | Pin checkout to `actions/checkout@11d5960a326750d5838078e36cf38b85af677262`, upload to the SHA in TASK-002, and download to `actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093`; set `persist-credentials: false`. | Yes | 2026-07-26 |
+| TASK-004 | Pin checkout, upload-artifact, and download-artifact to reviewed full SHAs for their current Node 24 releases; set `persist-credentials: false`. | Yes | 2026-07-26 |
 | TASK-005 | Add `.github/dependabot.yml` for weekly `github-actions` updates and document review of each upstream tag-to-SHA association. | Yes | 2026-07-26 |
 
 Completion criteria:
