@@ -48,6 +48,31 @@ final class PtionsPlusUITests: XCTestCase {
       XCTAssertTrue(app.staticTexts["Override Apps"].exists)
     }
 
+    func testSettingsStartInTheSharedMouseScope() {
+        let app = makeApp()
+        app.launch()
+
+      XCTAssertTrue(app.windows.element(boundBy: 0).waitForExistence(timeout: 5))
+      XCTAssertTrue(app.staticTexts["Applies to every mouse without its own mappings."].waitForExistence(timeout: 5))
+
+      let scopePicker = app.popUpButtons.firstMatch
+      XCTAssertTrue(scopePicker.waitForExistence(timeout: 5))
+      XCTAssertEqual(scopePicker.value as? String, "All Mice (Shared)")
+    }
+
+    func testGeneralTabListsConnectedMice() {
+        let app = makeApp()
+        app.launch()
+
+      XCTAssertTrue(app.windows.element(boundBy: 0).waitForExistence(timeout: 5))
+
+      let generalTab = app.radioButtons["General"]
+      XCTAssertTrue(generalTab.waitForExistence(timeout: 5))
+      generalTab.click()
+
+      XCTAssertTrue(app.staticTexts["Connected Mice"].waitForExistence(timeout: 5))
+    }
+
     private func makeApp() -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments.append("--ui-testing")
