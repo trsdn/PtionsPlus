@@ -81,6 +81,8 @@ open /Applications/Ptions+.app
 
 ### Signed Release Build
 
+Every release describes itself through `CHANGELOG.md`. Add each user-facing change under `## Unreleased` while you work; `bump-version.sh` then promotes those entries into a dated section for the new version, and the release workflow publishes exactly that section as the GitHub release notes.
+
 The release flow is three commands: bump version, sign, notarize.
 
 First create your local release config:
@@ -97,6 +99,12 @@ xcrun notarytool store-credentials "PtionsPlus" \
      --team-id "YOUR_TEAM_ID" \
      --password "app-specific-password"
 bash scripts/notarize.sh
+```
+
+Preview the notes a tag would publish:
+
+```bash
+scripts/changelog.sh release-notes v1.2.0
 ```
 
 If you already have a working `notarytool` keychain profile from another project, set it in `.release.env` or inline:
@@ -120,7 +128,7 @@ The final ZIP and DMG are rebuilt from the stapled app and verified before uploa
 shasum -a 256 -c Ptions+.dmg.sha256
 ```
 
-The GitHub release workflow builds signed, notarized artifacts on `v*` tags. Configure these repository secrets first:
+The GitHub release workflow builds signed, notarized artifacts on `v*` tags. It refuses to release when the changelog has no entries for the tagged version or when entries are still parked under `## Unreleased`. Configure these repository secrets first:
 `MACOS_CERTIFICATE`, `MACOS_CERTIFICATE_PWD`, `APPLE_ID`, `APPLE_TEAM_ID`, and `APPLE_APP_PASSWORD`.
 
 ### Grant Accessibility Access

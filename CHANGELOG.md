@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Added a changelog gate to the release pipeline: a tag whose version has no dated `CHANGELOG.md` section, or that leaves entries under `## Unreleased`, now fails before anything is signed.
+- Added `scripts/changelog.sh` and made the GitHub release body the changelog section of the released version instead of fixed boilerplate text.
+- Added changelog promotion to `scripts/bump-version.sh`, which moves the unreleased entries into a dated section for the new version.
+- Added documentation and changelog verification to CI so version, website, and changelog metadata cannot drift apart.
+
 ## 1.2.0 - 2026-08-31
 
 - Added Next Space and Previous Space preset actions so spaces can be switched from a mouse button (#28).

@@ -33,6 +33,11 @@ jobs:
       - name: Prepare results directory
         run: mkdir -p TestResults
 
+      - name: Verify documentation, scripts, and changelog
+        run: |
+          bash -n scripts/*.sh
+          scripts/check-documentation.sh
+
       - name: Run unit tests
         run: |
           xcodebuild \

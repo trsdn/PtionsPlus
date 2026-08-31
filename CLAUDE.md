@@ -23,8 +23,11 @@ xcodebuild -project PtionsPlus.xcodeproj -scheme "Ptions+" \
 xcodebuild -project PtionsPlus.xcodeproj -scheme "Ptions+" \
   -configuration Debug CODE_SIGNING_ALLOWED=NO analyze
 
-# Bump version and website metadata
+# Bump version, website metadata, and promote the changelog
 ./scripts/bump-version.sh patch  # or: minor, major
+
+# Preview the release notes a tag would publish
+scripts/changelog.sh release-notes v1.2.0
 
 # Build signed archive, notarize/staple, and create verified ZIP/DMG
 scripts/setup-notarization.sh --gui
@@ -37,6 +40,11 @@ bash -n scripts/*.sh
 ```
 
 Local release overrides live in `.release.env` and are ignored by git.
+
+Release notes are not written by hand. Every user-facing change goes under `## Unreleased` in `CHANGELOG.md`,
+`bump-version.sh` promotes those entries into a dated `## X.Y.Z` section, and the release workflow publishes that
+section as the GitHub release body. A tag whose version has no changelog entries, or that leaves entries under
+`## Unreleased`, fails before anything is signed.
 
 ## Architecture
 
