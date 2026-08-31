@@ -1,5 +1,5 @@
-import SwiftUI
 import Carbon.HIToolbox
+import SwiftUI
 
 struct ShortcutRecorderView: NSViewRepresentable {
     var onRecord: (KeyboardShortcut) -> Void
@@ -72,6 +72,15 @@ final class ShortcutRecorderField: NSView {
             label.centerYAnchor.constraint(equalTo: centerYAnchor),
             heightAnchor.constraint(greaterThanOrEqualToConstant: 30),
         ])
+
+        // The recorder captures raw key events, so assistive technology needs
+        // an explicit description of what the focused region expects.
+        setAccessibilityElement(true)
+        setAccessibilityRole(.group)
+        setAccessibilityLabel("Shortcut recorder")
+        setAccessibilityHelp(
+            "Press the key combination to assign. Press Escape to cancel without assigning."
+        )
     }
 
     override var acceptsFirstResponder: Bool { true }

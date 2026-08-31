@@ -61,17 +61,18 @@ final class SystemEventTapBackend: EventTapBackend {
         }
 
         let eventMask: CGEventMask =
-            (1 << CGEventType.otherMouseDown.rawValue) |
-            (1 << CGEventType.otherMouseUp.rawValue)
+            (1 << CGEventType.otherMouseDown.rawValue) | (1 << CGEventType.otherMouseUp.rawValue)
 
-        guard let tap = CGEvent.tapCreate(
-            tap: .cgSessionEventTap,
-            place: .headInsertEventTap,
-            options: .defaultTap,
-            eventsOfInterest: eventMask,
-            callback: eventTapCallback,
-            userInfo: userInfo
-        ) else {
+        guard
+            let tap = CGEvent.tapCreate(
+                tap: .cgSessionEventTap,
+                place: .headInsertEventTap,
+                options: .defaultTap,
+                eventsOfInterest: eventMask,
+                callback: eventTapCallback,
+                userInfo: userInfo
+            )
+        else {
             return false
         }
 
@@ -212,12 +213,13 @@ final class EventTapService: ObservableObject {
             forButtonNumber: buttonNumber,
             isDown: isDown
         )
-        deliverDiagnostic(MouseButtonEvent(
-            buttonNumber: buttonNumber,
-            isDown: isDown,
-            timestamp: Date(),
-            deviceName: device?.name
-        ))
+        deliverDiagnostic(
+            MouseButtonEvent(
+                buttonNumber: buttonNumber,
+                isDown: isDown,
+                timestamp: Date(),
+                deviceName: device?.name
+            ))
 
         guard let button = MouseButton(rawValue: Int(buttonNumber)) else {
             return Unmanaged.passUnretained(event)

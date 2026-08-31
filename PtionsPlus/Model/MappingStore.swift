@@ -1,5 +1,5 @@
-import Foundation
 import Combine
+import Foundation
 
 struct MouseModelChangeImpact {
     let hiddenButtons: [MouseButton]
@@ -48,7 +48,8 @@ final class MappingStore: ObservableObject {
         }
 
         let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-        return appSupport
+        return
+            appSupport
             .appendingPathComponent("Ptions+", isDirectory: true)
             .appendingPathComponent("config.json")
     }
@@ -71,7 +72,8 @@ final class MappingStore: ObservableObject {
 
     private var resolvedEditingDeviceID: String? {
         guard let editingDeviceID,
-              configuration.deviceConfiguration(withID: editingDeviceID) != nil else {
+            configuration.deviceConfiguration(withID: editingDeviceID) != nil
+        else {
             return nil
         }
         return editingDeviceID
@@ -127,8 +129,9 @@ final class MappingStore: ObservableObject {
     @discardableResult
     func refreshDeviceName(id deviceID: String, name: String) -> Bool {
         guard let existing = configuration.deviceConfiguration(withID: deviceID),
-              existing.name != name,
-              !name.isEmpty else {
+            existing.name != name,
+            !name.isEmpty
+        else {
             return false
         }
         return commit { candidate in
@@ -160,7 +163,7 @@ final class MappingStore: ObservableObject {
         } catch {
             persistenceState = .needsRecovery(
                 pendingRecovery.messages
-                + ["Could not apply repaired configuration: \(error.localizedDescription)"]
+                    + ["Could not apply repaired configuration: \(error.localizedDescription)"]
             )
             return false
         }
@@ -222,9 +225,10 @@ final class MappingStore: ObservableObject {
         }
         let hiddenButtonSet = Set(hiddenButtons)
         let activeMappingCount = scope.profiles.reduce(into: 0) { count, profile in
-            count += profile.mappings.filter {
-                hiddenButtonSet.contains($0.button) && $0.isActive
-            }.count
+            count +=
+                profile.mappings.filter {
+                    hiddenButtonSet.contains($0.button) && $0.isActive
+                }.count
         }
         let globalOverrideCount = scope.globalButtons.filter {
             hiddenButtonSet.contains($0)
@@ -266,7 +270,8 @@ final class MappingStore: ObservableObject {
     func addProfile(_ profile: AppProfile) -> Bool {
         let scope = resolvedEditingDeviceID
         if let bundleIdentifier = profile.bundleIdentifier,
-           editingConfiguration.profiles.contains(where: { $0.bundleIdentifier == bundleIdentifier }) {
+            editingConfiguration.profiles.contains(where: { $0.bundleIdentifier == bundleIdentifier })
+        {
             return false
         }
         return commit { candidate in
@@ -301,7 +306,9 @@ final class MappingStore: ObservableObject {
     }
 
     @discardableResult
-    func updateMapping(profileId: UUID, button: MouseButton, shortcut: KeyboardShortcut? = nil, systemAction: PresetAction? = nil) -> Bool {
+    func updateMapping(
+        profileId: UUID, button: MouseButton, shortcut: KeyboardShortcut? = nil, systemAction: PresetAction? = nil
+    ) -> Bool {
         let scope = resolvedEditingDeviceID
         return commit { candidate in
             candidate.mutateScope(scope) { _, profiles, _ in
@@ -334,8 +341,9 @@ final class MappingStore: ObservableObject {
         return commit { candidate in
             candidate.mutateScope(scope) { _, profiles, _ in
                 guard let profileIndex = profiles.firstIndex(where: { $0.id == profileId }),
-                      let mappingIndex = profiles[profileIndex].mappings.firstIndex(where: { $0.button == button }),
-                      profiles[profileIndex].mappings[mappingIndex].shortcut != nil else {
+                    let mappingIndex = profiles[profileIndex].mappings.firstIndex(where: { $0.button == button }),
+                    profiles[profileIndex].mappings[mappingIndex].shortcut != nil
+                else {
                     return
                 }
 

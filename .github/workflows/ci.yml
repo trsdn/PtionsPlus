@@ -20,6 +20,31 @@ env:
   TEST_REF: ${{ inputs.ref || github.sha }}
 
 jobs:
+  checks:
+    name: Lint, format, and documentation
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ env.TEST_REF }}
+          persist-credentials: false
+
+      - name: Shell syntax
+        run: |
+          for script in scripts/*.sh; do
+            bash -n "$script"
+          done
+
+      - name: Swift formatting and lint
+        run: bash scripts/lint.sh
+
+      - name: Version and product identity
+        run: bash scripts/verify-version.sh
+
+      - name: Documentation, site, and agent-instruction checks
+        run: bash scripts/check-documentation.sh
+
   build-and-unit:
     name: Build, analyze, and unit tests
     runs-on: macos-latest
@@ -32,11 +57,6 @@ jobs:
 
       - name: Prepare results directory
         run: mkdir -p TestResults
-
-      - name: Verify documentation, scripts, and changelog
-        run: |
-          bash -n scripts/*.sh
-          scripts/check-documentation.sh
 
       - name: Run unit tests
         run: |
@@ -109,3 +129,28 @@ jobs:
           name: ui-test-results
           path: TestResults
           if-no-files-found: ignore
+
+  compat:
+    name: Oldest supported macOS
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ env.TEST_REF }}
+          persist-credentials: false
+
+      # The deployment target is macOS 13, but GitHub has retired its macos-13
+      # runners. macos-14 is the oldest hosted image available, so it is the
+      # oldest OS this project can actually exercise. The macOS 13 floor stays
+      # enforced at compile time by MACOSX_DEPLOYMENT_TARGET.
+      - name: Run unit tests
+        run: |
+          xcodebuild \
+            -project PtionsPlus.xcodeproj \
+            -scheme "Ptions+" \
+            -configuration Debug \
+            -destination "platform=macOS" \
+            CODE_SIGNING_ALLOWED=NO \
+            test \
+            -only-testing:PtionsPlusTests

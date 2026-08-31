@@ -25,7 +25,7 @@ struct SettingsView: View {
                     accessibilityChecker: accessibilityChecker,
                     deviceService: deviceService
                 )
-                    .tabItem { Label("General", systemImage: "gear") }
+                .tabItem { Label("General", systemImage: "gear") }
             }
         }
         .frame(minWidth: 550, minHeight: 400)
@@ -48,11 +48,15 @@ private struct MouseScopePicker: View {
         HStack(spacing: 8) {
             Image(systemName: "computermouse")
                 .foregroundStyle(.secondary)
+                .accessibilityHidden(true)
 
-            Picker("Configuring", selection: Binding(
-                get: { store.editingConfiguration.deviceID },
-                set: { store.selectEditingDevice($0) }
-            )) {
+            Picker(
+                "Configuring",
+                selection: Binding(
+                    get: { store.editingConfiguration.deviceID },
+                    set: { store.selectEditingDevice($0) }
+                )
+            ) {
                 Text("All Mice (Shared)").tag(String?.none)
                 ForEach(store.deviceConfigurations) { device in
                     Text(connectedIDs.contains(device.id) ? device.name : "\(device.name) (Disconnected)")
@@ -63,11 +67,13 @@ private struct MouseScopePicker: View {
             .fixedSize()
             .accessibilityIdentifier("settings.scopePicker")
 
-            Text(store.editingConfiguration.isShared
-                ? "Applies to every mouse without its own mappings."
-                : "Applies only to this mouse.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+            Text(
+                store.editingConfiguration.isShared
+                    ? "Applies to every mouse without its own mappings."
+                    : "Applies only to this mouse."
+            )
+            .font(.caption)
+            .foregroundStyle(.secondary)
 
             Spacer()
         }
@@ -86,7 +92,8 @@ private struct ProfilesTab: View {
     private var resolvedProfile: AppProfile? {
         let profiles = store.editingConfiguration.profiles
         if let selectedProfileId,
-           let match = profiles.first(where: { $0.id == selectedProfileId }) {
+            let match = profiles.first(where: { $0.id == selectedProfileId })
+        {
             return match
         }
         return profiles.first(where: \.isDefault)
@@ -131,10 +138,13 @@ private struct GeneralTab: View {
     var body: some View {
         Form {
             Section("Mouse Model") {
-                Picker("Model", selection: Binding(
-                    get: { store.editingConfiguration.model },
-                    set: selectMouseModel
-                )) {
+                Picker(
+                    "Model",
+                    selection: Binding(
+                        get: { store.editingConfiguration.model },
+                        set: selectMouseModel
+                    )
+                ) {
                     ForEach(modelCategories, id: \.0) { category, models in
                         Section(category) {
                             ForEach(models) { model in
@@ -152,10 +162,13 @@ private struct GeneralTab: View {
 
             Section("Permissions") {
                 HStack {
-                    Image(systemName: accessibilityChecker.isTrusted
-                        ? "checkmark.circle.fill"
-                        : "xmark.circle.fill")
-                        .foregroundStyle(accessibilityChecker.isTrusted ? .green : .red)
+                    Image(
+                        systemName: accessibilityChecker.isTrusted
+                            ? "checkmark.circle.fill"
+                            : "xmark.circle.fill"
+                    )
+                    .foregroundStyle(accessibilityChecker.isTrusted ? .green : .red)
+                    .accessibilityLabel(accessibilityChecker.isTrusted ? "Granted" : "Not granted")
                     Text("Accessibility Access")
                     Spacer()
                     if !accessibilityChecker.isTrusted {
@@ -165,13 +178,17 @@ private struct GeneralTab: View {
 
                         if store.configuration.isEnabled {
                             HStack {
-                                Image(systemName: eventTapService.isRunning
-                                    ? "checkmark.circle.fill"
-                                    : "exclamationmark.triangle.fill")
-                                    .foregroundStyle(eventTapService.isRunning ? .green : .orange)
-                                Text(eventTapService.isRunning
-                                    ? "Mouse Interception Active"
-                                    : "Mouse Interception Inactive")
+                                Image(
+                                    systemName: eventTapService.isRunning
+                                        ? "checkmark.circle.fill"
+                                        : "exclamationmark.triangle.fill"
+                                )
+                                .foregroundStyle(eventTapService.isRunning ? .green : .orange)
+                                .accessibilityHidden(true)
+                                Text(
+                                    eventTapService.isRunning
+                                        ? "Mouse Interception Active"
+                                        : "Mouse Interception Inactive")
                                 Spacer()
                                 if case .failed = eventTapService.status {
                                     Button("Retry") {
@@ -185,10 +202,12 @@ private struct GeneralTab: View {
             }
 
             Section("Startup") {
-                Toggle(isOn: Binding(
-                    get: { launchAtLogin.isEnabled },
-                    set: launchAtLogin.setEnabled
-                )) {
+                Toggle(
+                    isOn: Binding(
+                        get: { launchAtLogin.isEnabled },
+                        set: launchAtLogin.setEnabled
+                    )
+                ) {
                     Text("Launch at Login")
                 }
 
@@ -249,8 +268,8 @@ private struct GeneralTab: View {
                     .joined(separator: ", ")
                 Text(
                     "\(buttons) will be hidden. "
-                    + "\(impact.activeMappingCount) active mapping(s) and "
-                    + "\(impact.globalOverrideCount) global override(s) will remain saved but inactive."
+                        + "\(impact.activeMappingCount) active mapping(s) and "
+                        + "\(impact.globalOverrideCount) global override(s) will remain saved but inactive."
                 )
             }
         }
@@ -362,6 +381,7 @@ private struct ConnectedMiceSection: View {
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: isConnected ? "computermouse.fill" : "computermouse")
                 .foregroundStyle(isConnected ? Color.green : Color.secondary)
+                .accessibilityLabel(isConnected ? "Connected" : "Not connected")
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(name)
@@ -398,7 +418,8 @@ private struct ConnectedMiceSection: View {
     }
 }
 
-private struct ConfigurationStatusView: View {    @ObservedObject var store: MappingStore
+private struct ConfigurationStatusView: View {
+    @ObservedObject var store: MappingStore
 
     var body: some View {
         switch store.persistenceState {
@@ -443,6 +464,7 @@ private struct ConfigurationStatusView: View {    @ObservedObject var store: Map
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: "exclamationmark.triangle.fill")
                 .foregroundStyle(.orange)
+                .accessibilityLabel("Warning")
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.headline)

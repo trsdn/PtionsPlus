@@ -1,7 +1,7 @@
-import Foundation
-import Combine
 import AppKit
 import ApplicationServices
+import Combine
+import Foundation
 
 protocol AccessibilityChecking: AnyObject {
     var isTrusted: Bool { get }
@@ -13,7 +13,9 @@ final class AccessibilityChecker: ObservableObject, AccessibilityChecking {
     @Published private(set) var isTrusted: Bool = false
 
     private var timer: Timer?
-    private let isTesting = ProcessInfo.processInfo.arguments.contains("--ui-testing") || ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+    private let isTesting =
+        ProcessInfo.processInfo.arguments.contains("--ui-testing")
+        || ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
 
     init() {
         isTrusted = isTesting ? true : AXIsProcessTrusted()
@@ -49,7 +51,7 @@ final class AccessibilityChecker: ObservableObject, AccessibilityChecking {
 
         let urls = [
             "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility",
-            "x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension.Privacy_Accessibility"
+            "x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension.Privacy_Accessibility",
         ].compactMap(URL.init(string:))
 
         for url in urls {

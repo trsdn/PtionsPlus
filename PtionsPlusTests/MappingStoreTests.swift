@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import Ptions_
 
 final class ConfigurationCompatibilityTests: XCTestCase {
@@ -15,7 +16,9 @@ final class ConfigurationCompatibilityTests: XCTestCase {
     }
 
     func testButtonMappingDecodeDefaultsHoldWhilePressedToFalse() throws {
-        let data = Data(#"{"id":"00000000-0000-0000-0000-000000000001","button":5,"shortcut":{"keyCode":3,"modifiers":{"command":true}}}"#.utf8)
+        let data = Data(
+            #"{"id":"00000000-0000-0000-0000-000000000001","button":5,"shortcut":{"keyCode":3,"modifiers":{"command":true}}}"#
+                .utf8)
 
         let mapping = try JSONDecoder().decode(ButtonMapping.self, from: data)
 
@@ -25,7 +28,9 @@ final class ConfigurationCompatibilityTests: XCTestCase {
     }
 
     func testAppConfigurationDecodeDefaultsMissingNewFields() throws {
-        let data = Data(#"{"profiles":[{"id":"00000000-0000-0000-0000-000000000010","name":"Default","bundleIdentifier":null,"mappings":[{"id":"00000000-0000-0000-0000-000000000011","button":5,"systemAction":"mission_control"}]}]}"#.utf8)
+        let data = Data(
+            #"{"profiles":[{"id":"00000000-0000-0000-0000-000000000010","name":"Default","bundleIdentifier":null,"mappings":[{"id":"00000000-0000-0000-0000-000000000011","button":5,"systemAction":"mission_control"}]}]}"#
+                .utf8)
 
         let configuration = try JSONDecoder().decode(AppConfiguration.self, from: data)
 
@@ -73,11 +78,12 @@ final class MappingStoreTests: XCTestCase {
             mappings: [ButtonMapping(button: button, systemAction: .copy)]
         )
 
-        let store = makeStore(configuration: AppConfiguration(
-            profiles: [defaultProfile, appProfile],
-            mouseModel: .mxMaster4,
-            globalButtons: [button]
-        ))
+        let store = makeStore(
+            configuration: AppConfiguration(
+                profiles: [defaultProfile, appProfile],
+                mouseModel: .mxMaster4,
+                globalButtons: [button]
+            ))
 
         let resolved = store.mapping(for: button, in: appProfile)
 
@@ -130,9 +136,10 @@ final class MappingStoreTests: XCTestCase {
             bundleIdentifier: "com.apple.mail",
             mappings: []
         )
-        let store = makeStore(configuration: AppConfiguration(
-            profiles: [AppProfile.makeDefault(), existing]
-        ))
+        let store = makeStore(
+            configuration: AppConfiguration(
+                profiles: [AppProfile.makeDefault(), existing]
+            ))
 
         XCTAssertFalse(store.addProfile(duplicate))
         XCTAssertEqual(store.configuration.profiles.count, 2)
@@ -233,11 +240,12 @@ final class MappingStoreTests: XCTestCase {
         var defaultProfile = AppProfile.makeDefault()
         let index = tryUnwrap(defaultProfile.mappings.firstIndex { $0.button == .button6 })
         defaultProfile.mappings[index].systemAction = .copy
-        let store = makeStore(configuration: AppConfiguration(
-            profiles: [defaultProfile],
-            mouseModel: .mxMaster4,
-            globalButtons: [.button6]
-        ))
+        let store = makeStore(
+            configuration: AppConfiguration(
+                profiles: [defaultProfile],
+                mouseModel: .mxMaster4,
+                globalButtons: [.button6]
+            ))
 
         let impact = store.modelChangeImpact(to: .generic3)
 

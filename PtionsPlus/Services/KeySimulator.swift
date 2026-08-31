@@ -15,11 +15,13 @@ struct CGKeyboardEventPoster: KeyboardEventPosting {
     private let source = CGEventSource(stateID: .hidSystemState)
 
     func postKeyEvent(keyCode: CGKeyCode, keyDown: Bool, flags: CGEventFlags) -> Bool {
-        guard let event = CGEvent(
-            keyboardEventSource: source,
-            virtualKey: keyCode,
-            keyDown: keyDown
-        ) else {
+        guard
+            let event = CGEvent(
+                keyboardEventSource: source,
+                virtualKey: keyCode,
+                keyDown: keyDown
+            )
+        else {
             logger.error("Failed to create keyboard event for key code \(keyCode, privacy: .public)")
             return false
         }
@@ -91,7 +93,8 @@ final class KeyboardStateCoordinator {
 
     func press(_ shortcut: KeyboardShortcut) -> Bool {
         if shortcut.modifiers.isEmpty,
-           let standaloneModifier = ModifierKey.standalone(for: shortcut.keyCode) {
+            let standaloneModifier = ModifierKey.standalone(for: shortcut.keyCode)
+        {
             return retainModifier(standaloneModifier)
         }
 
@@ -110,7 +113,8 @@ final class KeyboardStateCoordinator {
         let existingCount = keyCounts[keyCode, default: 0]
         keyCounts[keyCode] = existingCount + 1
         if existingCount == 0,
-           !eventPoster.postKeyEvent(keyCode: keyCode, keyDown: true, flags: currentFlags) {
+            !eventPoster.postKeyEvent(keyCode: keyCode, keyDown: true, flags: currentFlags)
+        {
             keyCounts.removeValue(forKey: keyCode)
             for retainedModifier in retainedModifiers.reversed() {
                 releaseModifier(retainedModifier)
@@ -123,7 +127,8 @@ final class KeyboardStateCoordinator {
 
     func release(_ shortcut: KeyboardShortcut) {
         if shortcut.modifiers.isEmpty,
-           let standaloneModifier = ModifierKey.standalone(for: shortcut.keyCode) {
+            let standaloneModifier = ModifierKey.standalone(for: shortcut.keyCode)
+        {
             releaseModifier(standaloneModifier)
             return
         }
@@ -179,11 +184,13 @@ final class KeyboardStateCoordinator {
             return true
         }
 
-        guard eventPoster.postKeyEvent(
-            keyCode: modifier.keyCode,
-            keyDown: true,
-            flags: currentFlags
-        ) else {
+        guard
+            eventPoster.postKeyEvent(
+                keyCode: modifier.keyCode,
+                keyDown: true,
+                flags: currentFlags
+            )
+        else {
             modifierCounts.removeValue(forKey: modifier)
             return false
         }
@@ -231,10 +238,11 @@ enum SystemAction: String {
 }
 
 final class CoreDockClient {
-    private typealias CoreDockFunction = @convention(c) (
-        CFString,
-        UnsafeMutableRawPointer?
-    ) -> Void
+    private typealias CoreDockFunction =
+        @convention(c) (
+            CFString,
+            UnsafeMutableRawPointer?
+        ) -> Void
 
     private let function: CoreDockFunction?
 
@@ -304,7 +312,8 @@ final class KeyboardLayoutResolver: KeyboardLayoutResolving {
 
     private func rebuildFromCurrentInputSource() {
         guard let inputSource = TISCopyCurrentKeyboardLayoutInputSource()?.takeRetainedValue(),
-              let layoutData = Self.layoutData(for: inputSource) else {
+            let layoutData = Self.layoutData(for: inputSource)
+        else {
             shortcutsByCharacter = [:]
             return
         }
@@ -328,12 +337,14 @@ final class KeyboardLayoutResolver: KeyboardLayoutResolving {
 
             for candidate in modifierCandidates {
                 for keyCode in UInt16(0)..<UInt16(128) {
-                    guard let character = Self.character(
-                        keyboardLayout: keyboardLayout,
-                        keyboardType: layoutData.keyboardType,
-                        keyCode: keyCode,
-                        modifierState: candidate.state
-                    ) else {
+                    guard
+                        let character = Self.character(
+                            keyboardLayout: keyboardLayout,
+                            keyboardType: layoutData.keyboardType,
+                            keyCode: keyCode,
+                            modifierState: candidate.state
+                        )
+                    else {
                         continue
                     }
                     let normalized = Character(String(character).lowercased())
@@ -350,9 +361,10 @@ final class KeyboardLayoutResolver: KeyboardLayoutResolving {
     }
 
     private static func layoutData(forInputSourceID inputSourceID: String) -> KeyboardLayoutData? {
-        let filter = [
-            kTISPropertyInputSourceID as String: inputSourceID,
-        ] as CFDictionary
+        let filter =
+            [
+                kTISPropertyInputSourceID as String: inputSourceID
+            ] as CFDictionary
         guard let sourceList = TISCreateInputSourceList(filter, true) else {
             return nil
         }
@@ -365,10 +377,12 @@ final class KeyboardLayoutResolver: KeyboardLayoutResolving {
     }
 
     private static func layoutData(for inputSource: TISInputSource) -> KeyboardLayoutData? {
-        guard let property = TISGetInputSourceProperty(
-            inputSource,
-            kTISPropertyUnicodeKeyLayoutData
-        ) else {
+        guard
+            let property = TISGetInputSourceProperty(
+                inputSource,
+                kTISPropertyUnicodeKeyLayoutData
+            )
+        else {
             return nil
         }
         let data = unsafeBitCast(property, to: CFData.self) as Data
@@ -439,9 +453,10 @@ final class PresetActionExecutor {
         }
 
         if action == .screenshotTool,
-           let screenshotURL = NSWorkspace.shared.urlForApplication(
-               withBundleIdentifier: "com.apple.screenshot.launcher"
-           ) {
+            let screenshotURL = NSWorkspace.shared.urlForApplication(
+                withBundleIdentifier: "com.apple.screenshot.launcher"
+            )
+        {
             let configuration = NSWorkspace.OpenConfiguration()
             NSWorkspace.shared.openApplication(
                 at: screenshotURL,
@@ -560,8 +575,8 @@ final class SystemEventActionExecutor: EventActionExecuting {
     }
 }
 
-private extension KeyboardShortcut.ModifierFlags {
-    func merging(_ other: Self) -> Self {
+extension KeyboardShortcut.ModifierFlags {
+    fileprivate func merging(_ other: Self) -> Self {
         Self(
             command: command || other.command,
             option: option || other.option,

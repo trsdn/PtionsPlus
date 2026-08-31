@@ -1,0 +1,59 @@
+name: Feature request
+description: Describe a problem Ptions+ does not solve today.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe the problem and the situation you are in. A proposed solution
+        is welcome, but the problem is what gets discussed first.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What are you unable to do today, and what does that cost you?
+      placeholder: >-
+        I use two mice on the same Mac and have to change the selected model in
+        Settings whenever I switch, which loses the mapping I had active.
+    validations:
+      required: true
+
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Use case
+      description: When does this come up, and how often? What are you doing at the time?
+      placeholder: >-
+        Every day. A trackball at the desk and a travel mouse in the bag, swapped
+        two or three times a week.
+    validations:
+      required: true
+
+  - type: textarea
+    id: workaround
+    attributes:
+      label: Current workaround
+      description: What do you do instead today, if anything?
+    validations:
+      required: false
+
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired outcome
+      description: >-
+        What would a good result look like from where you sit? Describe the
+        outcome rather than the implementation.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope check
+      options:
+        - label: >-
+            I understand Ptions+ makes no network requests and collects no data,
+            and this request does not require either.
+          required: true

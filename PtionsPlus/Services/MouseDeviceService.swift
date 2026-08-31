@@ -117,9 +117,11 @@ final class HIDMouseDeviceService: ObservableObject, MouseDeviceAttributing {
     }
 
     func openInputMonitoringSettings() {
-        guard let url = URL(
-            string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent"
-        ) else {
+        guard
+            let url = URL(
+                string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent"
+            )
+        else {
             return
         }
         NSWorkspace.shared.open(url)
@@ -323,7 +325,8 @@ final class HIDMouseDeviceService: ObservableObject, MouseDeviceAttributing {
         var devices: [ConnectedMouseDevice] = []
         for hidDevice in deviceSet {
             guard let device = makeDevice(from: hidDevice),
-                  seen.insert(device.id).inserted else {
+                seen.insert(device.id).inserted
+            else {
                 continue
             }
             devices.append(device)
@@ -336,7 +339,8 @@ final class HIDMouseDeviceService: ObservableObject, MouseDeviceAttributing {
         // Devices without vendor and product identifiers, such as the built-in
         // trackpad, cannot be told apart reliably and are not configurable.
         guard let vendorID = intProperty(hidDevice, kIOHIDVendorIDKey),
-              let productID = intProperty(hidDevice, kIOHIDProductIDKey) else {
+            let productID = intProperty(hidDevice, kIOHIDProductIDKey)
+        else {
             return nil
         }
 
@@ -350,11 +354,11 @@ final class HIDMouseDeviceService: ObservableObject, MouseDeviceAttributing {
         let manufacturer = stringProperty(hidDevice, kIOHIDManufacturerKey)
         let name: String
         switch (manufacturer, productName) {
-        case let (manufacturer?, product?) where !product.localizedCaseInsensitiveContains(manufacturer):
+        case (let manufacturer?, let product?) where !product.localizedCaseInsensitiveContains(manufacturer):
             name = "\(manufacturer) \(product)"
-        case let (_, product?):
+        case (_, let product?):
             name = product
-        case let (manufacturer?, nil):
+        case (let manufacturer?, nil):
             name = "\(manufacturer) Mouse"
         default:
             name = String(format: "Mouse %04x:%04x", vendorID, productID)

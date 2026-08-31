@@ -29,12 +29,20 @@
 <meta name="twitter:description" content="Map extra mouse buttons to keyboard shortcuts per-app. Native SwiftUI menu bar app. No bloat, no accounts, no telemetry.">
 <meta name="twitter:image" content="https://trsdn.github.io/PtionsPlus/settings-profiles.png">
 
-<!-- Theme -->
-<meta name="theme-color" content="#6C5CE7">
 <meta name="apple-mobile-web-app-title" content="Ptions+">
-
 <link rel="icon" type="image/svg+xml" href="icon.svg">
 <link rel="apple-touch-icon" href="icon.svg">
+
+<!--
+  Instrument Workshop, vendored from trsdn/design-system v1.5.0.
+  See assets/VENDORED.md for the version record and the re-vendoring procedure.
+
+  Every resource on this page is served from this repository. There are no
+  third-party requests, no cookies, and no analytics.
+-->
+<link rel="stylesheet" href="assets/instrument-workshop-fonts.css">
+<link rel="stylesheet" href="assets/core.tokens.css">
+<link rel="stylesheet" href="assets/instrument-workshop.css">
 
 <!-- Structured Data -->
 <script type="application/ld+json">
@@ -59,1003 +67,259 @@
   "image": "https://trsdn.github.io/PtionsPlus/settings-profiles.png"
 }
 </script>
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-
-:root {
-  --bg: #0e0c13;
-  --bg-raised: #16131e;
-  --bg-card: #1c1826;
-  --bg-card-hover: #231e2e;
-  --text: #e8e4f0;
-  --text-dim: #8a839a;
-  --text-faint: #5a5468;
-  --accent-1: #6C5CE7;
-  --accent-2: #E84393;
-  --accent-grad: linear-gradient(135deg, #6C5CE7, #a855d8, #E84393);
-  --accent-grad-h: linear-gradient(90deg, #6C5CE7, #a855d8, #E84393);
-  --mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
-  --sans: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
-  --radius: 12px;
-  --radius-lg: 20px;
-}
-
-html {
-  scroll-behavior: smooth;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-body {
-  font-family: var(--sans);
-  background: var(--bg);
-  color: var(--text);
-  line-height: 1.6;
-  overflow-x: hidden;
-}
-
-/* Noise texture overlay */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  opacity: 0.025;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size: 256px;
-  pointer-events: none;
-  z-index: 9999;
-}
-
-/* Scroll reveal */
-.reveal {
-  opacity: 0;
-  transform: translateY(28px);
-  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.reveal.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* ─── NAV ─── */
-nav {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 100;
-  padding: 16px 32px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  backdrop-filter: blur(20px) saturate(1.4);
-  -webkit-backdrop-filter: blur(20px) saturate(1.4);
-  background: rgba(14, 12, 19, 0.7);
-  border-bottom: 1px solid rgba(108, 92, 231, 0.08);
-  transition: background 0.3s;
-}
-
-.nav-brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  text-decoration: none;
-  color: var(--text);
-}
-
-.nav-brand img {
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-}
-
-.nav-brand span {
-  font-family: var(--mono);
-  font-weight: 700;
-  font-size: 15px;
-  letter-spacing: -0.02em;
-}
-
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: 28px;
-  list-style: none;
-}
-
-.nav-links a {
-  color: var(--text-dim);
-  text-decoration: none;
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  transition: color 0.2s;
-}
-
-.nav-links a:hover { color: var(--text); }
-
-.nav-gh {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 7px 14px;
-  border-radius: 8px;
-  background: rgba(108, 92, 231, 0.12);
-  border: 1px solid rgba(108, 92, 231, 0.2);
-  color: var(--text) !important;
-  font-family: var(--mono);
-  font-size: 12px;
-  transition: all 0.2s;
-}
-
-.nav-gh:hover {
-  background: rgba(108, 92, 231, 0.2);
-  border-color: rgba(108, 92, 231, 0.4);
-}
-
-/* ─── HERO ─── */
-.hero {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 120px 24px 80px;
-  position: relative;
-}
-
-/* Gradient orbs */
-.hero::before {
-  content: '';
-  position: absolute;
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(circle, rgba(108, 92, 231, 0.12) 0%, transparent 70%);
-  top: 5%;
-  left: -10%;
-  pointer-events: none;
-}
-
-.hero::after {
-  content: '';
-  position: absolute;
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(232, 67, 147, 0.08) 0%, transparent 70%);
-  bottom: 10%;
-  right: -5%;
-  pointer-events: none;
-}
-
-.hero-icon {
-  width: 96px;
-  height: 96px;
-  border-radius: 22px;
-  margin-bottom: 28px;
-  box-shadow:
-    0 0 0 1px rgba(108, 92, 231, 0.2),
-    0 8px 40px rgba(108, 92, 231, 0.15),
-    0 2px 8px rgba(0,0,0,0.3);
-  animation: float 6s ease-in-out infinite;
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
-}
-
-.hero-badges {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 5px 11px;
-  border-radius: 6px;
-  font-family: var(--mono);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  border: 1px solid rgba(255,255,255,0.06);
-}
-
-.badge-macos {
-  background: rgba(255,255,255,0.05);
-  color: var(--text-dim);
-}
-
-.badge-swift {
-  background: rgba(240, 81, 56, 0.1);
-  color: #F05138;
-  border-color: rgba(240, 81, 56, 0.15);
-}
-
-.badge-mit {
-  background: rgba(108, 92, 231, 0.08);
-  color: #a08ef0;
-  border-color: rgba(108, 92, 231, 0.15);
-}
-
-h1 {
-  font-family: var(--sans);
-  font-size: clamp(52px, 8vw, 88px);
-  font-weight: 800;
-  letter-spacing: -0.04em;
-  line-height: 1;
-  margin-bottom: 16px;
-  position: relative;
-}
-
-h1 .plus {
-  background: var(--accent-grad);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.hero-sub {
-  font-size: clamp(17px, 2.5vw, 21px);
-  color: var(--text-dim);
-  max-width: 520px;
-  line-height: 1.5;
-  margin-bottom: 36px;
-  font-weight: 300;
-}
-
-.hero-sub strong {
-  color: var(--text);
-  font-weight: 500;
-}
-
-.hero-actions {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 24px;
-  border-radius: 10px;
-  font-family: var(--mono);
-  font-size: 14px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  cursor: pointer;
-  border: none;
-}
-
-.btn-primary {
-  background: var(--accent-grad);
-  color: white;
-  box-shadow: 0 4px 20px rgba(108, 92, 231, 0.3), 0 1px 3px rgba(0,0,0,0.2);
-}
-
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 32px rgba(108, 92, 231, 0.4), 0 2px 6px rgba(0,0,0,0.3);
-}
-
-.btn-secondary {
-  background: var(--bg-card);
-  color: var(--text);
-  border: 1px solid rgba(255,255,255,0.08);
-}
-
-.btn-secondary:hover {
-  background: var(--bg-card-hover);
-  border-color: rgba(255,255,255,0.14);
-  transform: translateY(-2px);
-}
-
-/* ─── SECTIONS ─── */
-section {
-  padding: 100px 24px;
-  max-width: 1100px;
-  margin: 0 auto;
-}
-
-.section-label {
-  font-family: var(--mono);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--accent-1);
-  margin-bottom: 12px;
-}
-
-.section-title {
-  font-size: clamp(28px, 4vw, 40px);
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  line-height: 1.15;
-  margin-bottom: 16px;
-}
-
-.section-desc {
-  color: var(--text-dim);
-  font-size: 17px;
-  max-width: 600px;
-  line-height: 1.6;
-  font-weight: 300;
-}
-
-/* ─── SCREENSHOTS ─── */
-.screenshots {
-  padding: 60px 24px 100px;
-  max-width: 1100px;
-  margin: 0 auto;
-}
-
-.screenshot-grid {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 32px;
-  align-items: center;
-}
-
-.screenshot-card {
-  position: relative;
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.06);
-  box-shadow:
-    0 24px 80px rgba(0,0,0,0.4),
-    0 4px 16px rgba(0,0,0,0.2),
-    0 0 0 1px rgba(108, 92, 231, 0.06);
-  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s;
-}
-
-.screenshot-card:hover {
-  transform: translateY(-4px) scale(1.005);
-  box-shadow:
-    0 32px 100px rgba(108, 92, 231, 0.15),
-    0 8px 24px rgba(0,0,0,0.3),
-    0 0 0 1px rgba(108, 92, 231, 0.12);
-}
-
-.screenshot-card img {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
-.screenshot-card.small {
-  max-width: 200px;
-}
-
-.screenshot-label {
-  font-family: var(--mono);
-  font-size: 12px;
-  color: var(--text-faint);
-  text-align: center;
-  margin-top: 12px;
-}
-
-/* ─── FEATURES ─── */
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-top: 48px;
-}
-
-.feature-card {
-  padding: 28px 24px;
-  border-radius: var(--radius);
-  background: var(--bg-raised);
-  border: 1px solid rgba(255,255,255,0.04);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.feature-card:hover {
-  background: var(--bg-card);
-  border-color: rgba(108, 92, 231, 0.12);
-  transform: translateY(-2px);
-}
-
-.feature-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  margin-bottom: 16px;
-  background: rgba(108, 92, 231, 0.08);
-  border: 1px solid rgba(108, 92, 231, 0.1);
-}
-
-.feature-card h3 {
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 6px;
-  letter-spacing: -0.01em;
-}
-
-.feature-card p {
-  font-size: 14px;
-  color: var(--text-dim);
-  line-height: 1.5;
-  font-weight: 300;
-}
-
-/* ─── MICE ─── */
-.mice-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-top: 48px;
-}
-
-.mice-group {
-  padding: 24px;
-  border-radius: var(--radius);
-  background: var(--bg-raised);
-  border: 1px solid rgba(255,255,255,0.04);
-}
-
-.mice-group h3 {
-  font-family: var(--mono);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text-faint);
-  margin-bottom: 14px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
-}
-
-.mice-group ul {
-  list-style: none;
-}
-
-.mice-group li {
-  font-size: 15px;
-  padding: 5px 0;
-  color: var(--text-dim);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.mice-group li::before {
-  content: '';
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--accent-1);
-  opacity: 0.5;
-  flex-shrink: 0;
-}
-
-/* ─── BUILD ─── */
-.build-steps {
-  margin-top: 48px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.build-step {
-  display: flex;
-  gap: 20px;
-  align-items: flex-start;
-}
-
-.step-num {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: rgba(108, 92, 231, 0.1);
-  border: 1px solid rgba(108, 92, 231, 0.15);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--mono);
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--accent-1);
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-.step-content {
-  flex: 1;
-}
-
-.step-content h3 {
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 6px;
-}
-
-.step-content p {
-  font-size: 14px;
-  color: var(--text-dim);
-  margin-bottom: 10px;
-  font-weight: 300;
-}
-
-pre {
-  background: #0a090f;
-  border: 1px solid rgba(255,255,255,0.05);
-  border-radius: 10px;
-  padding: 16px 20px;
-  overflow-x: auto;
-  font-family: var(--mono);
-  font-size: 13px;
-  line-height: 1.7;
-  color: #c4bdd4;
-}
-
-pre .comment { color: #5a5468; }
-pre .cmd { color: #a08ef0; }
-
-/* ─── FLOW DIAGRAM ─── */
-.flow {
-  margin-top: 48px;
-  padding: 32px;
-  border-radius: var(--radius-lg);
-  background: var(--bg-raised);
-  border: 1px solid rgba(255,255,255,0.04);
-}
-
-.flow pre {
-  background: transparent;
-  border: none;
-  padding: 0;
-  font-size: 13px;
-  line-height: 1.6;
-  color: var(--text-dim);
-}
-
-.flow .hl { color: var(--accent-1); }
-.flow .hl2 { color: #E84393; }
-
-/* ─── DISCLAIMER ─── */
-.disclaimer {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 0 24px 80px;
-}
-
-.disclaimer-inner {
-  padding: 24px 28px;
-  border-radius: var(--radius);
-  background: rgba(232, 67, 147, 0.03);
-  border: 1px solid rgba(232, 67, 147, 0.08);
-  border-left: 3px solid rgba(232, 67, 147, 0.3);
-}
-
-.disclaimer-inner h3 {
-  font-family: var(--mono);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #E84393;
-  margin-bottom: 8px;
-}
-
-.disclaimer-inner p {
-  font-size: 13px;
-  color: var(--text-dim);
-  line-height: 1.6;
-}
-
-/* ─── FOOTER ─── */
-footer {
-  padding: 40px 24px;
-  text-align: center;
-  border-top: 1px solid rgba(255,255,255,0.04);
-}
-
-.footer-inner {
-  max-width: 1100px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.footer-left {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.footer-left img {
-  width: 20px;
-  height: 20px;
-  border-radius: 5px;
-  opacity: 0.5;
-}
-
-.footer-left span {
-  font-family: var(--mono);
-  font-size: 12px;
-  color: var(--text-faint);
-}
-
-.footer-right {
-  display: flex;
-  gap: 20px;
-}
-
-.footer-right a {
-  font-family: var(--mono);
-  font-size: 12px;
-  color: var(--text-faint);
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-.footer-right a:hover { color: var(--text-dim); }
-
-/* ─── RESPONSIVE ─── */
-@media (max-width: 768px) {
-  nav { padding: 14px 16px; }
-  .nav-links { gap: 16px; }
-  .nav-links .hide-mobile { display: none; }
-
-  .features-grid,
-  .mice-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .screenshot-grid {
-    grid-template-columns: 1fr;
-    justify-items: center;
-  }
-
-  .screenshot-card.small {
-    max-width: 160px;
-  }
-
-  .hero { padding: 100px 20px 60px; }
-
-  section { padding: 60px 20px; }
-
-  .build-step { flex-direction: column; gap: 10px; }
-
-  .footer-inner {
-    flex-direction: column;
-    gap: 16px;
-  }
-}
-
-@media (max-width: 480px) {
-  .features-grid { gap: 12px; }
-  .hero-actions { flex-direction: column; align-items: center; }
-  .btn { width: 100%; justify-content: center; max-width: 260px; }
-}
-
-/* Gradient accent line at top */
-body::after {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: var(--accent-grad-h);
-  z-index: 200;
-  opacity: 0.7;
-}
-</style>
 </head>
-<body>
 
-<!-- NAV -->
-<nav aria-label="Main navigation">
-  <a href="#" class="nav-brand">
-    <img src="icon.svg" alt="Ptions+" width="28" height="28">
-    <span>Ptions+</span>
-  </a>
-  <ul class="nav-links">
-    <li><a href="#features" class="hide-mobile">Features</a></li>
-    <li><a href="#mice" class="hide-mobile">Mice</a></li>
-    <li><a href="#build" class="hide-mobile">Build</a></li>
-    <li><a href="https://github.com/trsdn/PtionsPlus" class="nav-gh" target="_blank" rel="noopener">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-      GitHub
-    </a></li>
-  </ul>
-</nav>
+<body class="iw-root">
 
-<main>
+<a class="iw-skip-link" href="#main">Skip to content</a>
 
-<!-- HERO -->
-<section class="hero">
-  <img src="icon.svg" alt="Ptions+" class="hero-icon" width="96" height="96">
-  <div class="hero-badges">
-    <span class="badge badge-macos">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-      macOS 13+
-    </span>
-    <span class="badge badge-swift">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M21.985 14.018c.065-.26.107-.53.128-.807.021-.277.021-.555 0-.832a5.76 5.76 0 00-.384-1.522c-.533-1.237-1.522-2.273-2.804-2.804-.065-.021-.128-.043-.192-.065.042-.128.085-.256.107-.384.149-.598.149-1.217 0-1.815a4.84 4.84 0 00-.598-1.366A4.84 4.84 0 0016.877 3.1a3.97 3.97 0 00-1.815 0c-.128.022-.256.064-.384.107-.021-.065-.043-.128-.064-.192C14.08 1.733 13.044.744 11.807.211A5.76 5.76 0 009.285.211C8.048.744 7.012 1.733 6.478 3.015c-.02.064-.042.128-.064.192a3.97 3.97 0 00-.384-.107 3.97 3.97 0 00-1.815 0 4.84 4.84 0 00-1.366.598A4.84 4.84 0 001.526 5.02a3.97 3.97 0 000 1.815c.022.128.064.256.107.384-.065.022-.128.043-.192.065-1.282.53-2.271 1.567-2.804 2.804a5.76 5.76 0 000 3.354c.533 1.237 1.522 2.273 2.804 2.804.064.021.127.043.192.064a3.97 3.97 0 00-.107.384 3.97 3.97 0 000 1.815c.171.49.383.96.598 1.366a4.84 4.84 0 001.323 1.323c.406.214.876.427 1.366.598a3.97 3.97 0 001.815 0c.128-.022.256-.064.384-.107.021.065.043.128.064.192.534 1.282 1.567 2.271 2.804 2.804a5.76 5.76 0 003.354 0c1.237-.533 2.273-1.522 2.804-2.804.021-.064.043-.127.064-.192.128.043.256.085.384.107.598.149 1.217.149 1.815 0a4.84 4.84 0 001.366-.598 4.84 4.84 0 001.323-1.323c.215-.406.427-.876.598-1.366z"/></svg>
-      Swift 5.9
-    </span>
-    <span class="badge badge-mit">MIT</span>
-  </div>
-  <h1>Ptions<span class="plus">+</span></h1>
-  <p class="hero-sub">Map extra mouse buttons to <strong>keyboard shortcuts</strong>, per-app. A native macOS replacement for bloated vendor software.</p>
-  <div class="hero-actions">
-    <a href="https://github.com/trsdn/PtionsPlus/releases" class="btn btn-primary">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      Download
+<div class="iw-page">
+
+  <header class="iw-page-header">
+    <div>
+      <p class="iw-eyebrow">Open source · macOS menu bar utility</p>
+      <h1 class="iw-page-title">
+        <img src="icon.svg" alt="" width="40" height="40" style="vertical-align:-8px;margin-right:8px">
+        Ptions+
+      </h1>
+      <p class="iw-body">
+        Ptions+ maps the extra buttons on your mouse to keyboard shortcuts, with
+        a different set of mappings for every app.
+      </p>
+      <p class="iw-row" style="margin-top:12px;flex-wrap:wrap;gap:8px">
+        <span class="iw-status" data-state="active">Maintained</span>
+        <span class="iw-badge iw-badge--identity">Version <span data-app-version>1.2.0</span></span>
+        <span class="iw-badge">macOS 13+</span>
+        <span class="iw-badge">MIT</span>
+      </p>
+    </div>
+    <a class="iw-button iw-button--primary" href="https://github.com/trsdn/PtionsPlus/releases/latest">
+      Download for macOS
     </a>
-    <a href="https://github.com/trsdn/PtionsPlus" class="btn btn-secondary" target="_blank" rel="noopener">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-      View Source
-    </a>
-  </div>
-</section>
+  </header>
 
-<!-- SCREENSHOTS -->
-<div class="screenshots reveal">
-  <div class="screenshot-grid">
-    <div>
-      <div class="screenshot-card">
-        <img src="settings-profiles.png" alt="Ptions+ Settings — Profile Editor" loading="lazy">
+  <main id="main">
+
+    <!-- WHAT IT DOES -->
+    <section class="iw-section" aria-labelledby="what">
+      <h2 class="iw-section-title" id="what">What it does</h2>
+      <p class="iw-body">
+        You have a mouse with extra buttons. The vendor's companion app is
+        200&nbsp;MB, wants an account, and breaks after every macOS update. You
+        just want <strong>Back</strong> to send <code class="iw-code">Cmd+[</code>
+        in Safari, and Mission Control on the thumb button everywhere else.
+        Ptions+ does that, from the menu bar, in about 8&nbsp;MB of memory.
+      </p>
+
+      <figure class="iw-region iw-region--authored" style="margin:24px 0">
+        <img src="settings-profiles.png"
+             alt="The Ptions+ profile editor, showing a per-app profile with each mouse button mapped to a keyboard shortcut."
+             width="1024" height="680" loading="lazy"
+             style="width:100%;height:auto;display:block">
+        <figcaption class="iw-caption" style="margin-top:8px">
+          The profile editor. Each app gets its own set of button mappings.
+        </figcaption>
+      </figure>
+
+      <div class="iw-cardgrid">
+        <article class="iw-card">
+          <h3 class="iw-card-fact">Per-app profiles</h3>
+          <p class="iw-body--compact">
+            Safari gets browser navigation, Xcode gets build shortcuts,
+            everything else gets your defaults.
+          </p>
+        </article>
+        <article class="iw-card">
+          <h3 class="iw-card-fact">System actions</h3>
+          <p class="iw-body--compact">
+            Mission Control, App Exposé, Show Desktop, and Launchpad, with a
+            graceful fallback when macOS does not offer them.
+          </p>
+        </article>
+        <article class="iw-card">
+          <h3 class="iw-card-fact">18 preset actions</h3>
+          <p class="iw-body--compact">
+            Next and Previous Space, Spotlight, Screenshot Tool, Notification
+            Center, Lock Screen and more. Presets follow your active keyboard
+            layout.
+          </p>
+        </article>
+        <article class="iw-card">
+          <h3 class="iw-card-fact">Shortcut recorder</h3>
+          <p class="iw-body--compact">
+            Click Assign and press the combination — even system-reserved ones
+            such as Control + Arrow that macOS would otherwise swallow.
+          </p>
+        </article>
+        <article class="iw-card">
+          <h3 class="iw-card-fact">Launch at login</h3>
+          <p class="iw-body--compact">
+            Native <code class="iw-code">SMAppService</code> registration, with
+            the system as the source of truth.
+          </p>
+        </article>
+        <article class="iw-card">
+          <h3 class="iw-card-fact">Debug monitor</h3>
+          <p class="iw-body--compact">
+            A live view of raw mouse events, and which mouse produced them, so
+            an unrecognised button is a two-minute diagnosis rather than a guess.
+          </p>
+        </article>
+        <article class="iw-card">
+          <h3 class="iw-card-fact">Multiple mice</h3>
+          <p class="iw-body--compact">
+            Every connected mouse can carry its own model and mappings,
+            remembered across reconnects.
+          </p>
+        </article>
       </div>
-      <p class="screenshot-label">Profile editor with per-app button mappings</p>
-    </div>
-    <div>
-      <div class="screenshot-card small">
-        <img src="menubar-dropdown.png" alt="Ptions+ Menu Bar" loading="lazy">
+    </section>
+
+    <hr class="iw-rule">
+
+    <!-- SUPPORTED MICE -->
+    <section class="iw-section" aria-labelledby="mice">
+      <h2 class="iw-section-title" id="mice">Supported mice</h2>
+      <p class="iw-body">
+        Mouse model selection is manual. Any mouse that sends
+        <code class="iw-code">otherMouseDown</code> events over HID works; pick
+        the closest model, or one of the generic options.
+      </p>
+      <div class="iw-table-wrap" role="region" tabindex="0" aria-label="Supported mouse models">
+        <table class="iw-table">
+          <caption class="iw-visually-hidden">Mouse models selectable in Ptions+</caption>
+          <thead>
+            <tr>
+              <th scope="col">Logitech MX</th>
+              <th scope="col">Logitech G</th>
+              <th scope="col">Generic</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>MX Master 4</td><td>G502</td><td>Generic (5 buttons)</td></tr>
+            <tr><td>MX Master 3 / 3S / 2S</td><td>G604</td><td>Generic (3 buttons)</td></tr>
+            <tr><td>MX Anywhere 3</td><td></td><td></td></tr>
+            <tr><td>MX Ergo</td><td></td><td></td></tr>
+            <tr><td>MX Vertical</td><td></td><td></td></tr>
+          </tbody>
+        </table>
       </div>
-      <p class="screenshot-label">Menu bar controls</p>
-    </div>
-  </div>
-  <div class="screenshot-grid" style="margin-top: 32px;">
-    <div>
-      <div class="screenshot-card">
-        <img src="settings-general.png" alt="Ptions+ Settings — General" loading="lazy">
+    </section>
+
+    <hr class="iw-rule">
+
+    <!-- HOW TO GET IT -->
+    <section class="iw-section" aria-labelledby="get">
+      <h2 class="iw-section-title" id="get">How to get it</h2>
+
+      <ol class="iw-steps">
+        <li data-step="1">
+          <strong>Download the latest release.</strong>
+          The <a href="https://github.com/trsdn/PtionsPlus/releases/latest">DMG
+          and ZIP</a> are signed with a Developer ID certificate and notarised by
+          Apple. Each release ships a <code class="iw-code">.sha256</code> file
+          so you can verify what you downloaded.
+        </li>
+        <li data-step="2">
+          <strong>Remove vendor mouse software.</strong>
+          Logi Options+ and similar tools capture the same buttons before
+          Ptions+ can see them. Ptions+ cannot work alongside them.
+        </li>
+        <li data-step="3">
+          <strong>Grant Accessibility permission.</strong>
+          System Settings → Privacy &amp; Security → Accessibility → enable
+          Ptions+. Intercepting mouse events and posting keyboard events both
+          require it; there is no way around this on macOS.
+        </li>
+        <li data-step="4">
+          <strong>Optional: grant Input Monitoring.</strong>
+          Only needed to tell several connected mice apart. Without it Ptions+
+          still lists your mice, but they all share one set of mappings.
+        </li>
+      </ol>
+
+      <div class="iw-callout iw-callout--warning" style="margin-top:20px">
+        <p class="iw-callout-title">Requirements</p>
+        <p class="iw-body--compact">
+          macOS 13 Ventura or later, on Apple silicon or Intel. Ptions+ runs in
+          the menu bar and has no Dock icon.
+        </p>
       </div>
-      <p class="screenshot-label">General settings — mouse model, permissions, launch at login</p>
-    </div>
-    <div></div>
-  </div>
+
+      <p class="iw-body" style="margin-top:20px">
+        Prefer to build it yourself, or want to read the code first? The
+        <a href="https://github.com/trsdn/PtionsPlus#build-from-source">build
+        instructions</a> and the full source are in the repository.
+      </p>
+    </section>
+
+    <hr class="iw-rule">
+
+    <!-- PRIVACY -->
+    <section class="iw-section" aria-labelledby="privacy">
+      <h2 class="iw-section-title" id="privacy">Privacy</h2>
+      <div class="iw-callout iw-callout--success">
+        <p class="iw-callout-title">Ptions+ collects nothing and sends nothing</p>
+        <p class="iw-body--compact">
+          The app makes no network requests. There is no telemetry, no
+          analytics, no crash reporting, no update check, and no account. Your
+          configuration is a single JSON file at
+          <code class="iw-code">~/Library/Application&nbsp;Support/Ptions+/config.json</code>,
+          which stays on your Mac until you delete it.
+        </p>
+      </div>
+      <p class="iw-body" style="margin-top:16px">
+        This page behaves the same way. Every stylesheet, font, and image is
+        served from this repository, so nothing here loads from a third party,
+        sets a cookie, or records your visit.
+      </p>
+    </section>
+
+    <hr class="iw-rule">
+
+    <!-- ACCESSIBILITY -->
+    <section class="iw-section" aria-labelledby="a11y">
+      <h2 class="iw-section-title" id="a11y">Accessibility</h2>
+      <p class="iw-body">
+        Settings are fully operable from the keyboard and every control exposes
+        a name to VoiceOver. Known limitations, including the parts that
+        deliberately require a physical key press, are documented in the
+        <a href="https://github.com/trsdn/PtionsPlus/blob/main/docs/accessibility.md">accessibility
+        note</a>.
+      </p>
+    </section>
+
+  </main>
+
+  <hr class="iw-rule">
+
+  <footer class="iw-section">
+    <h2 class="iw-section-title">Project</h2>
+    <ul class="iw-index-list">
+      <li><a href="https://github.com/trsdn/PtionsPlus">Source repository</a></li>
+      <li><a href="https://github.com/trsdn/PtionsPlus/blob/main/LICENSE">Licence — MIT</a></li>
+      <li><a href="https://github.com/trsdn/.github/blob/main/SECURITY.md">Security policy</a></li>
+      <li><a href="https://github.com/trsdn/PtionsPlus/security/advisories/new">Report a vulnerability privately</a></li>
+      <li><a href="https://github.com/trsdn/.github/blob/main/SUPPORT.md">Support</a></li>
+      <li><a href="https://github.com/trsdn/PtionsPlus/issues">Issue tracker</a></li>
+      <li><a href="https://github.com/trsdn/PtionsPlus/blob/main/CHANGELOG.md">Changelog</a></li>
+    </ul>
+
+    <p class="iw-secondary" style="margin-top:24px">
+      Ptions+ is an independent, open-source project. It is not affiliated with,
+      endorsed by, or associated with Logitech, Logi, or any of their
+      subsidiaries. Product names and trademarks belong to their respective
+      owners and are used solely to identify compatibility.
+    </p>
+
+    <p class="iw-caption" style="margin-top:16px">
+      Describes version <span data-app-version>1.2.0</span>. Page last reviewed
+      <time datetime="2026-08-31" data-reviewed>31 August 2026</time>.
+      Built with Instrument Workshop v1.5.0.
+    </p>
+  </footer>
+
 </div>
-
-<!-- FEATURES -->
-<section id="features">
-  <div class="reveal">
-    <p class="section-label">Features</p>
-    <h2 class="section-title">Everything you need.<br>Nothing you don't.</h2>
-    <p class="section-desc">No accounts, no telemetry, no 200 MB runtime. Just button mappings that work.</p>
-  </div>
-  <div class="features-grid">
-    <div class="feature-card reveal">
-      <div class="feature-icon">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a08ef0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-      </div>
-      <h3>Per-App Profiles</h3>
-      <p>Different button mappings for every app. Safari gets browser nav, Xcode gets build shortcuts.</p>
-    </div>
-    <div class="feature-card reveal">
-      <div class="feature-icon">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a08ef0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-      </div>
-      <h3>System Actions</h3>
-      <p>Mission Control, App Expose, Show Desktop, and Launchpad use a dynamically detected macOS integration.</p>
-    </div>
-    <div class="feature-card reveal">
-      <div class="feature-icon">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a08ef0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-      </div>
-      <h3>Shortcut Recorder</h3>
-      <p>Click assign, press your key combo. Even system-reserved ones like Control + Arrow. Done.</p>
-    </div>
-    <div class="feature-card reveal">
-      <div class="feature-icon">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a08ef0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
-      </div>
-      <h3>18 Preset Actions</h3>
-      <p>Next/Previous Space, Spotlight, Screenshot Tool, Notification Center, Lock Screen, and more built-in.</p>
-    </div>
-    <div class="feature-card reveal">
-      <div class="feature-icon">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a08ef0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="2" width="8" height="20" rx="4"/><rect x="13" y="2" width="8" height="20" rx="4"/></svg>
-      </div>
-      <h3>Multiple Mice</h3>
-      <p>Every connected mouse can have its own model and mappings, remembered across reconnects.</p>
-    </div>
-    <div class="feature-card reveal">
-      <div class="feature-icon">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a08ef0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
-      </div>
-      <h3>Supported Mouse Models</h3>
-      <p>Manually select MX Master, MX Anywhere, MX Ergo, G502, G604, or a generic HID model.</p>
-    </div>
-    <div class="feature-card reveal">
-      <div class="feature-icon">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a08ef0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-      </div>
-      <h3>Debug Monitor</h3>
-      <p>Live view of raw mouse events. See exactly what buttons fire on which mouse, troubleshoot instantly.</p>
-    </div>
-  </div>
-</section>
-
-<!-- HOW IT WORKS -->
-<section>
-  <div class="reveal">
-    <p class="section-label">Architecture</p>
-    <h2 class="section-title">How it works</h2>
-    <p class="section-desc">A session event tap feeds a deterministic state machine that keeps mouse down/up decisions paired and safely coordinates held shortcuts.</p>
-  </div>
-  <div class="flow reveal">
-    <pre><span class="hl">Mouse Button Press</span>
-       │
-       ▼
-  <span class="hl">CGEventTap</span> (EventTapService)
-       │
-       ▼
-  <span class="hl">Press State</span> (EventStateMachine)
-       │
-       ▼
-  <span class="hl">Active App Lookup</span> (ActiveAppMonitor)
-       │
-       ▼
-  <span class="hl">Profile Match</span> (MappingStore)
-       │
-       ├── Has mapping? → <span class="hl2">Coordinated input / system action</span> → Suppress event pair
-       │
-       └── No mapping?  → Pass through</pre>
-  </div>
-</section>
-
-<!-- MICE -->
-<section id="mice">
-  <div class="reveal">
-    <p class="section-label">Compatibility</p>
-    <h2 class="section-title">Supported mice</h2>
-    <p class="section-desc">Any mouse that sends <code style="font-family:var(--mono);background:var(--bg-card);padding:2px 7px;border-radius:4px;font-size:14px">otherMouseDown</code> events will work. Pick the closest model or use Generic.</p>
-  </div>
-  <div class="mice-grid reveal">
-    <div class="mice-group">
-      <h3>Logitech MX</h3>
-      <ul>
-        <li>MX Master 4</li>
-        <li>MX Master 3</li>
-        <li>MX Master 3S</li>
-        <li>MX Master 2S</li>
-        <li>MX Anywhere 3</li>
-        <li>MX Ergo</li>
-        <li>MX Vertical</li>
-      </ul>
-    </div>
-    <div class="mice-group">
-      <h3>Logitech G</h3>
-      <ul>
-        <li>G502</li>
-        <li>G604</li>
-      </ul>
-    </div>
-    <div class="mice-group">
-      <h3>Generic</h3>
-      <ul>
-        <li>Generic (5 buttons)</li>
-        <li>Generic (3 buttons)</li>
-      </ul>
-    </div>
-  </div>
-</section>
-
-<!-- BUILD -->
-<section id="build">
-  <div class="reveal">
-    <p class="section-label">Getting Started</p>
-    <h2 class="section-title">Build from source</h2>
-    <p class="section-desc">Requires Xcode 15+ and macOS 13 Ventura or later. The vendor's companion software must be uninstalled first.</p>
-  </div>
-  <div class="build-steps">
-    <div class="build-step reveal">
-      <div class="step-num">1</div>
-      <div class="step-content">
-        <h3>Clone & build</h3>
-        <pre><span class="comment"># Clone the repo</span>
-<span class="cmd">git clone</span> https://github.com/trsdn/PtionsPlus.git && <span class="cmd">cd</span> PtionsPlus
-
-<span class="comment"># Build</span>
-<span class="cmd">xcodebuild</span> -project PtionsPlus.xcodeproj -scheme "Ptions+" -configuration Release build</pre>
-      </div>
-    </div>
-    <div class="build-step reveal">
-      <div class="step-num">2</div>
-      <div class="step-content">
-        <h3>Install</h3>
-        <pre><span class="cmd">cp</span> -R ~/Library/Developer/Xcode/DerivedData/PtionsPlus-*/Build/Products/Release/Ptions+.app /Applications/
-<span class="cmd">xattr</span> -cr /Applications/Ptions+.app
-<span class="cmd">open</span> /Applications/Ptions+.app</pre>
-      </div>
-    </div>
-    <div class="build-step reveal">
-      <div class="step-num">3</div>
-      <div class="step-content">
-        <h3>Grant accessibility access</h3>
-        <p>System Settings → Privacy & Security → Accessibility → enable Ptions+</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- DISCLAIMER -->
-<div class="disclaimer reveal">
-  <div class="disclaimer-inner">
-    <h3>Disclaimer</h3>
-    <p>Ptions+ is an independent, open-source project. It is not affiliated with, endorsed by, or associated with Logitech, Logi, or any of their subsidiaries or products. All product names, trademarks, and registered trademarks mentioned in this project are the property of their respective owners. Mouse model names are used solely for compatibility identification purposes.</p>
-  </div>
-</div>
-
-</main>
-
-<!-- FOOTER -->
-<footer>
-  <div class="footer-inner">
-    <div class="footer-left">
-      <img src="icon.svg" alt="" width="20" height="20">
-      <span>MIT License</span>
-    </div>
-    <div class="footer-right">
-      <a href="https://github.com/trsdn/PtionsPlus" target="_blank" rel="noopener">GitHub</a>
-      <a href="https://github.com/trsdn/PtionsPlus/releases" target="_blank" rel="noopener">Releases</a>
-      <a href="https://github.com/trsdn/PtionsPlus/issues" target="_blank" rel="noopener">Issues</a>
-    </div>
-  </div>
-</footer>
-
-<script>
-// Scroll reveal with IntersectionObserver
-const reveals = document.querySelectorAll('.reveal');
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach((entry, i) => {
-    if (entry.isIntersecting) {
-      setTimeout(() => {
-        entry.target.classList.add('visible');
-      }, i * 60);
-      observer.unobserve(entry.target);
-    }
-  });
-}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
-
-reveals.forEach(el => observer.observe(el));
-
-// Stagger feature cards
-document.querySelectorAll('.feature-card.reveal').forEach((card, i) => {
-  card.style.transitionDelay = `${i * 80}ms`;
-});
-
-// Smooth nav background on scroll
-const nav = document.querySelector('nav');
-window.addEventListener('scroll', () => {
-  nav.style.background = window.scrollY > 60
-    ? 'rgba(14, 12, 19, 0.92)'
-    : 'rgba(14, 12, 19, 0.7)';
-}, { passive: true });
-</script>
 
 </body>
 </html>

@@ -86,12 +86,13 @@ final class EventStateMachine {
         }
 
         guard mappingResolver.isButtonAvailable(button, deviceID: deviceID),
-              let mapping = mappingResolver.resolvedMapping(
+            let mapping = mappingResolver.resolvedMapping(
                 for: button,
                 bundleIdentifier: bundleIdentifier,
                 deviceID: deviceID
-              ),
-              mapping.isActive else {
+            ),
+            mapping.isActive
+        else {
             store(ButtonPressState(depth: 1, disposition: .passThrough, heldShortcut: nil), for: key)
             return .passThrough
         }
@@ -125,7 +126,8 @@ final class EventStateMachine {
 
     private func handleUp(button: MouseButton, deviceID: String?) -> EventDisposition {
         guard let key = matchingPressKey(for: button, deviceID: deviceID),
-              var press = activePresses[key] else {
+            var press = activePresses[key]
+        else {
             return .passThrough
         }
 
@@ -179,8 +181,9 @@ extension MappingStore: MappingResolving {
     }
 
     func isButtonAvailable(_ button: MouseButton, deviceID: String?) -> Bool {
-        isConfigurationUsable && runtimeModel(forDeviceID: deviceID)
-            .availableButtons
-            .contains(button)
+        isConfigurationUsable
+            && runtimeModel(forDeviceID: deviceID)
+                .availableButtons
+                .contains(button)
     }
 }

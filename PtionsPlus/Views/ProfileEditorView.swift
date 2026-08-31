@@ -1,5 +1,5 @@
-import SwiftUI
 import Carbon.HIToolbox
+import SwiftUI
 
 struct ProfileEditorView: View {
     @ObservedObject var store: MappingStore
@@ -36,9 +36,11 @@ struct ProfileEditorView: View {
 
             Section("Button Mappings") {
                 if profile.isDefault {
-                    Text("Default defines fallback behavior. Turn on Override Apps for buttons that should ignore app-specific mappings.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    Text(
+                        "Default defines fallback behavior. Turn on Override Apps for buttons that should ignore app-specific mappings."
+                    )
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
                 }
 
                 ForEach(store.editingConfiguration.model.availableButtons) { button in
@@ -85,7 +87,9 @@ struct ProfileEditorView: View {
                 pendingConflictCount = 0
             }
         } message: { button in
-            Text("\(button.displayName(for: store.editingConfiguration.model)) is already configured in \(pendingConflictCount) app profile(s). Enabling Override Apps will force the Default mapping for this button until you turn it off.")
+            Text(
+                "\(button.displayName(for: store.editingConfiguration.model)) is already configured in \(pendingConflictCount) app profile(s). Enabling Override Apps will force the Default mapping for this button until you turn it off."
+            )
         }
     }
 
@@ -117,8 +121,9 @@ private struct ButtonMappingRow: View {
     private var mappingStatusText: String {
         guard let effectiveMapping, effectiveMapping.isActive else { return "Not assigned" }
         if let action = effectiveMapping.systemAction,
-           action.isDockAction,
-           !CoreDockClient.shared.isAvailable {
+            action.isDockAction,
+            !CoreDockClient.shared.isAvailable
+        {
             return "\(action.displayName) (Unavailable)"
         }
         return effectiveMapping.displayString
@@ -137,7 +142,9 @@ private struct ButtonMappingRow: View {
         }
 
         if effectiveMapping.shortcut != nil {
-            return effectiveMapping.holdWhilePressed ? "Shortcut stays pressed while the mouse button is down." : "Shortcut runs when you press the mouse button."
+            return effectiveMapping.holdWhilePressed
+                ? "Shortcut stays pressed while the mouse button is down."
+                : "Shortcut runs when you press the mouse button."
         }
 
         if let action = effectiveMapping.systemAction {
@@ -190,7 +197,8 @@ private struct ButtonMappingRow: View {
                                     Section(category) {
                                         ForEach(actions) { action in
                                             Button(action.displayName) {
-                                                store.updateMapping(profileId: profile.id, button: button, systemAction: action)
+                                                store.updateMapping(
+                                                    profileId: profile.id, button: button, systemAction: action)
                                             }
                                             .disabled(action.isDockAction && !CoreDockClient.shared.isAvailable)
                                         }
@@ -202,7 +210,8 @@ private struct ButtonMappingRow: View {
                                         store.updateMapping(
                                             profileId: profile.id,
                                             button: button,
-                                            shortcut: KeyboardShortcut(keyCode: UInt16(kVK_Function), modifiers: .init())
+                                            shortcut: KeyboardShortcut(
+                                                keyCode: UInt16(kVK_Function), modifiers: .init())
                                         )
                                     }
 
@@ -215,6 +224,12 @@ private struct ButtonMappingRow: View {
                             }
                             .menuStyle(.borderedButton)
                             .fixedSize()
+                            .accessibilityLabel(
+                                effectiveMapping?.isActive == true
+                                    ? "Change mapping for \(button.displayName)"
+                                    : "Assign mapping for \(button.displayName)"
+                            )
+                            .accessibilityHint("Choose a system action, a preset, or record a custom shortcut")
                         }
 
                         if effectiveMapping?.isActive == true {
@@ -225,6 +240,8 @@ private struct ButtonMappingRow: View {
                                     .foregroundStyle(.secondary)
                             }
                             .buttonStyle(.plain)
+                            .accessibilityLabel("Clear mapping for \(button.displayName)")
+                            .accessibilityHint("Removes the assigned shortcut and leaves the button unmapped")
                         }
                     }
                 }
@@ -251,22 +268,28 @@ private struct ButtonMappingRow: View {
 
             VStack(alignment: .leading, spacing: 10) {
                 if profile.isDefault {
-                    optionRow(label: "Override Apps", description: "Use the Default mapping even when an app-specific profile exists.") {
-                        Toggle("", isOn: Binding(
-                            get: { store.isGlobalButton(button) },
-                            set: { isEnabled in
-                                if isEnabled {
-                                    let conflictCount = store.globalOverrideConflictCount(for: button)
-                                    if conflictCount > 0 {
-                                        onRequestGlobalOverride(conflictCount)
+                    optionRow(
+                        label: "Override Apps",
+                        description: "Use the Default mapping even when an app-specific profile exists."
+                    ) {
+                        Toggle(
+                            "",
+                            isOn: Binding(
+                                get: { store.isGlobalButton(button) },
+                                set: { isEnabled in
+                                    if isEnabled {
+                                        let conflictCount = store.globalOverrideConflictCount(for: button)
+                                        if conflictCount > 0 {
+                                            onRequestGlobalOverride(conflictCount)
+                                        } else {
+                                            store.setGlobalButton(button, enabled: true)
+                                        }
                                     } else {
-                                        store.setGlobalButton(button, enabled: true)
+                                        store.setGlobalButton(button, enabled: false)
                                     }
-                                } else {
-                                    store.setGlobalButton(button, enabled: false)
                                 }
-                            }
-                        ))
+                            )
+                        )
                         .labelsHidden()
                         .toggleStyle(.switch)
                         .accessibilityIdentifier("mapping.override.\(button.rawValue)")
@@ -274,13 +297,19 @@ private struct ButtonMappingRow: View {
                 }
 
                 if showsPushToTalkToggle, let effectiveMapping {
-                    optionRow(label: "Push-to-Talk Mode", description: "Keep the shortcut pressed while you hold the mouse button.") {
-                        Toggle("", isOn: Binding(
-                            get: { effectiveMapping.holdWhilePressed },
-                            set: { isEnabled in
-                                store.setHoldWhilePressed(profileId: profile.id, button: button, enabled: isEnabled)
-                            }
-                        ))
+                    optionRow(
+                        label: "Push-to-Talk Mode",
+                        description: "Keep the shortcut pressed while you hold the mouse button."
+                    ) {
+                        Toggle(
+                            "",
+                            isOn: Binding(
+                                get: { effectiveMapping.holdWhilePressed },
+                                set: { isEnabled in
+                                    store.setHoldWhilePressed(profileId: profile.id, button: button, enabled: isEnabled)
+                                }
+                            )
+                        )
                         .labelsHidden()
                         .toggleStyle(.switch)
                         .accessibilityIdentifier("mapping.pushToTalk.\(button.rawValue)")
@@ -315,7 +344,9 @@ private struct ButtonMappingRow: View {
     }
 
     @ViewBuilder
-    private func optionRow<Control: View>(label: String, description: String, @ViewBuilder control: () -> Control) -> some View {
+    private func optionRow<Control: View>(label: String, description: String, @ViewBuilder control: () -> Control)
+        -> some View
+    {
         HStack(alignment: .center, spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(label)

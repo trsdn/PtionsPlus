@@ -10,12 +10,14 @@ struct MenuBarView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Toggle(isOn: Binding(
-                get: { store.configuration.isEnabled },
-                set: { newValue in
-                    store.setEnabled(newValue)
-                }
-            )) {
+            Toggle(
+                isOn: Binding(
+                    get: { store.configuration.isEnabled },
+                    set: { newValue in
+                        store.setEnabled(newValue)
+                    }
+                )
+            ) {
                 Text("Enabled")
             }
 
@@ -52,13 +54,18 @@ struct MenuBarView: View {
             if !store.isConfigurationUsable {
                 Divider()
                 Label("Configuration needs attention", systemImage: "exclamationmark.triangle.fill")
-                .foregroundStyle(.red)
+                    .foregroundStyle(.red)
             }
 
             Divider()
 
             Button("Settings...") {
                 openWindow(id: "settings")
+                NSApp.activate(ignoringOtherApps: true)
+            }
+
+            Button("About Ptions+") {
+                openWindow(id: "about")
                 NSApp.activate(ignoringOtherApps: true)
             }
 

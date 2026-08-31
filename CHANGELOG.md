@@ -2,10 +2,13 @@
 
 ## Unreleased
 
-- Added a changelog gate to the release pipeline: a tag whose version has no dated `CHANGELOG.md` section, or that leaves entries under `## Unreleased`, now fails before anything is signed.
+- Added an About window reachable from the menu bar that shows the app version and links to the repository, issue tracker, and licence (#32).
+- Reworked the published website onto vendored design-system styling with self-hosted fonts, removing the third-party font requests that previously observed every visitor (#32).
+- Added `AGENTS.md` as the single home for build, test, and release instructions, plus `scripts/validate.sh` as one validation command (#32).
+- Added a changelog gate to the release pipeline: a tag whose version has no dated `CHANGELOG.md` section, or that leaves entries under `## Unreleased`, now fails before anything is built or signed.
 - Added `scripts/changelog.sh` and made the GitHub release body the changelog section of the released version instead of fixed boilerplate text.
 - Added changelog promotion to `scripts/bump-version.sh`, which moves the unreleased entries into a dated section for the new version.
-- Added documentation and changelog verification to CI so version, website, and changelog metadata cannot drift apart.
+- Added changelog verification to the documentation checks, so the version being shipped is always described.
 
 ## 1.2.0 - 2026-08-31
 

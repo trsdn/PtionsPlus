@@ -1,6 +1,7 @@
 import AppKit
 import Carbon.HIToolbox
 import XCTest
+
 @testable import Ptions_
 
 final class MouseDeviceIdentityTests: XCTestCase {
@@ -62,9 +63,10 @@ final class SpacePresetActionTests: XCTestCase {
 
         XCTAssertTrue(executor.isAvailable(.nextSpace))
         XCTAssertTrue(executor.perform(.nextSpace))
-        XCTAssertTrue(poster.events.contains {
-            $0.keyCode == CGKeyCode(kVK_RightArrow) && $0.keyDown && $0.flags.contains(.maskControl)
-        })
+        XCTAssertTrue(
+            poster.events.contains {
+                $0.keyCode == CGKeyCode(kVK_RightArrow) && $0.keyDown && $0.flags.contains(.maskControl)
+            })
     }
 
     func testPreviousSpacePostsControlLeftArrow() {
@@ -72,12 +74,14 @@ final class SpacePresetActionTests: XCTestCase {
         let executor = makeExecutor(poster: poster)
 
         XCTAssertTrue(executor.perform(.previousSpace))
-        XCTAssertTrue(poster.events.contains {
-            $0.keyCode == CGKeyCode(kVK_LeftArrow) && $0.keyDown && $0.flags.contains(.maskControl)
-        })
-        XCTAssertTrue(poster.events.contains {
-            $0.keyCode == CGKeyCode(kVK_LeftArrow) && !$0.keyDown
-        })
+        XCTAssertTrue(
+            poster.events.contains {
+                $0.keyCode == CGKeyCode(kVK_LeftArrow) && $0.keyDown && $0.flags.contains(.maskControl)
+            })
+        XCTAssertTrue(
+            poster.events.contains {
+                $0.keyCode == CGKeyCode(kVK_LeftArrow) && !$0.keyDown
+            })
     }
 
     private func makeExecutor(poster: StubKeyboardEventPoster) -> PresetActionExecutor {
@@ -160,7 +164,9 @@ final class DeviceConfigurationSchemaTests: XCTestCase {
     }
 
     func testLegacyConfigurationDecodesWithoutDevices() throws {
-        let data = Data(#"{"schemaVersion":3,"mouseModel":"mx_master_4","profiles":[{"name":"Default","bundleIdentifier":null,"mappings":[]}]}"#.utf8)
+        let data = Data(
+            #"{"schemaVersion":3,"mouseModel":"mx_master_4","profiles":[{"name":"Default","bundleIdentifier":null,"mappings":[]}]}"#
+                .utf8)
 
         let configuration = try JSONDecoder().decode(AppConfiguration.self, from: data)
 
@@ -239,11 +245,12 @@ final class MappingStoreDeviceTests: XCTestCase {
 
     func testInputFromEachMouseUsesItsOwnMappings() {
         let device = makeDeviceConfiguration(serial: "A1", model: .mxMaster3s, button5Action: .copy)
-        let store = makeStore(configuration: AppConfiguration(
-            profiles: [AppProfile.makeDefault()],
-            mouseModel: .mxMaster3,
-            devices: [device]
-        ))
+        let store = makeStore(
+            configuration: AppConfiguration(
+                profiles: [AppProfile.makeDefault()],
+                mouseModel: .mxMaster3,
+                devices: [device]
+            ))
 
         XCTAssertEqual(
             store.resolvedMapping(for: .button5, bundleIdentifier: nil, deviceID: device.id)?.systemAction,
@@ -257,10 +264,11 @@ final class MappingStoreDeviceTests: XCTestCase {
 
     func testUnknownMouseFallsBackToSharedConfiguration() {
         let device = makeDeviceConfiguration(serial: "A1", model: .mxMaster3s, button5Action: .copy)
-        let store = makeStore(configuration: AppConfiguration(
-            profiles: [AppProfile.makeDefault()],
-            devices: [device]
-        ))
+        let store = makeStore(
+            configuration: AppConfiguration(
+                profiles: [AppProfile.makeDefault()],
+                devices: [device]
+            ))
 
         XCTAssertEqual(
             store.resolvedMapping(for: .button5, bundleIdentifier: nil, deviceID: "ffff:ffff")?.systemAction,
@@ -271,11 +279,12 @@ final class MappingStoreDeviceTests: XCTestCase {
     func testAvailableButtonsFollowThePerDeviceModel() {
         var device = makeDeviceConfiguration(serial: "A1", model: .generic3)
         device.profiles = [AppProfile.makeDefault()]
-        let store = makeStore(configuration: AppConfiguration(
-            profiles: [AppProfile.makeDefault()],
-            mouseModel: .mxMaster3,
-            devices: [device]
-        ))
+        let store = makeStore(
+            configuration: AppConfiguration(
+                profiles: [AppProfile.makeDefault()],
+                mouseModel: .mxMaster3,
+                devices: [device]
+            ))
 
         XCTAssertFalse(store.isButtonAvailable(.button5, deviceID: device.id))
         XCTAssertTrue(store.isButtonAvailable(.button5, deviceID: nil))
@@ -315,11 +324,12 @@ final class MappingStoreDeviceTests: XCTestCase {
         let deviceID = store.editingConfiguration.deviceID
 
         let deviceDefault = store.defaultProfile
-        XCTAssertTrue(store.updateMapping(
-            profileId: deviceDefault.id,
-            button: .back,
-            systemAction: .nextSpace
-        ))
+        XCTAssertTrue(
+            store.updateMapping(
+                profileId: deviceDefault.id,
+                button: .back,
+                systemAction: .nextSpace
+            ))
 
         XCTAssertEqual(
             store.resolvedMapping(for: .back, bundleIdentifier: nil, deviceID: deviceID)?.systemAction,
@@ -348,11 +358,12 @@ final class MappingStoreDeviceTests: XCTestCase {
         let store = makeStore(configuration: .empty)
         XCTAssertTrue(store.createDeviceConfiguration(for: connectedDevice()))
         let deviceID = try? XCTUnwrap(store.editingConfiguration.deviceID)
-        XCTAssertTrue(store.updateMapping(
-            profileId: store.defaultProfile.id,
-            button: .back,
-            systemAction: .nextSpace
-        ))
+        XCTAssertTrue(
+            store.updateMapping(
+                profileId: store.defaultProfile.id,
+                button: .back,
+                systemAction: .nextSpace
+            ))
 
         XCTAssertTrue(store.removeDeviceConfiguration(id: try! XCTUnwrap(deviceID)))
 
@@ -376,17 +387,19 @@ final class MappingStoreDeviceTests: XCTestCase {
         )
 
         XCTAssertTrue(store.createDeviceConfiguration(for: first))
-        XCTAssertTrue(store.updateMapping(
-            profileId: store.defaultProfile.id,
-            button: .back,
-            systemAction: .nextSpace
-        ))
+        XCTAssertTrue(
+            store.updateMapping(
+                profileId: store.defaultProfile.id,
+                button: .back,
+                systemAction: .nextSpace
+            ))
         XCTAssertTrue(store.createDeviceConfiguration(for: second))
-        XCTAssertTrue(store.updateMapping(
-            profileId: store.defaultProfile.id,
-            button: .back,
-            systemAction: .previousSpace
-        ))
+        XCTAssertTrue(
+            store.updateMapping(
+                profileId: store.defaultProfile.id,
+                button: .back,
+                systemAction: .previousSpace
+            ))
 
         // Reloading models a restart with only one of the mice attached.
         let reloaded = MappingStore(configURL: url)
@@ -534,7 +547,8 @@ private func makeDeviceConfiguration(
 ) -> MouseDeviceConfiguration {
     var profile = AppProfile.makeDefault()
     if let button5Action,
-       let index = profile.mappings.firstIndex(where: { $0.button == .button5 }) {
+        let index = profile.mappings.firstIndex(where: { $0.button == .button5 })
+    {
         profile.mappings[index].systemAction = button5Action
     }
 

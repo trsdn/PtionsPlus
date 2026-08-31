@@ -81,11 +81,12 @@ struct ConfigurationRepository {
                 return .ready(configuration)
             }
 
-            return .needsRecovery(ConfigurationRecovery(
-                originalData: data,
-                repairedConfiguration: ConfigurationValidator.repair(configuration),
-                messages: validation.messages
-            ))
+            return .needsRecovery(
+                ConfigurationRecovery(
+                    originalData: data,
+                    repairedConfiguration: ConfigurationValidator.repair(configuration),
+                    messages: validation.messages
+                ))
         } catch {
             return .failed(
                 message: "Could not load config.json: \(error.localizedDescription)",
@@ -172,11 +173,12 @@ enum ConfigurationValidator {
         }
 
         for device in configuration.devices {
-            messages.append(contentsOf: validateScope(
-                profiles: device.profiles,
-                globalButtons: device.globalButtons,
-                scopeLabel: device.name
-            ))
+            messages.append(
+                contentsOf: validateScope(
+                    profiles: device.profiles,
+                    globalButtons: device.globalButtons,
+                    scopeLabel: device.name
+                ))
         }
 
         return ConfigurationValidationResult(messages: Array(Set(messages)).sorted())

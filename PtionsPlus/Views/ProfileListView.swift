@@ -37,6 +37,8 @@ struct ProfileListView: View {
                 Button(action: { showingAppPicker = true }) {
                     Image(systemName: "plus")
                 }
+                .accessibilityLabel("Add app profile")
+                .accessibilityHint("Choose an installed app to give it its own button mappings")
             }
         }
         .sheet(isPresented: $showingAppPicker) {
@@ -57,7 +59,8 @@ struct ProfileListView: View {
         .onAppear {
             let profiles = store.editingConfiguration.profiles
             if selectedProfileId == nil
-                || !profiles.contains(where: { $0.id == selectedProfileId }) {
+                || !profiles.contains(where: { $0.id == selectedProfileId })
+            {
                 selectedProfileId = store.defaultProfile.id
             }
         }
