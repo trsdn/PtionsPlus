@@ -8,7 +8,7 @@ Replaces bloated vendor software with a fast, focused, open-source alternative. 
 
 [![License: MIT](https://img.shields.io/github/license/trsdn/PtionsPlus?style=flat-square)](LICENSE)
 [![macOS 13+](https://img.shields.io/badge/macOS-13%2B-000?style=flat-square&logo=apple&logoColor=white)](#requirements)
-[![CI](https://img.shields.io/github/actions/workflow/status/trsdn/PtionsPlus/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/trsdn/PtionsPlus/actions/workflows/ci.yml?query=branch%3Amain)
+[![CI](https://github.com/trsdn/PtionsPlus/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/trsdn/PtionsPlus/actions/workflows/ci.yml?query=branch%3Amain)
 [![Latest release](https://img.shields.io/github/v/release/trsdn/PtionsPlus?style=flat-square)](https://github.com/trsdn/PtionsPlus/releases/latest)
 [![Repository Quality Standard](.github/badges/conformance.svg)](.github/conformance.yml)
 
