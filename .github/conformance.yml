@@ -1,4 +1,4 @@
-standard_version: "1.5.1"
+standard_version: "1.6.0"
 assessed_on: "2026-08-31"
 state: "Healthy"
 evidence: "docs/self-assessment.md"
@@ -24,7 +24,7 @@ criteria:
   P05: pass
   P06: pass
   P07: pass
-  P08: partial
+  P08: pass
   P09: pass
   S01: pass
   S02: pass
