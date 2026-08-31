@@ -83,7 +83,7 @@ Not applicable, with rationale:
 | R03 | pass | A `v*` tag runs [`release.yml`](../.github/workflows/release.yml), which builds, signs, notarises, staples, and uploads a ZIP, a DMG, and a SHA-256 file. |
 | R04 | pass | `scripts/verify-version.sh --tag` rejects a tag that does not match `MARKETING_VERSION`. |
 | R05 | pass | `scripts/verify-release-artifacts.sh` rebuilds the ZIP and DMG from the stapled app and verifies them before upload; the release workflow reruns the full CI suite against the tagged commit first. |
-| R06 | pass | `CHANGELOG.md` and GitHub release notes. |
+| R06 | pass | The release workflow gates on `scripts/changelog.sh release-notes` and publishes the `CHANGELOG.md` section of the tagged version as the release body, so a release cannot ship without described changes. |
 
 ## Product Identity
 

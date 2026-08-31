@@ -85,6 +85,18 @@ bash scripts/sign-release.sh
 bash scripts/notarize.sh
 ```
 
+Release notes are never written by hand. Every user-facing change is described
+under `## Unreleased` in `CHANGELOG.md`, `bump-version.sh` promotes those
+entries into the dated `## X.Y.Z` section it creates, and the release workflow
+publishes exactly that section as the GitHub release body. A tag whose version
+has no changelog entries, or that leaves entries under `## Unreleased`, fails
+before anything is built or signed.
+
+```bash
+# Preview the notes a tag would publish
+scripts/changelog.sh release-notes v1.2.0
+```
+
 ## High-risk operations
 
 Never perform any of the following without an explicit, specific instruction
@@ -141,6 +153,7 @@ Generated or tool-owned. Do not hand-edit.
 | `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION` in `PtionsPlus.xcodeproj/project.pbxproj` | `scripts/bump-version.sh` |
 | `PtionsPlus/Utilities/ProductIdentity.swift` version constants | Derived from the bundle at runtime; values come from the build |
 | `"softwareVersion"` and the version badge in `docs/index.html` | `scripts/bump-version.sh` |
+| The dated `## X.Y.Z` headings in `CHANGELOG.md` | `scripts/bump-version.sh` promotes the entries you wrote under `## Unreleased` |
 | `docs/assets/core.tokens.css`, `docs/assets/instrument-workshop.css`, `docs/assets/instrument-workshop-fonts.css`, `docs/assets/fonts/**` | Vendored from `trsdn/design-system`. Re-vendor from a tag; never patch in place. |
 | `.github/badges/*.svg` | Generated from `.github/conformance.yml` and the stats workflow |
 | `build/`, `dist/`, `TestResults/` | Build output, gitignored |

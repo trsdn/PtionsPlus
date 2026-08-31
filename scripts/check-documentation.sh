@@ -80,4 +80,16 @@ for pointer in "$PROJECT_DIR/CLAUDE.md" "$PROJECT_DIR/.github/copilot-instructio
   fi
 done
 
+# R06: the changelog is the source of the release notes, so the released
+# version must always be described and the unreleased section must exist.
+if ! grep -q '^## Unreleased$' "$PROJECT_DIR/CHANGELOG.md"; then
+  echo "Error: CHANGELOG.md must keep an '## Unreleased' section."
+  exit 1
+fi
+
+if [ -z "$("$SCRIPT_DIR/changelog.sh" section "$MARKETING_VERSION")" ]; then
+  echo "Error: CHANGELOG.md has no entries for version $MARKETING_VERSION."
+  exit 1
+fi
+
 echo "Documentation references verified."

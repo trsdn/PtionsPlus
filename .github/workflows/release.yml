@@ -39,6 +39,31 @@ jobs:
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
           echo "version=${tag#v}" >> "$GITHUB_OUTPUT"
 
+      - name: Checkout release tooling
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify changelog and build release notes
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          set -euo pipefail
+          if ! git rev-parse -q --verify "refs/tags/$RELEASE_TAG" >/dev/null; then
+            git fetch --no-tags --depth=1 origin "refs/tags/$RELEASE_TAG:refs/tags/$RELEASE_TAG"
+          fi
+          git show "refs/tags/$RELEASE_TAG:CHANGELOG.md" > CHANGELOG.md
+          scripts/changelog.sh release-notes "$RELEASE_TAG" --output dist/release-notes.md
+
+      - name: Upload release notes
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: PtionsPlus-release-notes
+          path: dist/release-notes.md
+          if-no-files-found: error
+
   tests:
     name: Test release commit
     needs: metadata
@@ -150,6 +175,12 @@ jobs:
           name: PtionsPlus-release-assets
           path: release-assets
 
+      - name: Download release notes
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: PtionsPlus-release-notes
+          path: release-notes
+
       - name: Attach assets to GitHub Release
         shell: bash
         env:
@@ -159,10 +190,19 @@ jobs:
           RELEASE_VERSION: ${{ needs.metadata.outputs.version }}
         run: |
           set -euo pipefail
-          if ! gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+          notes="release-notes/release-notes.md"
+          if [[ ! -s "$notes" ]]; then
+            echo "Release notes from the changelog are missing."
+            exit 1
+          fi
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release edit "$RELEASE_TAG" \
+              --title "Ptions+ ${RELEASE_VERSION}" \
+              --notes-file "$notes"
+          else
             gh release create "$RELEASE_TAG" \
               --title "Ptions+ ${RELEASE_VERSION}" \
-              --notes "Signed, notarized, stapled, and verified macOS release artifacts."
+              --notes-file "$notes"
           fi
           gh release upload "$RELEASE_TAG" \
             "release-assets/Ptions+.dmg" \
