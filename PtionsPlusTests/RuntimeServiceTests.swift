@@ -1,14 +1,16 @@
 import Carbon.HIToolbox
 import Combine
 import XCTest
+
 @testable import Ptions_
 
 final class EventStateMachineTests: XCTestCase {
     func testMouseUpUsesMouseDownDispositionAfterMappingChanges() {
-        let resolver = FakeMappingResolver(mapping: ButtonMapping(
-            button: .back,
-            shortcut: KeyboardShortcut(keyCode: 3, modifiers: .init(command: true))
-        ))
+        let resolver = FakeMappingResolver(
+            mapping: ButtonMapping(
+                button: .back,
+                shortcut: KeyboardShortcut(keyCode: 3, modifiers: .init(command: true))
+            ))
         let executor = FakeEventActionExecutor()
         let stateMachine = EventStateMachine(mappingResolver: resolver, actionExecutor: executor)
 
@@ -42,11 +44,12 @@ final class EventStateMachineTests: XCTestCase {
 
     func testHeldShortcutIsPressedOnceAcrossOverlappingDownEvents() {
         let shortcut = KeyboardShortcut(keyCode: 3, modifiers: .init(control: true))
-        let resolver = FakeMappingResolver(mapping: ButtonMapping(
-            button: .button5,
-            shortcut: shortcut,
-            holdWhilePressed: true
-        ))
+        let resolver = FakeMappingResolver(
+            mapping: ButtonMapping(
+                button: .button5,
+                shortcut: shortcut,
+                holdWhilePressed: true
+            ))
         let executor = FakeEventActionExecutor()
         let stateMachine = EventStateMachine(mappingResolver: resolver, actionExecutor: executor)
 
@@ -62,11 +65,12 @@ final class EventStateMachineTests: XCTestCase {
 
     func testStopReleasesHeldShortcutsAndAllInput() {
         let shortcut = KeyboardShortcut(keyCode: 3, modifiers: .init(control: true))
-        let resolver = FakeMappingResolver(mapping: ButtonMapping(
-            button: .button5,
-            shortcut: shortcut,
-            holdWhilePressed: true
-        ))
+        let resolver = FakeMappingResolver(
+            mapping: ButtonMapping(
+                button: .button5,
+                shortcut: shortcut,
+                holdWhilePressed: true
+            ))
         let executor = FakeEventActionExecutor()
         let stateMachine = EventStateMachine(mappingResolver: resolver, actionExecutor: executor)
 
@@ -102,17 +106,20 @@ final class KeyboardStateCoordinatorTests: XCTestCase {
         XCTAssertTrue(coordinator.press(second))
         coordinator.release(first)
 
-        XCTAssertEqual(poster.events.filter {
-            $0.keyCode == CGKeyCode(kVK_Control) && !$0.keyDown
-        }.count, 0)
+        XCTAssertEqual(
+            poster.events.filter {
+                $0.keyCode == CGKeyCode(kVK_Control) && !$0.keyDown
+            }.count, 0)
 
         coordinator.release(second)
-        XCTAssertEqual(poster.events.filter {
-            $0.keyCode == CGKeyCode(kVK_Control) && $0.keyDown
-        }.count, 1)
-        XCTAssertEqual(poster.events.filter {
-            $0.keyCode == CGKeyCode(kVK_Control) && !$0.keyDown
-        }.count, 1)
+        XCTAssertEqual(
+            poster.events.filter {
+                $0.keyCode == CGKeyCode(kVK_Control) && $0.keyDown
+            }.count, 1)
+        XCTAssertEqual(
+            poster.events.filter {
+                $0.keyCode == CGKeyCode(kVK_Control) && !$0.keyDown
+            }.count, 1)
     }
 
     func testReleaseAllBalancesActiveInput() {
@@ -123,12 +130,14 @@ final class KeyboardStateCoordinatorTests: XCTestCase {
         XCTAssertTrue(coordinator.press(shortcut))
         coordinator.releaseAll()
 
-        XCTAssertTrue(poster.events.contains {
-            $0.keyCode == CGKeyCode(kVK_ANSI_A) && !$0.keyDown
-        })
-        XCTAssertTrue(poster.events.contains {
-            $0.keyCode == CGKeyCode(kVK_Command) && !$0.keyDown
-        })
+        XCTAssertTrue(
+            poster.events.contains {
+                $0.keyCode == CGKeyCode(kVK_ANSI_A) && !$0.keyDown
+            })
+        XCTAssertTrue(
+            poster.events.contains {
+                $0.keyCode == CGKeyCode(kVK_Command) && !$0.keyDown
+            })
     }
 }
 
@@ -166,11 +175,13 @@ final class EventTapServiceRecoveryTests: XCTestCase {
         let profile = AppProfile(
             name: "Default",
             bundleIdentifier: nil,
-            mappings: [ButtonMapping(
-                button: .button5,
-                shortcut: shortcut,
-                holdWhilePressed: true
-            )]
+            mappings: [
+                ButtonMapping(
+                    button: .button5,
+                    shortcut: shortcut,
+                    holdWhilePressed: true
+                )
+            ]
         )
         let store = MappingStore(
             configuration: AppConfiguration(
@@ -331,20 +342,22 @@ final class DebugMonitorModelTests: XCTestCase {
         model.start()
 
         for index in 0...DebugMonitorModel.capacity {
-            service.deliverDiagnostic(MouseButtonEvent(
-                buttonNumber: Int64(index),
-                isDown: true,
-                timestamp: Date()
-            ))
+            service.deliverDiagnostic(
+                MouseButtonEvent(
+                    buttonNumber: Int64(index),
+                    isDown: true,
+                    timestamp: Date()
+                ))
         }
         XCTAssertEqual(model.events.count, DebugMonitorModel.capacity)
 
         model.stop()
-        service.deliverDiagnostic(MouseButtonEvent(
-            buttonNumber: 99,
-            isDown: false,
-            timestamp: Date()
-        ))
+        service.deliverDiagnostic(
+            MouseButtonEvent(
+                buttonNumber: 99,
+                isDown: false,
+                timestamp: Date()
+            ))
         XCTAssertEqual(model.events.count, DebugMonitorModel.capacity)
     }
 
@@ -391,7 +404,7 @@ final class PresetActionExecutorTests: XCTestCase {
         let poster = RecordingKeyboardEventPoster()
         let keyboardState = KeyboardStateCoordinator(eventPoster: poster)
         let layoutResolver = StaticKeyboardLayoutResolver(shortcuts: [
-            "z": KeyboardShortcut(keyCode: 42, modifiers: .init(option: true)),
+            "z": KeyboardShortcut(keyCode: 42, modifiers: .init(option: true))
         ])
         let executor = PresetActionExecutor(
             keyboardState: keyboardState,
@@ -400,12 +413,10 @@ final class PresetActionExecutorTests: XCTestCase {
         )
 
         XCTAssertTrue(executor.perform(.undo))
-        XCTAssertTrue(poster.events.contains {
-            $0.keyCode == 42 &&
-            $0.keyDown &&
-            $0.flags.contains(.maskCommand) &&
-            $0.flags.contains(.maskAlternate)
-        })
+        XCTAssertTrue(
+            poster.events.contains {
+                $0.keyCode == 42 && $0.keyDown && $0.flags.contains(.maskCommand) && $0.flags.contains(.maskAlternate)
+            })
     }
 
     func testDockActionIsUnavailableWhenPrivateSymbolIsMissing() {

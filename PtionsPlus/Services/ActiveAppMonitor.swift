@@ -1,6 +1,6 @@
-import Foundation
 import AppKit
 import Combine
+import Foundation
 
 final class ActiveAppMonitor: ObservableObject {
     @Published var activeBundleIdentifier: String?

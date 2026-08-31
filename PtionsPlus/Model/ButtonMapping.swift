@@ -1,5 +1,5 @@
-import Foundation
 import CoreGraphics
+import Foundation
 
 enum MouseModel: String, Codable, CaseIterable, Identifiable {
     case mxMaster4 = "mx_master_4"
@@ -66,18 +66,26 @@ enum MouseModel: String, Codable, CaseIterable, Identifiable {
         }
     }
 
-    var buttonNames: [MouseButton: String] {        switch self {
+    var buttonNames: [MouseButton: String] {
+        switch self {
         case .mxMaster4:
-            return [.middle: "Middle Click", .back: "Thumb Back", .forward: "Thumb Forward", .button5: "Front Thumb", .button6: "Thumb Gesture"]
+            return [
+                .middle: "Middle Click", .back: "Thumb Back", .forward: "Thumb Forward", .button5: "Front Thumb",
+                .button6: "Thumb Gesture",
+            ]
         case .mxMaster3, .mxMaster3s, .mxMaster2s:
             return [.middle: "Middle Click", .back: "Thumb Back", .forward: "Thumb Forward", .button5: "Thumb Gesture"]
         case .g502:
-            return [.middle: "Middle Click", .back: "Back", .forward: "Forward",
-                    .button5: "G4", .button6: "G5", .button7: "G7", .button8: "G8"]
+            return [
+                .middle: "Middle Click", .back: "Back", .forward: "Forward",
+                .button5: "G4", .button6: "G5", .button7: "G7", .button8: "G8",
+            ]
         case .g604:
-            return [.middle: "Middle Click", .back: "Back", .forward: "Forward",
-                    .button5: "G4", .button6: "G5", .button7: "G6", .button8: "G7",
-                    .button9: "G8", .button10: "G9", .button11: "G10"]
+            return [
+                .middle: "Middle Click", .back: "Back", .forward: "Forward",
+                .button5: "G4", .button6: "G5", .button7: "G6", .button8: "G7",
+                .button9: "G8", .button10: "G9", .button11: "G10",
+            ]
         default:
             return [:]
         }
@@ -91,7 +99,8 @@ enum MouseModel: String, Codable, CaseIterable, Identifiable {
             return .generic5
         }
 
-        let candidates = allCases
+        let candidates =
+            allCases
             .filter { $0 != .generic3 && $0 != .generic5 }
             .sorted { normalizedModelKey($0.displayName).count > normalizedModelKey($1.displayName).count }
 
@@ -314,7 +323,10 @@ struct ButtonMapping: Codable, Identifiable {
         case holdWhilePressed
     }
 
-    init(id: UUID = UUID(), button: MouseButton, shortcut: KeyboardShortcut? = nil, systemAction: PresetAction? = nil, holdWhilePressed: Bool = false) {
+    init(
+        id: UUID = UUID(), button: MouseButton, shortcut: KeyboardShortcut? = nil, systemAction: PresetAction? = nil,
+        holdWhilePressed: Bool = false
+    ) {
         self.id = id
         self.button = button
         self.shortcut = shortcut
@@ -453,10 +465,11 @@ struct AppConfiguration: Codable {
         isEnabled = try container.decodeIfPresent(Bool.self, forKey: .isEnabled) ?? true
         mouseModel = try container.decodeIfPresent(MouseModel.self, forKey: .mouseModel) ?? .mxMaster3
         globalButtons = try container.decodeIfPresent([MouseButton].self, forKey: .globalButtons) ?? []
-        devices = try container.decodeIfPresent(
-            [MouseDeviceConfiguration].self,
-            forKey: .devices
-        ) ?? []
+        devices =
+            try container.decodeIfPresent(
+                [MouseDeviceConfiguration].self,
+                forKey: .devices
+            ) ?? []
     }
 
     static var empty: AppConfiguration {
@@ -496,7 +509,8 @@ struct AppConfiguration: Codable {
         _ body: (inout MouseModel, inout [AppProfile], inout [MouseButton]) -> Void
     ) {
         guard let deviceID,
-              let index = devices.firstIndex(where: { $0.id == deviceID }) else {
+            let index = devices.firstIndex(where: { $0.id == deviceID })
+        else {
             body(&mouseModel, &profiles, &globalButtons)
             return
         }

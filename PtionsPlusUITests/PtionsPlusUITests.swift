@@ -24,53 +24,56 @@ final class PtionsPlusUITests: XCTestCase {
         let app = makeApp()
         app.launch()
 
-      XCTAssertTrue(app.windows.element(boundBy: 0).waitForExistence(timeout: 5))
-      XCTAssertTrue(app.staticTexts["Default"].waitForExistence(timeout: 5))
-      XCTAssertTrue(app.staticTexts["Button Mappings"].exists)
-      XCTAssertTrue(app.staticTexts["Mission Control"].exists)
+        XCTAssertTrue(app.windows.element(boundBy: 0).waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Default"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Button Mappings"].exists)
+        XCTAssertTrue(app.staticTexts["Mission Control"].exists)
     }
 
     func testLaunchUsesSampleMouseModelLabels() {
         let app = makeApp()
         app.launch()
 
-      XCTAssertTrue(app.windows.element(boundBy: 0).waitForExistence(timeout: 5))
-      XCTAssertTrue(app.staticTexts["Front Thumb"].waitForExistence(timeout: 5))
-      XCTAssertTrue(app.staticTexts["Thumb Gesture"].exists)
+        XCTAssertTrue(app.windows.element(boundBy: 0).waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Front Thumb"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Thumb Gesture"].exists)
     }
 
     func testDefaultProfileShowsFallbackMessaging() {
         let app = makeApp()
         app.launch()
 
-      XCTAssertTrue(app.windows.element(boundBy: 0).waitForExistence(timeout: 5))
-      XCTAssertTrue(app.staticTexts["Default defines fallback behavior. Turn on Override Apps for buttons that should ignore app-specific mappings."].waitForExistence(timeout: 5))
-      XCTAssertTrue(app.staticTexts["Override Apps"].exists)
+        XCTAssertTrue(app.windows.element(boundBy: 0).waitForExistence(timeout: 5))
+        XCTAssertTrue(
+            app.staticTexts[
+                "Default defines fallback behavior. Turn on Override Apps for buttons that should ignore app-specific mappings."
+            ].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Override Apps"].exists)
     }
 
     func testSettingsStartInTheSharedMouseScope() {
         let app = makeApp()
         app.launch()
 
-      XCTAssertTrue(app.windows.element(boundBy: 0).waitForExistence(timeout: 5))
-      XCTAssertTrue(app.staticTexts["Applies to every mouse without its own mappings."].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.windows.element(boundBy: 0).waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Applies to every mouse without its own mappings."].waitForExistence(timeout: 5))
 
-      let scopePicker = app.popUpButtons.firstMatch
-      XCTAssertTrue(scopePicker.waitForExistence(timeout: 5))
-      XCTAssertEqual(scopePicker.value as? String, "All Mice (Shared)")
+        let scopePicker = app.popUpButtons.firstMatch
+        XCTAssertTrue(scopePicker.waitForExistence(timeout: 5))
+        XCTAssertEqual(scopePicker.value as? String, "All Mice (Shared)")
     }
 
     func testGeneralTabListsConnectedMice() {
         let app = makeApp()
         app.launch()
 
-      XCTAssertTrue(app.windows.element(boundBy: 0).waitForExistence(timeout: 5))
+        XCTAssertTrue(app.windows.element(boundBy: 0).waitForExistence(timeout: 5))
 
-      let generalTab = app.radioButtons["General"]
-      XCTAssertTrue(generalTab.waitForExistence(timeout: 5))
-      generalTab.click()
+        let generalTab = app.radioButtons["General"]
+        XCTAssertTrue(generalTab.waitForExistence(timeout: 5))
+        generalTab.click()
 
-      XCTAssertTrue(app.staticTexts["Connected Mice"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Connected Mice"].waitForExistence(timeout: 5))
     }
 
     private func makeApp() -> XCUIApplication {
@@ -82,44 +85,44 @@ final class PtionsPlusUITests: XCTestCase {
 
     private func sampleConfigurationData() throws -> Data {
         let json = #"""
-        {
-          "profiles": [
             {
-              "id": "00000000-0000-0000-0000-000000000001",
-              "name": "Default",
-              "bundleIdentifier": null,
-              "mappings": [
-                { "id": "00000000-0000-0000-0000-000000000101", "button": 2 },
-                { "id": "00000000-0000-0000-0000-000000000102", "button": 3 },
-                { "id": "00000000-0000-0000-0000-000000000103", "button": 4 },
-                { "id": "00000000-0000-0000-0000-000000000104", "button": 5, "systemAction": "mission_control" },
-                { "id": "00000000-0000-0000-0000-000000000105", "button": 6 }
-              ]
-            },
-            {
-              "id": "00000000-0000-0000-0000-000000000002",
-              "name": "Mail",
-              "bundleIdentifier": "com.apple.mail",
-              "mappings": [
+              "profiles": [
                 {
-                  "id": "00000000-0000-0000-0000-000000000201",
-                  "button": 5,
-                  "shortcut": {
-                    "keyCode": 3,
-                    "modifiers": {
-                      "command": true
+                  "id": "00000000-0000-0000-0000-000000000001",
+                  "name": "Default",
+                  "bundleIdentifier": null,
+                  "mappings": [
+                    { "id": "00000000-0000-0000-0000-000000000101", "button": 2 },
+                    { "id": "00000000-0000-0000-0000-000000000102", "button": 3 },
+                    { "id": "00000000-0000-0000-0000-000000000103", "button": 4 },
+                    { "id": "00000000-0000-0000-0000-000000000104", "button": 5, "systemAction": "mission_control" },
+                    { "id": "00000000-0000-0000-0000-000000000105", "button": 6 }
+                  ]
+                },
+                {
+                  "id": "00000000-0000-0000-0000-000000000002",
+                  "name": "Mail",
+                  "bundleIdentifier": "com.apple.mail",
+                  "mappings": [
+                    {
+                      "id": "00000000-0000-0000-0000-000000000201",
+                      "button": 5,
+                      "shortcut": {
+                        "keyCode": 3,
+                        "modifiers": {
+                          "command": true
+                        }
+                      }
                     }
-                  }
+                  ]
                 }
-              ]
+              ],
+              "isEnabled": true,
+              "launchAtLogin": false,
+              "mouseModel": "mx_master_4",
+              "globalButtons": []
             }
-          ],
-          "isEnabled": true,
-          "launchAtLogin": false,
-          "mouseModel": "mx_master_4",
-          "globalButtons": []
-        }
-        """#
+            """#
 
         guard let data = json.data(using: .utf8) else {
             throw NSError(domain: "PtionsPlusUITests", code: 1)

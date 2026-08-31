@@ -1,0 +1,125 @@
+name: Bug report
+description: Something in Ptions+ does not behave as documented.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before filing: vendor mouse software such as Logi Options+ captures the
+        same buttons before Ptions+ can see them. If it is installed, quit and
+        uninstall it, then check whether the problem persists. This is the most
+        common cause of reported failures.
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+      description: What did you expect to happen?
+      placeholder: Pressing the Back button in Safari should send Cmd+[.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+      description: What happened instead?
+      placeholder: Nothing happens, and Safari does not navigate back.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Numbered steps that reproduce this from a known starting state.
+      placeholder: |
+        1. Open Settings and select the MX Master 3S model.
+        2. Add a profile for Safari and map Back to Cmd+[.
+        3. Focus Safari and press the Back button.
+    validations:
+      required: true
+
+  - type: input
+    id: app-version
+    attributes:
+      label: Ptions+ version
+      description: Shown in the menu bar dropdown under About Ptions+.
+      placeholder: 1.2.0
+    validations:
+      required: true
+
+  - type: input
+    id: macos-version
+    attributes:
+      label: macOS version
+      description: Apple menu, About This Mac.
+      placeholder: macOS 15.3 (Apple silicon)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: mouse-model
+    attributes:
+      label: Selected mouse model
+      description: The model selected in Ptions+ Settings, not necessarily the mouse you own.
+      options:
+        - MX Master 4
+        - MX Master 3
+        - MX Master 3S
+        - MX Master 2S
+        - MX Anywhere 3
+        - MX Ergo
+        - MX Vertical
+        - G502
+        - G604
+        - Generic (5 buttons)
+        - Generic (3 buttons)
+    validations:
+      required: true
+
+  - type: input
+    id: mouse-hardware
+    attributes:
+      label: Actual mouse hardware
+      description: The physical mouse, if it differs from the selected model.
+      placeholder: Logitech MX Master 3S for Mac
+    validations:
+      required: false
+
+  - type: dropdown
+    id: vendor-software
+    attributes:
+      label: Is vendor mouse software installed?
+      description: Logi Options+, Logitech Options, Logitech G HUB, SteerMouse, USB Overdrive, or similar.
+      options:
+        - "No, none is installed"
+        - "Yes, and it is running"
+        - "Yes, but it is quit"
+        - "Not sure"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: accessibility
+    attributes:
+      label: Is Accessibility permission granted?
+      description: System Settings, Privacy & Security, Accessibility.
+      options:
+        - "Yes, Ptions+ is enabled"
+        - "No"
+        - "Enabled but the app still reports it as missing"
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Debug monitor output or logs
+      description: |
+        Optional. The Debug tab in Settings shows raw mouse events. Paste the
+        relevant lines. Remove anything you do not want to publish; this issue
+        is public.
+      render: text
+    validations:
+      required: false

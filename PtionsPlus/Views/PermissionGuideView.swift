@@ -9,6 +9,7 @@ struct PermissionGuideView: View {
             Image(systemName: "hand.raised.circle.fill")
                 .font(.system(size: 64))
                 .foregroundStyle(.blue)
+                .accessibilityHidden(true)
 
             Text("Accessibility Permission Required")
                 .font(.title2)

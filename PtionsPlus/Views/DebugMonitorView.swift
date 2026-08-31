@@ -3,6 +3,10 @@ import SwiftUI
 struct DebugEvent: Identifiable {
     private static let formatter: DateFormatter = {
         let formatter = DateFormatter()
+        // A diagnostic timestamp is deliberately locale-independent: it is read
+        // alongside Console output and pasted into issues, so it must not shift
+        // with the user's region. This is the documented exception to L05.
+        formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "HH:mm:ss.SSS"
         return formatter
     }()
@@ -15,7 +19,8 @@ struct DebugEvent: Identifiable {
 
     var displayString: String {
         let direction = isDown ? "DOWN" : "UP"
-        let buttonName = MouseButton(rawValue: Int(buttonNumber))?.displayName
+        let buttonName =
+            MouseButton(rawValue: Int(buttonNumber))?.displayName
             ?? "Button \(buttonNumber)"
         let source = deviceName.map { " [\($0)]" } ?? ""
         return "[\(Self.formatter.string(from: timestamp))] \(buttonName) \(direction)\(source)"
@@ -53,12 +58,13 @@ final class DebugMonitorModel: ObservableObject {
     }
 
     private func append(_ mouseEvent: MouseButtonEvent) {
-        events.append(DebugEvent(
-            timestamp: mouseEvent.timestamp,
-            buttonNumber: mouseEvent.buttonNumber,
-            isDown: mouseEvent.isDown,
-            deviceName: mouseEvent.deviceName
-        ))
+        events.append(
+            DebugEvent(
+                timestamp: mouseEvent.timestamp,
+                buttonNumber: mouseEvent.buttonNumber,
+                isDown: mouseEvent.isDown,
+                deviceName: mouseEvent.deviceName
+            ))
         if events.count > Self.capacity {
             events.removeFirst(events.count - Self.capacity)
         }

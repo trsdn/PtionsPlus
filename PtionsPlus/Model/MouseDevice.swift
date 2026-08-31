@@ -46,7 +46,8 @@ struct MouseDeviceIdentity: Codable, Hashable, Identifiable {
 
     private static func normalizedSerial(_ value: String?) -> String? {
         guard let trimmed = value?.trimmingCharacters(in: .whitespacesAndNewlines),
-              !trimmed.isEmpty else {
+            !trimmed.isEmpty
+        else {
             return nil
         }
         return trimmed

@@ -17,7 +17,13 @@ struct PtionsApp: App {
                 accessibilityChecker: appDelegate.accessibilityChecker
             )
         } label: {
-            Image(systemName: appDelegate.store.configuration.isEnabled ? Constants.menuBarIcon : Constants.menuBarIconDisabled)
+            Image(
+                systemName: appDelegate.store.configuration.isEnabled
+                    ? Constants.menuBarIcon : Constants.menuBarIconDisabled
+            )
+            .accessibilityLabel(
+                appDelegate.store.configuration.isEnabled
+                    ? "Ptions+, enabled" : "Ptions+, disabled")
         }
 
         Window("Ptions+ Settings", id: "settings") {
@@ -29,6 +35,11 @@ struct PtionsApp: App {
             )
         }
         .defaultSize(width: 600, height: 450)
+
+        Window("About Ptions+", id: "about") {
+            AboutView()
+        }
+        .windowResizability(.contentSize)
     }
 }
 
@@ -53,7 +64,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var deviceNameCancellable: AnyCancellable?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        logger.info("App launched. Trusted: \(self.accessibilityChecker.isTrusted, privacy: .public), enabled: \(self.store.configuration.isEnabled, privacy: .public)")
+        logger.info(
+            "App launched. Trusted: \(self.accessibilityChecker.isTrusted, privacy: .public), enabled: \(self.store.configuration.isEnabled, privacy: .public)"
+        )
 
         if isUITesting {
             showUITestWindow()

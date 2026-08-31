@@ -1,0 +1,281 @@
+/*
+ * Vendored from trsdn/design-system (Instrument Workshop) v1.5.0.
+ * Source: core.tokens.css
+ * Vendored on: 2026-08-31
+ *
+ * Do not edit in place. Re-vendor from a tag; see docs/assets/VENDORED.md.
+ */
+/*
+ * DO NOT EDIT — generated file
+ * Source: tokens/core.tokens.json
+ * Source SHA-256: c2c2e11413d4ea8a8a3f23ef80fdfebf50750231850e942f7d2555dcecbd6143
+ * Generator: scripts/build-tokens.mjs@1.2.0
+ * Lifecycle: Generated / non-normative
+ * Decision: decisions/token-transform-architecture.md
+ * Regenerate: node scripts/build-tokens.mjs
+ */
+
+:root {
+  color-scheme: light;
+  --canvas: #d8d5ce;
+  --surface-primary: #ece9e2;
+  --surface-grouped: #c8c7c1;
+  --surface-hover: #b9bbb5;
+  --text-primary: #202522;
+  --text-secondary: #5d625e;
+  --border-essential: #656864;
+  --rule-subtle: #9a9d98;
+  --identity: #29483c;
+  --identity-ink: #ffffff;
+  --warning: #8a5400;
+  --danger: #a4381a;
+  --success: #315f4b;
+  --focus: #111111;
+  --surface-raised: #ece9e2;
+  --surface-recessed: #d8d5ce;
+  --surface-sunken: #d8d5ce;
+  --surface-selected: #b9bbb5;
+  --text-quiet: #5d625e;
+  --text-attention: #8a5400;
+  --text-critical: #a4381a;
+  --border-subtle: #9a9d98;
+  --border-quiet: #9a9d98;
+  --status-critical: #a4381a;
+  --status-caution: #8a5400;
+  --status-affirmative: #315f4b;
+  --focus-ring: #111111;
+  --syntax-plain: #202522;
+  --syntax-quiet: #5d625e;
+  --syntax-keyword: #29483c;
+  --syntax-string: #8a5400;
+  --syntax-literal: #a4381a;
+  --syntax-invalid: #a4381a;
+  --syntax-added: #315f4b;
+  --syntax-removed: #a4381a;
+  --syntax-modified: #8a5400;
+  --chart-categorical-1: #122f50;
+  --chart-categorical-2: #643212;
+  --chart-categorical-3: #24635c;
+  --chart-categorical-4: #6e7a36;
+  --chart-sequential-1: #a5c9ba;
+  --chart-sequential-2: #7ea092;
+  --chart-sequential-3: #58796b;
+  --chart-sequential-4: #355448;
+  --chart-sequential-5: #133226;
+  --term-background: #ece9e2;
+  --term-foreground: #202522;
+  --term-cursor: #111111;
+  --term-black: #1b201d;
+  --term-bright-black: #3f4642;
+  --term-red: #7a1800;
+  --term-bright-red: #a63a1c;
+  --term-green: #174633;
+  --term-bright-green: #396753;
+  --term-yellow: #5a3500;
+  --term-bright-yellow: #885200;
+  --term-blue: #243e63;
+  --term-bright-blue: #485f86;
+  --term-magenta: #6c2246;
+  --term-bright-magenta: #924567;
+  --term-cyan: #004452;
+  --term-bright-cyan: #226678;
+  --term-white: #4e534f;
+  --term-bright-white: #6c716d;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --canvas: #171b19;
+    --surface-primary: #252a27;
+    --surface-grouped: #343936;
+    --surface-hover: #404641;
+    --text-primary: #f0ede5;
+    --text-secondary: #b8b6ae;
+    --border-essential: #858a83;
+    --rule-subtle: #555b56;
+    --identity: #7fa38f;
+    --identity-ink: #0d1a14;
+    --warning: #ef9d36;
+    --danger: #ee6b43;
+    --success: #83b599;
+    --focus: #ffffff;
+    --surface-raised: #252a27;
+    --surface-recessed: #171b19;
+    --surface-sunken: #171b19;
+    --surface-selected: #404641;
+    --text-quiet: #b8b6ae;
+    --text-attention: #ef9d36;
+    --text-critical: #ee6b43;
+    --border-subtle: #555b56;
+    --border-quiet: #555b56;
+    --status-critical: #ee6b43;
+    --status-caution: #ef9d36;
+    --status-affirmative: #83b599;
+    --focus-ring: #ffffff;
+    --syntax-plain: #f0ede5;
+    --syntax-quiet: #b8b6ae;
+    --syntax-keyword: #7fa38f;
+    --syntax-string: #ef9d36;
+    --syntax-literal: #ee6b43;
+    --syntax-invalid: #ee6b43;
+    --syntax-added: #83b599;
+    --syntax-removed: #ee6b43;
+    --syntax-modified: #ef9d36;
+    --chart-categorical-1: #3878c3;
+    --chart-categorical-2: #de7834;
+    --chart-categorical-3: #4fc2b6;
+    --chart-categorical-4: #c4d865;
+    --chart-sequential-1: #2d4d3c;
+    --chart-sequential-2: #4d6f5d;
+    --chart-sequential-3: #709380;
+    --chart-sequential-4: #94b9a4;
+    --chart-sequential-5: #bae0cb;
+    --term-background: #252a27;
+    --term-foreground: #f0ede5;
+    --term-cursor: #ffffff;
+    --term-black: #101512;
+    --term-bright-black: #495049;
+    --term-red: #e46e4a;
+    --term-bright-red: #ff9c7d;
+    --term-green: #6b9b84;
+    --term-bright-green: #8fc1a9;
+    --term-yellow: #c28437;
+    --term-bright-yellow: #eca85a;
+    --term-blue: #7b91bb;
+    --term-bright-blue: #a1b6e3;
+    --term-magenta: #ca779a;
+    --term-bright-magenta: #f29dc0;
+    --term-cyan: #5b9aac;
+    --term-bright-cyan: #81bfd2;
+    --term-white: #9aa09b;
+    --term-bright-white: #c6ccc7;
+  }
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --canvas: #171b19;
+  --surface-primary: #252a27;
+  --surface-grouped: #343936;
+  --surface-hover: #404641;
+  --text-primary: #f0ede5;
+  --text-secondary: #b8b6ae;
+  --border-essential: #858a83;
+  --rule-subtle: #555b56;
+  --identity: #7fa38f;
+  --identity-ink: #0d1a14;
+  --warning: #ef9d36;
+  --danger: #ee6b43;
+  --success: #83b599;
+  --focus: #ffffff;
+  --surface-raised: #252a27;
+  --surface-recessed: #171b19;
+  --surface-sunken: #171b19;
+  --surface-selected: #404641;
+  --text-quiet: #b8b6ae;
+  --text-attention: #ef9d36;
+  --text-critical: #ee6b43;
+  --border-subtle: #555b56;
+  --border-quiet: #555b56;
+  --status-critical: #ee6b43;
+  --status-caution: #ef9d36;
+  --status-affirmative: #83b599;
+  --focus-ring: #ffffff;
+  --syntax-plain: #f0ede5;
+  --syntax-quiet: #b8b6ae;
+  --syntax-keyword: #7fa38f;
+  --syntax-string: #ef9d36;
+  --syntax-literal: #ee6b43;
+  --syntax-invalid: #ee6b43;
+  --syntax-added: #83b599;
+  --syntax-removed: #ee6b43;
+  --syntax-modified: #ef9d36;
+  --chart-categorical-1: #3878c3;
+  --chart-categorical-2: #de7834;
+  --chart-categorical-3: #4fc2b6;
+  --chart-categorical-4: #c4d865;
+  --chart-sequential-1: #2d4d3c;
+  --chart-sequential-2: #4d6f5d;
+  --chart-sequential-3: #709380;
+  --chart-sequential-4: #94b9a4;
+  --chart-sequential-5: #bae0cb;
+  --term-background: #252a27;
+  --term-foreground: #f0ede5;
+  --term-cursor: #ffffff;
+  --term-black: #101512;
+  --term-bright-black: #495049;
+  --term-red: #e46e4a;
+  --term-bright-red: #ff9c7d;
+  --term-green: #6b9b84;
+  --term-bright-green: #8fc1a9;
+  --term-yellow: #c28437;
+  --term-bright-yellow: #eca85a;
+  --term-blue: #7b91bb;
+  --term-bright-blue: #a1b6e3;
+  --term-magenta: #ca779a;
+  --term-bright-magenta: #f29dc0;
+  --term-cyan: #5b9aac;
+  --term-bright-cyan: #81bfd2;
+  --term-white: #9aa09b;
+  --term-bright-white: #c6ccc7;
+}
+
+:root {
+  --space-detail: 4px;
+  --space-compact: 8px;
+  --space-dense: 12px;
+  --space-standard: 16px;
+  --space-group: 24px;
+  --space-section: 32px;
+  --target-minimum: 24px;
+  --target-compact-row: 32px;
+  --target-standard-control: 40px;
+  --target-touch-control: 44px;
+  --target-pointer: 24px;
+  --icon-size-inline: 16px;
+  --icon-size-standard: 20px;
+  --icon-size-prominent: 24px;
+  --layout-page-inset-compact: 16px;
+  --layout-page-inset-standard: 24px;
+  --layout-page-inset-wide: 32px;
+  --layout-work-width-maximum: 1440px;
+  --edge-boundary-essential: 1px;
+  --edge-state-emphasis: 3px;
+  --edge-focus-width: 3px;
+  --edge-focus-offset: 3px;
+  --edge-focus-ring: 3px;
+  --edge-radius-authored: 3px;
+  --edge-clip-major: 10px;
+  --edge-boundary-subtle: 1px;
+  --edge-boundary-strong: 3px;
+  --edge-signature: 3px;
+  --edge-selection: 3px;
+  --font-size-page-title: 26px;
+  --font-size-section-title: 20px;
+  --font-size-body: 16px;
+  --font-size-body-compact: 15px;
+  --font-size-label-dense: 13px;
+  --font-size-caption: 12px;
+  --font-size-heading: 20px;
+  --font-size-display: 26px;
+  --line-height-page-title: 1.2;
+  --line-height-section-title: 1.25;
+  --line-height-body: 1.5;
+  --line-height-label-dense: 1.35;
+  --font-weight-body: 400;
+  --font-weight-emphasis: 500;
+  --font-weight-title: 600;
+  --font-weight-label-dense: 600;
+  --letter-spacing-interface: 0em;
+  --letter-spacing-eyebrow: 0.08em;
+  --motion-duration-press-fast: 80ms;
+  --motion-duration-press-standard: 160ms;
+  --motion-duration-local-reveal: 200ms;
+  --motion-duration-panel-transition: 240ms;
+  --motion-duration-reduced: 100ms;
+  --motion-easing-direct: cubic-bezier(0, 0, 0.58, 1);
+  --font-interface: "IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  --font-numeric: "IBM Plex Mono", ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+}

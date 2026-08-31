@@ -53,18 +53,19 @@ final class HotKeyCaptureTap: HotKeyCapturing {
         }
 
         let eventMask: CGEventMask =
-            (1 << CGEventType.keyDown.rawValue) |
-            (1 << CGEventType.keyUp.rawValue) |
-            (1 << CGEventType.flagsChanged.rawValue)
+            (1 << CGEventType.keyDown.rawValue) | (1 << CGEventType.keyUp.rawValue)
+            | (1 << CGEventType.flagsChanged.rawValue)
 
-        guard let tap = CGEvent.tapCreate(
-            tap: .cgSessionEventTap,
-            place: .headInsertEventTap,
-            options: .defaultTap,
-            eventsOfInterest: eventMask,
-            callback: hotKeyCaptureCallback,
-            userInfo: Unmanaged.passUnretained(self).toOpaque()
-        ) else {
+        guard
+            let tap = CGEvent.tapCreate(
+                tap: .cgSessionEventTap,
+                place: .headInsertEventTap,
+                options: .defaultTap,
+                eventsOfInterest: eventMask,
+                callback: hotKeyCaptureCallback,
+                userInfo: Unmanaged.passUnretained(self).toOpaque()
+            )
+        else {
             logger.notice("Falling back to responder-based shortcut recording")
             self.handler = nil
             return false
@@ -100,8 +101,9 @@ final class HotKeyCaptureTap: HotKeyCapturing {
         }
 
         guard let handler,
-              isApplicationActive(),
-              let keyEvent = NSEvent(cgEvent: event) else {
+            isApplicationActive(),
+            let keyEvent = NSEvent(cgEvent: event)
+        else {
             return Unmanaged.passUnretained(event)
         }
 
