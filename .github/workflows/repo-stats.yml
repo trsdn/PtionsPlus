@@ -1,0 +1,22 @@
+name: Repository stats
+
+# Generates the self-hosted repository statistics card (criterion P09) and
+# commits it. The card is generated from the GitHub API rather than fetched
+# from a third-party rendering service at read time, so no reader of the README
+# is observed by another host.
+
+on:
+  schedule:
+    # Weekly, so the card cannot silently age past the repository it describes.
+    - cron: "23 5 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  stats:
+    uses: trsdn/.github/.github/workflows/repo-stats.yml@main
+    with:
+      output-dir: .github/stats
+      theme: both

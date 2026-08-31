@@ -1,0 +1,31 @@
+# Repository configuration for the GitHub Copilot app.
+#
+# The authoritative instructions for this repository are in AGENTS.md. This file
+# points at them rather than restating them, so the two cannot drift apart.
+
+instructions: |
+  Read AGENTS.md in the repository root and follow it. It is the authoritative
+  guidance for this repository.
+
+  The rules that are most often broken:
+
+  1. Never create, move, or delete a v* tag. A tag publishes a signed, notarized
+     release to the public.
+  2. Never run scripts/sign-release.sh, scripts/notarize.sh, or
+     scripts/deploy.sh unattended, and never commit .release.env or any signing
+     or notarization credential.
+  3. Never add a network call, telemetry, or a third-party resource. The app
+     makes no network requests and the site loads nothing cross-origin.
+  4. The App Sandbox stays disabled and LSUIElement stays YES. No Dock icon.
+
+  Validate with the Validate script before proposing any change.
+
+scripts:
+  - name: Validate
+    command: scripts/validate.sh
+  - name: Validate (fast)
+    command: scripts/validate.sh --fast
+
+automation:
+  auto_issue_session: true
+  remote_control: false

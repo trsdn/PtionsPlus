@@ -41,6 +41,15 @@ next_version="$major.$minor.$patch"
 next_build=$((current_build + 1))
 
 perl -0pi -e "s/MARKETING_VERSION = \Q$current_version\E;/MARKETING_VERSION = $next_version;/g; s/CURRENT_PROJECT_VERSION = \Q$current_build\E;/CURRENT_PROJECT_VERSION = $next_build;/g" "$PROJECT_FILE"
+
+# The site is machine-owned for these three facts: the structured-data version,
+# every visible version marker, and the review date the page publishes.
+review_date_iso=$(date -u +%Y-%m-%d)
+review_date_human=$(date -u "+%-d %B %Y")
+
 perl -0pi -e "s/\"softwareVersion\": \"[^\"]+\"/\"softwareVersion\": \"$next_version\"/" "$WEBSITE_FILE"
+perl -0pi -e "s/(<span data-app-version>)[^<]*(<\/span>)/\${1}$next_version\${2}/g" "$WEBSITE_FILE"
+perl -0pi -e "s/<time datetime=\"[^\"]*\" data-reviewed>[^<]*<\/time>/<time datetime=\"$review_date_iso\" data-reviewed>$review_date_human<\/time>/" "$WEBSITE_FILE"
 
 echo "Updated version: $current_version ($current_build) -> $next_version ($next_build)"
+echo "Site version markers and review date ($review_date_iso) updated."

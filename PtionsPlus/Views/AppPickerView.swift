@@ -53,8 +53,8 @@ struct AppPickerView: View {
     private var filteredApps: [AppInfo] {
         if searchText.isEmpty { return model.apps }
         return model.apps.filter {
-            $0.name.localizedCaseInsensitiveContains(searchText) ||
-            $0.bundleIdentifier.localizedCaseInsensitiveContains(searchText)
+            $0.name.localizedCaseInsensitiveContains(searchText)
+                || $0.bundleIdentifier.localizedCaseInsensitiveContains(searchText)
         }
     }
 
@@ -101,6 +101,7 @@ struct AppPickerView: View {
                             Image(nsImage: icon)
                                 .resizable()
                                 .frame(width: 24, height: 24)
+                                .accessibilityHidden(true)
                         }
                         VStack(alignment: .leading) {
                             Text(app.name)
@@ -118,6 +119,14 @@ struct AppPickerView: View {
                 }
                 .buttonStyle(.plain)
                 .disabled(isConfigured)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(app.name)
+                .accessibilityValue(isConfigured ? "Already configured" : "")
+                .accessibilityHint(
+                    isConfigured
+                        ? "This app already has a profile"
+                        : "Creates a profile for \(app.name)"
+                )
             }
         }
         .frame(width: 460, height: 520)
@@ -133,7 +142,8 @@ struct AppPickerView: View {
         panel.canChooseFiles = true
 
         guard panel.runModal() == .OK,
-              let url = panel.url else {
+            let url = panel.url
+        else {
             return
         }
         guard let app = ApplicationDiscoveryService.appInfo(for: url) else {

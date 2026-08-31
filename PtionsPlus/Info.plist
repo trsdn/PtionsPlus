@@ -8,5 +8,11 @@
 	<true/>
 	<key>NSAccessibilityUsageDescription</key>
 	<string>Ptions+ needs Accessibility access to intercept mouse button events and simulate keyboard shortcuts.</string>
+	<key>TRSRepositoryURL</key>
+	<string>https://github.com/trsdn/PtionsPlus</string>
+	<key>TRSIssuesURL</key>
+	<string>https://github.com/trsdn/PtionsPlus/issues</string>
+	<key>TRSLicenseIdentifier</key>
+	<string>MIT</string>
 </dict>
 </plist>

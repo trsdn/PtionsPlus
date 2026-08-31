@@ -14,6 +14,9 @@
 		A1B2C3D4E5F60001000001EE /* KeySimulator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60001000002EE /* KeySimulator.swift */; };
 		A1B2C3D4E5F60001000001FF /* ActiveAppMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60001000002FF /* ActiveAppMonitor.swift */; };
 		A1B2C3D4E5F6000100000100 /* AccessibilityChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000100000200 /* AccessibilityChecker.swift */; };
+		A1B2C3D4E5F6000100000311 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000100000321 /* AboutView.swift */; };
+		A1B2C3D4E5F6000100000312 /* ProductIdentity.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000100000322 /* ProductIdentity.swift */; };
+		A1B2C3D4E5F6000100000313 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000100000323 /* LICENSE */; };
 		A1B2C3D4E5F6000100000101 /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000100000201 /* MenuBarView.swift */; };
 		A1B2C3D4E5F6000100000102 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000100000202 /* SettingsView.swift */; };
 		A1B2C3D4E5F6000100000103 /* ProfileListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000100000203 /* ProfileListView.swift */; };
@@ -67,6 +70,9 @@
 		A1B2C3D4E5F60001000002EE /* KeySimulator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeySimulator.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60001000002FF /* ActiveAppMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveAppMonitor.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F6000100000200 /* AccessibilityChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityChecker.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6000100000321 /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutView.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6000100000322 /* ProductIdentity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductIdentity.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6000100000323 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = SOURCE_ROOT; };
 		A1B2C3D4E5F6000100000201 /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F6000100000202 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F6000100000203 /* ProfileListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileListView.swift; sourceTree = "<group>"; };
@@ -130,6 +136,7 @@
 				A1B2C3D4E5F6000100000501 /* PtionsPlus */,
 				B1C2D3E4F5A6000200000301 /* PtionsPlusTests */,
 				C1D2E3F4A5B6000300000301 /* PtionsPlusUITests */,
+				A1B2C3D4E5F6000100000323 /* LICENSE */,
 				A1B2C3D4E5F6000100000502 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -198,6 +205,7 @@
 				A1B2C3D4E5F6000100000206 /* AppPickerView.swift */,
 				A1B2C3D4E5F6000100000207 /* DebugMonitorView.swift */,
 				A1B2C3D4E5F6000100000208 /* PermissionGuideView.swift */,
+				A1B2C3D4E5F6000100000321 /* AboutView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -207,6 +215,7 @@
 			children = (
 				A1B2C3D4E5F6000100000209 /* KeyCodeMap.swift */,
 				A1B2C3D4E5F600010000020A /* Constants.swift */,
+				A1B2C3D4E5F6000100000322 /* ProductIdentity.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -335,6 +344,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A1B2C3D4E5F600010000010B /* Assets.xcassets in Resources */,
+				A1B2C3D4E5F6000100000313 /* LICENSE in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -367,6 +377,8 @@
 				A1B2C3D4E5F60001000001FF /* ActiveAppMonitor.swift in Sources */,
 				A1B2C3D4E5F6000100000100 /* AccessibilityChecker.swift in Sources */,
 				A1B2C3D4E5F6000100000101 /* MenuBarView.swift in Sources */,
+				A1B2C3D4E5F6000100000311 /* AboutView.swift in Sources */,
+				A1B2C3D4E5F6000100000312 /* ProductIdentity.swift in Sources */,
 				A1B2C3D4E5F6000100000102 /* SettingsView.swift in Sources */,
 				A1B2C3D4E5F6000100000103 /* ProfileListView.swift in Sources */,
 				A1B2C3D4E5F6000100000104 /* ProfileEditorView.swift in Sources */,
@@ -548,7 +560,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = PtionsPlus/Info.plist;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright (c) 2026 Torsten Mahr. MIT licence.";
 				INFOPLIST_KEY_NSMainStoryboardFile = "";
 				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -574,7 +586,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = PtionsPlus/Info.plist;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright (c) 2026 Torsten Mahr. MIT licence.";
 				INFOPLIST_KEY_NSMainStoryboardFile = "";
 				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
 				LD_RUNPATH_SEARCH_PATHS = (

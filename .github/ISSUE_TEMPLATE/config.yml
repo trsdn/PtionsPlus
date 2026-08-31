@@ -1,0 +1,14 @@
+# Blank issues are disabled so that the forms are the only way in. Without this,
+# every form can be bypassed with one click and the structure they exist to
+# enforce becomes advisory.
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/trsdn/PtionsPlus/security/advisories/new
+    about: Do not open a public issue. Report privately through a security advisory.
+  - name: Ask a question or request support
+    url: https://github.com/trsdn/.github/blob/main/SUPPORT.md
+    about: Questions are answered on a best-effort basis. Start here before opening an issue.
+  - name: Mouse buttons do nothing at all
+    url: https://github.com/trsdn/PtionsPlus#troubleshooting
+    about: Vendor software such as Logi Options+ captures the buttons first. Read this before filing a bug.

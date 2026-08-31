@@ -57,25 +57,28 @@ final class ApplicationDiscoveryService {
         completion: @escaping (Result<[AppInfo], Error>) -> Void
     ) -> ApplicationDiscoveryTask {
         let task = ApplicationDiscoveryTask()
-        let runningApplications = injectedRunningApplications ?? (includeRunningApplications
-            ? NSWorkspace.shared.runningApplications.compactMap { application -> AppInfo? in
-                guard application.activationPolicy != .prohibited else {
-                    return nil
+        let runningApplications =
+            injectedRunningApplications
+            ?? (includeRunningApplications
+                ? NSWorkspace.shared.runningApplications.compactMap { application -> AppInfo? in
+                    guard application.activationPolicy != .prohibited else {
+                        return nil
+                    }
+                    guard let bundleIdentifier = application.bundleIdentifier,
+                        let name = application.localizedName,
+                        let url = application.bundleURL
+                    else {
+                        return nil
+                    }
+                    return AppInfo(
+                        id: bundleIdentifier,
+                        name: name,
+                        bundleIdentifier: bundleIdentifier,
+                        url: url,
+                        icon: application.icon
+                    )
                 }
-                guard let bundleIdentifier = application.bundleIdentifier,
-                      let name = application.localizedName,
-                      let url = application.bundleURL else {
-                    return nil
-                }
-                return AppInfo(
-                    id: bundleIdentifier,
-                    name: name,
-                    bundleIdentifier: bundleIdentifier,
-                    url: url,
-                    icon: application.icon
-                )
-            }
-            : [])
+                : [])
 
         let workItem = DispatchWorkItem { [fileManager, searchRoots] in
             var applicationsByBundleIdentifier: [String: AppInfo] = [:]
@@ -90,17 +93,19 @@ final class ApplicationDiscoveryService {
                 guard !task.isCancelled else {
                     return
                 }
-                guard let enumerator = fileManager.enumerator(
-                    at: root,
-                    includingPropertiesForKeys: [.isDirectoryKey],
-                    options: [.skipsHiddenFiles, .skipsPackageDescendants],
-                    errorHandler: { _, error in
-                        if firstError == nil {
-                            firstError = error
+                guard
+                    let enumerator = fileManager.enumerator(
+                        at: root,
+                        includingPropertiesForKeys: [.isDirectoryKey],
+                        options: [.skipsHiddenFiles, .skipsPackageDescendants],
+                        errorHandler: { _, error in
+                            if firstError == nil {
+                                firstError = error
+                            }
+                            return true
                         }
-                        return true
-                    }
-                ) else {
+                    )
+                else {
                     continue
                 }
 
@@ -113,7 +118,8 @@ final class ApplicationDiscoveryService {
                     }
                     enumerator.skipDescendants()
                     guard let app = Self.appInfo(for: url),
-                          applicationsByBundleIdentifier[app.bundleIdentifier] == nil else {
+                        applicationsByBundleIdentifier[app.bundleIdentifier] == nil
+                    else {
                         continue
                     }
                     applicationsByBundleIdentifier[app.bundleIdentifier] = app
@@ -141,8 +147,9 @@ final class ApplicationDiscoveryService {
 
     static func appInfo(for url: URL) -> AppInfo? {
         guard let bundle = Bundle(url: url),
-              let bundleIdentifier = bundle.bundleIdentifier,
-              !bundleIdentifier.isEmpty else {
+            let bundleIdentifier = bundle.bundleIdentifier,
+            !bundleIdentifier.isEmpty
+        else {
             return nil
         }
 

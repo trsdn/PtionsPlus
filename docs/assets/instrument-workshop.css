@@ -1,0 +1,2705 @@
+/*
+ * Vendored from trsdn/design-system (Instrument Workshop) v1.5.0.
+ * Source: instrument-workshop.css
+ * Vendored on: 2026-08-31
+ *
+ * Do not edit in place. Re-vendor from a tag; see docs/assets/VENDORED.md.
+ */
+/*
+ * Instrument Workshop — consumable component stylesheet
+ *
+ * Lifecycle: Candidate / consumable
+ * Requires:  tokens/generated/web/core.tokens.css (load first)
+ * Source of truth for values: tokens/core.tokens.json
+ * Foundations: foundations/design-language.md
+ *
+ * Usage:
+ *   <link rel="stylesheet" href="core.tokens.css">
+ *   <link rel="stylesheet" href="instrument-workshop.css">
+ *   <body class="iw-root"> … </body>
+ *
+ * This file styles real application markup. It adds no JavaScript, no build
+ * step, and no framework. Every control is native HTML so platform behaviour,
+ * keyboard support, and assistive technology semantics are preserved.
+ *
+ * Density: set data-density="compact | standard | comfortable" on any container.
+ * Theme:   set data-theme="dark" on <html> (see core.tokens.css).
+ *
+ * Cascade: everything here lives in the `instrument-workshop` layer, so any
+ * unlayered rule in a consuming app overrides these styles without specificity
+ * escalation or !important.
+ */
+
+@layer instrument-workshop {
+
+
+/* ==========================================================================
+   1. Base
+   ========================================================================== */
+
+.iw-root {
+  /* Web-only layout knobs; retune per app without forking the stylesheet.
+     ch/rem measures have no cross-platform token equivalent. */
+  --measure-prose: 66ch;
+  --iw-sidebar-min: 200px;
+  --iw-sidebar-max: 240px;
+  --iw-metric-min: 14rem;
+  --iw-avatar-size: 2rem;
+  margin: 0;
+  background: var(--canvas);
+  color: var(--text-primary);
+  font-family: var(--font-interface);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+  font-weight: var(--font-weight-body);
+  -webkit-text-size-adjust: 100%;
+}
+
+.iw-root *,
+.iw-root *::before,
+.iw-root *::after {
+  box-sizing: border-box;
+}
+
+/* Density scale. Standard is the default for repeated work. */
+.iw-root,
+[data-density="standard"] {
+  --iw-control-height: var(--target-standard-control);
+  --iw-row-height: var(--target-standard-control);
+  --iw-region-padding: var(--space-standard);
+}
+
+[data-density="compact"] {
+  --iw-control-height: var(--target-compact-row);
+  --iw-row-height: var(--target-compact-row);
+  --iw-region-padding: var(--space-dense);
+}
+
+[data-density="comfortable"] {
+  --iw-control-height: var(--target-touch-control);
+  --iw-row-height: var(--target-touch-control);
+  --iw-region-padding: var(--space-group);
+}
+
+/* Touch-capable input returns to comfortable targets regardless of density. */
+@media (pointer: coarse) {
+  .iw-root,
+  [data-density] {
+    --iw-control-height: var(--target-touch-control);
+    --iw-row-height: var(--target-touch-control);
+  }
+}
+
+/* One focus indicator for every interactive surface. */
+.iw-root :focus-visible {
+  outline: var(--edge-focus-width) solid var(--focus);
+  outline-offset: var(--edge-focus-offset);
+  border-radius: var(--edge-radius-authored);
+}
+
+.iw-root :focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ==========================================================================
+   2. Typography roles (foundations section 5.2)
+   ========================================================================== */
+
+.iw-page-title {
+  margin: 0;
+  font-size: var(--font-size-page-title);
+  line-height: var(--line-height-page-title);
+  font-weight: var(--font-weight-title);
+  text-wrap: balance;
+}
+
+.iw-section-title {
+  margin: 0;
+  font-size: var(--font-size-section-title);
+  line-height: var(--line-height-section-title);
+  font-weight: var(--font-weight-title);
+}
+
+.iw-body {
+  margin: 0;
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+}
+
+.iw-body--compact {
+  font-size: var(--font-size-body-compact);
+}
+
+.iw-secondary {
+  color: var(--text-secondary);
+}
+
+.iw-caption {
+  margin: 0;
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-label-dense);
+  color: var(--text-secondary);
+}
+
+/*
+ * Eyebrow — an indexed, uppercase label. Foundations limit uppercase to short
+ * codes and eyebrows of 16 characters or fewer, with added tracking.
+ */
+.iw-eyebrow {
+  margin: 0;
+  font-family: var(--font-data);
+  font-size: var(--font-size-label-dense);
+  line-height: var(--line-height-label-dense);
+  font-weight: var(--font-weight-label-dense);
+  letter-spacing: var(--letter-spacing-eyebrow);
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+/* Signature: calibrated numerics. Tabular figures, stable alignment. */
+.iw-numeric {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* Codes, IDs, and exact values. Same optical size as surrounding text. */
+.iw-code {
+  font-family: var(--font-data);
+  font-size: 0.9375em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ==========================================================================
+   3. Layout
+   ========================================================================== */
+
+.iw-page {
+  max-width: var(--layout-work-width-maximum);
+  margin-inline: auto;
+  padding-inline: var(--layout-page-inset-compact);
+  padding-block: var(--space-group);
+}
+
+@media (min-width: 768px) {
+  .iw-page {
+    padding-inline: var(--layout-page-inset-standard);
+  }
+}
+
+@media (min-width: 1200px) {
+  .iw-page {
+    padding-inline: var(--layout-page-inset-wide);
+  }
+}
+
+/* Application shell: navigation column plus work column. */
+.iw-shell {
+  display: grid;
+  gap: var(--space-group);
+  grid-template-columns: 1fr;
+  align-items: start;
+}
+
+@media (min-width: 900px) {
+  .iw-shell {
+    grid-template-columns: minmax(var(--iw-sidebar-min, 200px), var(--iw-sidebar-max, 240px)) minmax(0, 1fr);
+  }
+}
+
+.iw-page-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-standard);
+  align-items: flex-end;
+  justify-content: space-between;
+  padding-block-end: var(--space-standard);
+  border-block-end: var(--edge-boundary-essential) solid var(--border-essential);
+}
+
+.iw-page-header > div {
+  display: grid;
+  gap: var(--space-detail);
+  min-width: 0;
+}
+
+.iw-stack {
+  display: grid;
+  gap: var(--space-standard);
+}
+
+.iw-stack--dense {
+  gap: var(--space-dense);
+}
+
+.iw-stack--section {
+  gap: var(--space-section);
+}
+
+.iw-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-compact);
+  align-items: center;
+}
+
+.iw-spacer {
+  flex: 1 1 auto;
+}
+
+/*
+ * Signature: visible construction. Sections are separated by rules and shared
+ * alignment rather than by giving every region its own floating card.
+ */
+.iw-section {
+  display: grid;
+  gap: var(--space-dense);
+  padding-block: var(--space-group);
+  border-block-start: var(--edge-boundary-essential) solid var(--rule-subtle);
+}
+
+.iw-section:first-child {
+  border-block-start: none;
+  padding-block-start: 0;
+}
+
+/* ==========================================================================
+   4. Signatures
+   ========================================================================== */
+
+/*
+ * Signature: clipped geometry. A restrained clipped corner marks one major
+ * authored region per view. Not for individual controls.
+ */
+.iw-region {
+  position: relative;
+  align-content: start;
+  padding: var(--iw-region-padding);
+  background: var(--surface-primary);
+  border: var(--edge-boundary-essential) solid var(--border-essential);
+  border-radius: var(--edge-radius-authored);
+}
+
+.iw-region--authored {
+  border-radius: 0;
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--edge-clip-major)) 0,
+    100% var(--edge-clip-major),
+    100% 100%,
+    0 100%
+  );
+}
+
+/* The clip removes the border on the bevel, so restate the seam explicitly. */
+.iw-region--authored::after {
+  content: "";
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-end: 0;
+  width: var(--edge-clip-major);
+  height: var(--edge-clip-major);
+  background: linear-gradient(
+    to bottom left,
+    var(--border-essential) 0 var(--edge-boundary-essential),
+    transparent var(--edge-boundary-essential)
+  );
+  pointer-events: none;
+}
+
+/* Identity-led region: current position or branded authored area. */
+.iw-region--identity {
+  border-inline-start: var(--edge-state-emphasis) solid var(--identity);
+}
+
+/*
+ * Signature: calibrated indexing. A labelled scale tied to real quantity,
+ * position, or sequence. Anti-rule: never decorative — each index must state a
+ * real position, so it lives in markup as data-index rather than as a separate
+ * decorative rail that can drift out of alignment with its rows.
+ */
+.iw-index-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-dense);
+}
+
+.iw-index-list > li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-dense);
+  align-items: baseline;
+}
+
+.iw-index-list > li::before {
+  content: attr(data-index);
+  align-self: stretch;
+  padding-inline-end: var(--space-compact);
+  border-inline-end: var(--edge-boundary-essential) solid var(--rule-subtle);
+  font-family: var(--font-data);
+  font-size: var(--font-size-caption);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+}
+
+/* Current and completed positions are marked by weight and edge, not colour. */
+.iw-index-list > li[aria-current] {
+  font-weight: var(--font-weight-title);
+}
+
+.iw-index-list > li[aria-current]::before {
+  border-inline-end-color: var(--identity);
+  border-inline-end-width: var(--edge-state-emphasis);
+  color: var(--text-primary);
+}
+
+.iw-index-list > li[data-complete]::before {
+  border-inline-end-color: var(--success);
+  border-inline-end-width: var(--edge-state-emphasis);
+}
+
+/*
+ * Signature: joined assemblies. Related controls share an outer boundary and
+ * an aligned seam while remaining individually operable.
+ */
+.iw-assembly {
+  display: inline-flex;
+  align-items: stretch;
+  border: var(--edge-boundary-essential) solid var(--border-essential);
+  border-radius: var(--edge-radius-authored);
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.iw-assembly > * {
+  border-radius: 0;
+  border-block: none;
+  border-inline-start: none;
+  border-inline-end: var(--edge-boundary-essential) solid var(--border-essential);
+  margin: 0;
+}
+
+.iw-assembly > *:last-child {
+  border-inline-end: none;
+}
+
+/* Keep the focus ring readable above the shared seam. */
+.iw-assembly > *:focus-visible {
+  outline-offset: calc(var(--edge-focus-offset) * -1);
+  position: relative;
+  z-index: 1;
+}
+
+/* ==========================================================================
+   5. Buttons
+   ========================================================================== */
+
+.iw-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-compact);
+  min-height: var(--iw-control-height);
+  min-width: var(--target-minimum);
+  padding-inline: var(--space-standard);
+  border: var(--edge-boundary-essential) solid var(--border-essential);
+  border-radius: var(--edge-radius-authored);
+  background: var(--surface-primary);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--font-size-body-compact);
+  font-weight: var(--font-weight-emphasis);
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  /* Signature: settled state change. Direct easing, no bounce or overshoot. */
+  transition:
+    background-color var(--motion-duration-press-fast) var(--motion-easing-direct),
+    border-color var(--motion-duration-press-fast) var(--motion-easing-direct);
+}
+
+.iw-button:hover {
+  background: var(--surface-hover);
+}
+
+.iw-button:active {
+  background: var(--surface-grouped);
+}
+
+.iw-button[disabled],
+.iw-button[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* One primary action leads a normal task region. */
+.iw-button--primary {
+  background: var(--identity);
+  border-color: var(--identity);
+  color: var(--identity-ink);
+  font-weight: var(--font-weight-title);
+}
+
+.iw-button--primary:hover,
+.iw-button--primary:active {
+  background: var(--identity);
+  border-color: var(--text-primary);
+}
+
+/*
+ * Destructive actions carry a text label plus a colour role. Colour alone never
+ * communicates the destructive meaning.
+ */
+.iw-button--danger {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.iw-button--danger:hover {
+  background: var(--surface-hover);
+}
+
+.iw-button--quiet {
+  border-color: transparent;
+  background: transparent;
+}
+
+.iw-button--quiet:hover {
+  background: var(--surface-hover);
+  border-color: var(--border-essential);
+}
+
+.iw-button--compact {
+  min-height: var(--target-compact-row);
+  padding-inline: var(--space-dense);
+  font-size: var(--font-size-label-dense);
+}
+
+/* Toolbar of joined actions. */
+.iw-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-compact);
+  align-items: center;
+  padding-block: var(--space-compact);
+}
+
+/* ==========================================================================
+   6. Fields and validation
+   ========================================================================== */
+
+.iw-field {
+  display: grid;
+  gap: var(--space-detail);
+  min-width: 0;
+}
+
+.iw-label {
+  font-size: var(--font-size-label-dense);
+  line-height: var(--line-height-label-dense);
+  font-weight: var(--font-weight-label-dense);
+}
+
+.iw-input,
+.iw-select,
+.iw-textarea {
+  min-height: var(--iw-control-height);
+  width: 100%;
+  padding: var(--space-compact) var(--space-dense);
+  border: var(--edge-boundary-essential) solid var(--border-essential);
+  border-radius: var(--edge-radius-authored);
+  background: var(--surface-primary);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--font-size-body-compact);
+}
+
+.iw-textarea {
+  min-height: calc(var(--iw-control-height) * 2.5);
+  line-height: var(--line-height-body);
+  resize: vertical;
+}
+
+.iw-input::placeholder,
+.iw-textarea::placeholder {
+  color: var(--text-secondary);
+}
+
+.iw-input:disabled,
+.iw-select:disabled,
+.iw-textarea:disabled {
+  background: var(--surface-grouped);
+  cursor: not-allowed;
+}
+
+/*
+ * Invalid state uses a thickened edge plus a text message, never colour alone.
+ * Pair with aria-invalid and aria-describedby on the control.
+ */
+.iw-input[aria-invalid="true"],
+.iw-select[aria-invalid="true"],
+.iw-textarea[aria-invalid="true"] {
+  border-color: var(--danger);
+  border-inline-start-width: var(--edge-state-emphasis);
+}
+
+/* Helper text. Never carries errors or required instructions alone. */
+.iw-help {
+  margin: 0;
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-label-dense);
+  color: var(--text-secondary);
+}
+
+/* Inline validation message. Colour is on Surface 1 only (4.5:1 verified). */
+.iw-message {
+  display: flex;
+  gap: var(--space-detail);
+  align-items: baseline;
+  margin: 0;
+  font-size: var(--font-size-label-dense);
+  line-height: var(--line-height-label-dense);
+  font-weight: var(--font-weight-emphasis);
+}
+
+.iw-message::before {
+  font-family: var(--font-data);
+  font-weight: var(--font-weight-title);
+}
+
+/*
+ * Markers follow the state vocabulary in foundations/design-language.md §9.2,
+ * the same one .iw-status uses: a warning is a triangle, an error an
+ * exclamation, a success a check. Drawing a warning with the error's glyph
+ * would leave colour as the only thing separating the two.
+ */
+.iw-message--error {
+  color: var(--danger);
+}
+
+.iw-message--error::before {
+  content: "!";
+}
+
+.iw-message--warning {
+  color: var(--warning);
+}
+
+.iw-message--warning::before {
+  content: "\25B2";
+}
+
+.iw-message--success {
+  color: var(--success);
+}
+
+.iw-message--success::before {
+  content: "\2713";
+}
+
+/* Checkbox, radio, and their labels. */
+.iw-choice {
+  display: flex;
+  gap: var(--space-compact);
+  align-items: center;
+  min-height: var(--iw-control-height);
+  cursor: pointer;
+}
+
+.iw-checkbox,
+.iw-radio {
+  inline-size: var(--space-standard);
+  block-size: var(--space-standard);
+  accent-color: var(--identity);
+  margin: 0;
+  flex: none;
+  cursor: pointer;
+}
+
+.iw-fieldset {
+  margin: 0;
+  padding: var(--iw-region-padding);
+  border: var(--edge-boundary-essential) solid var(--border-essential);
+  border-radius: var(--edge-radius-authored);
+}
+
+.iw-fieldset > legend {
+  padding-inline: var(--space-compact);
+  font-size: var(--font-size-label-dense);
+  font-weight: var(--font-weight-label-dense);
+}
+
+/* C36 Radio group. One choice from a short, fully visible set. The group is a
+   fieldset so the legend names the choice for assistive technology; the
+   indicator aligns to the first line of a wrapped label rather than to the
+   centre of a two-line block. */
+.iw-radio-group {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-compact);
+}
+
+.iw-radio-group > legend {
+  padding: 0;
+  margin-block-end: var(--space-compact);
+  font-size: var(--font-size-label-dense);
+  font-weight: var(--font-weight-label-dense);
+}
+
+.iw-radio-group .iw-choice {
+  align-items: flex-start;
+  min-height: 0;
+  padding-block: calc(var(--space-compact) / 2);
+}
+
+.iw-radio-group .iw-radio {
+  /* Centre the control on the first line of the label rather than on the
+     whole label box, so a wrapped option stays aligned at 200% zoom. */
+  margin-block-start: calc((1lh - var(--space-standard)) / 2);
+}
+
+.iw-radio-group[data-invalid="true"] > legend {
+  color: var(--text-critical, currentColor);
+}
+
+/* Two-column form grid that reflows complete groups, never split fields. */
+.iw-form-grid {
+  display: grid;
+  gap: var(--space-standard);
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+  .iw-form-grid--two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ==========================================================================
+   7. Table
+   ========================================================================== */
+
+/*
+ * The table may scroll internally when a stacked representation would destroy
+ * comparison. A scrollable region must be reachable and announced, so mark it up
+ * as <div class="iw-table-wrap" role="region" tabindex="0" aria-label="…">.
+ */
+.iw-table-wrap {
+  overflow-x: auto;
+  border: var(--edge-boundary-essential) solid var(--border-essential);
+  border-radius: var(--edge-radius-authored);
+}
+
+.iw-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-body-compact);
+}
+
+.iw-table caption {
+  padding: var(--space-dense);
+  text-align: start;
+  font-size: var(--font-size-label-dense);
+  font-weight: var(--font-weight-label-dense);
+  color: var(--text-secondary);
+}
+
+.iw-table th,
+.iw-table td {
+  padding: var(--space-compact) var(--space-dense);
+  text-align: start;
+  vertical-align: baseline;
+  border-block-end: var(--edge-boundary-essential) solid var(--rule-subtle);
+}
+
+.iw-table thead th {
+  height: var(--target-compact-row);
+  background: var(--surface-grouped);
+  border-block-end: var(--edge-boundary-essential) solid var(--border-essential);
+  font-size: var(--font-size-label-dense);
+  font-weight: var(--font-weight-label-dense);
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.iw-table tbody tr {
+  height: var(--iw-row-height);
+}
+
+.iw-table tbody tr:hover {
+  background: var(--surface-hover);
+}
+
+.iw-table tbody tr:last-child td {
+  border-block-end: none;
+}
+
+/* Numeric and date columns keep stable alignment across rows. */
+.iw-table [data-numeric] {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/*
+ * Selected row: identity edge plus a checked control. The row is never
+ * identified by background colour alone.
+ */
+.iw-table tbody tr[aria-selected="true"] {
+  background: var(--surface-grouped);
+  box-shadow: inset var(--edge-state-emphasis) 0 0 0 var(--identity);
+}
+
+/* Sortable header button sits inside the th and keeps native semantics. */
+.iw-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-detail);
+  padding: var(--space-detail) 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: var(--font-weight-label-dense);
+  cursor: pointer;
+}
+
+.iw-sort::after {
+  content: "\2195";
+  font-family: var(--font-data);
+  color: var(--text-secondary);
+}
+
+th[aria-sort="ascending"] .iw-sort::after {
+  content: "\2191";
+  color: var(--text-primary);
+}
+
+th[aria-sort="descending"] .iw-sort::after {
+  content: "\2193";
+  color: var(--text-primary);
+}
+
+/* ==========================================================================
+   8. Status, priority, and badges
+   ========================================================================== */
+
+/*
+ * State is carried by the text label. The marker adds a second, non-colour
+ * channel so status survives greyscale and forced-colors.
+ */
+.iw-status {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-detail);
+  font-size: var(--font-size-label-dense);
+  font-weight: var(--font-weight-label-dense);
+  white-space: nowrap;
+}
+
+.iw-status::before {
+  content: "\25A1";
+  font-family: var(--font-data);
+}
+
+.iw-status[data-state="ready"]::before {
+  content: "\25A0";
+  color: var(--success);
+}
+
+.iw-status[data-state="in-progress"]::before {
+  content: "\25D0";
+  color: var(--identity);
+}
+
+.iw-status[data-state="at-risk"]::before {
+  content: "\25B2";
+  color: var(--warning);
+}
+
+.iw-status[data-state="blocked"]::before {
+  content: "\2715";
+  color: var(--danger);
+}
+
+.iw-status[data-state="complete"]::before {
+  content: "\2713";
+  color: var(--success);
+}
+
+/* Priority uses a monospaced code so P0…P3 align down a column. */
+.iw-priority {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-detail);
+  font-family: var(--font-data);
+  font-size: var(--font-size-label-dense);
+  font-weight: var(--font-weight-label-dense);
+  white-space: nowrap;
+}
+
+.iw-priority::before {
+  content: "\2014\2014\2014";
+  letter-spacing: -0.15em;
+  color: var(--rule-subtle);
+}
+
+.iw-priority[data-priority="p0"]::before {
+  content: "\2588\2588\2588";
+  letter-spacing: 0;
+  color: var(--danger);
+}
+
+.iw-priority[data-priority="p1"]::before {
+  content: "\2588\2588\2014";
+  letter-spacing: 0;
+  color: var(--warning);
+}
+
+.iw-priority[data-priority="p2"]::before {
+  content: "\2588\2014\2014";
+  letter-spacing: 0;
+  color: var(--text-secondary);
+}
+
+.iw-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-detail);
+  padding: 0 var(--space-compact);
+  min-height: var(--target-minimum);
+  border: var(--edge-boundary-essential) solid var(--border-essential);
+  border-radius: var(--edge-radius-authored);
+  background: var(--surface-grouped);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-label-dense);
+  white-space: nowrap;
+}
+
+.iw-badge--identity {
+  border-color: var(--identity);
+  border-inline-start-width: var(--edge-state-emphasis);
+}
+
+/* ==========================================================================
+   9. Callouts
+   ========================================================================== */
+
+/*
+ * Callouts sit on Surface 1 so the coloured title text keeps its verified
+ * contrast ratio. The left edge and the title word carry the meaning together.
+ */
+.iw-callout {
+  display: grid;
+  align-content: start;
+  gap: var(--space-detail);
+  padding: var(--space-dense) var(--space-standard);
+  background: var(--surface-primary);
+  border: var(--edge-boundary-essential) solid var(--border-essential);
+  border-inline-start-width: var(--edge-state-emphasis);
+  border-radius: var(--edge-radius-authored);
+}
+
+.iw-callout > p {
+  margin: 0;
+}
+
+.iw-callout-title {
+  margin: 0;
+  font-size: var(--font-size-label-dense);
+  line-height: var(--line-height-label-dense);
+  font-weight: var(--font-weight-title);
+}
+
+.iw-callout--warning {
+  border-inline-start-color: var(--warning);
+}
+
+.iw-callout--warning .iw-callout-title {
+  color: var(--warning);
+}
+
+.iw-callout--danger {
+  border-inline-start-color: var(--danger);
+}
+
+.iw-callout--danger .iw-callout-title {
+  color: var(--danger);
+}
+
+.iw-callout--success {
+  border-inline-start-color: var(--success);
+}
+
+.iw-callout--success .iw-callout-title {
+  color: var(--success);
+}
+
+.iw-callout--identity {
+  border-inline-start-color: var(--identity);
+}
+
+/* ==========================================================================
+   10. Navigation
+   ========================================================================== */
+
+.iw-nav {
+  display: grid;
+  gap: var(--space-detail);
+}
+
+.iw-nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-detail);
+}
+
+.iw-nav a {
+  display: flex;
+  align-items: center;
+  min-height: var(--iw-control-height);
+  padding: var(--space-compact) var(--space-dense);
+  border-inline-start: var(--edge-state-emphasis) solid transparent;
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.iw-nav a:hover {
+  background: var(--surface-hover);
+}
+
+/* Current position: identity edge plus a weight change, never colour alone. */
+.iw-nav a[aria-current] {
+  border-inline-start-color: var(--identity);
+  background: var(--surface-grouped);
+  font-weight: var(--font-weight-title);
+}
+
+.iw-breadcrumb {
+  font-size: var(--font-size-label-dense);
+  color: var(--text-secondary);
+}
+
+.iw-breadcrumb ol {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-compact);
+  margin: 0;
+  padding: 0;
+}
+
+.iw-breadcrumb li + li::before {
+  content: "/";
+  margin-inline-end: var(--space-compact);
+  color: var(--rule-subtle);
+}
+
+.iw-breadcrumb a {
+  color: inherit;
+}
+
+.iw-breadcrumb [aria-current] {
+  color: var(--text-primary);
+  font-weight: var(--font-weight-emphasis);
+}
+
+/* Tabs. Use with role="tablist" and native buttons. */
+.iw-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  border-block-end: var(--edge-boundary-essential) solid var(--border-essential);
+}
+
+.iw-tab {
+  min-height: var(--iw-control-height);
+  padding: var(--space-compact) var(--space-standard);
+  border: none;
+  border-block-end: var(--edge-state-emphasis) solid transparent;
+  background: none;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: var(--font-size-body-compact);
+  font-weight: var(--font-weight-emphasis);
+  cursor: pointer;
+}
+
+.iw-tab:hover {
+  color: var(--text-primary);
+  background: var(--surface-hover);
+}
+
+.iw-tab[aria-selected="true"] {
+  color: var(--text-primary);
+  border-block-end-color: var(--identity);
+  font-weight: var(--font-weight-title);
+}
+
+/* ==========================================================================
+   11. Dialog
+   ========================================================================== */
+
+.iw-dialog {
+  padding: 0;
+  border: var(--edge-boundary-essential) solid var(--border-essential);
+  border-radius: var(--edge-radius-authored);
+  background: var(--surface-primary);
+  color: var(--text-primary);
+  max-width: min(560px, calc(100vw - var(--space-section)));
+  font-family: var(--font-interface);
+}
+
+.iw-dialog::backdrop {
+  background: rgb(0 0 0 / 0.55);
+}
+
+.iw-dialog-header,
+.iw-dialog-footer {
+  padding: var(--space-standard);
+}
+
+.iw-dialog-header {
+  border-block-end: var(--edge-boundary-essential) solid var(--rule-subtle);
+}
+
+.iw-dialog-body {
+  padding: var(--space-standard);
+  display: grid;
+  gap: var(--space-standard);
+}
+
+.iw-dialog-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-compact);
+  justify-content: flex-end;
+  border-block-start: var(--edge-boundary-essential) solid var(--rule-subtle);
+}
+
+/* ==========================================================================
+   12. Feedback and progression
+   ========================================================================== */
+
+/* Live status region. Pair with role="status" and aria-live="polite". */
+.iw-live {
+  margin: 0;
+  padding: var(--space-compact) var(--space-dense);
+  background: var(--surface-grouped);
+  border-inline-start: var(--edge-state-emphasis) solid var(--identity);
+  border-radius: var(--edge-radius-authored);
+  font-size: var(--font-size-body-compact);
+}
+
+.iw-empty {
+  display: grid;
+  gap: var(--space-compact);
+  justify-items: start;
+  padding: var(--space-section) var(--space-standard);
+  border: var(--edge-boundary-essential) dashed var(--border-essential);
+  border-radius: var(--edge-radius-authored);
+}
+
+/* Bulk action bar for a filtered result. */
+.iw-bulk-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-compact);
+  align-items: center;
+  padding: var(--space-compact) var(--space-dense);
+  background: var(--surface-grouped);
+  border: var(--edge-boundary-essential) solid var(--border-essential);
+  border-radius: var(--edge-radius-authored);
+  font-size: var(--font-size-body-compact);
+}
+
+/*
+ * Signature: calibrated indexing applied to progression. Each step shows a real
+ * position in a real sequence.
+ */
+.iw-steps {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-standard);
+  margin: 0;
+  padding: 0;
+  font-size: var(--font-size-label-dense);
+}
+
+.iw-steps li {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-compact);
+  padding-block-end: var(--space-compact);
+  border-block-end: var(--edge-state-emphasis) solid var(--rule-subtle);
+  color: var(--text-secondary);
+}
+
+.iw-steps li::before {
+  content: attr(data-step);
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+}
+
+.iw-steps li[aria-current] {
+  color: var(--text-primary);
+  border-block-end-color: var(--identity);
+  font-weight: var(--font-weight-title);
+}
+
+.iw-steps li[data-complete] {
+  color: var(--text-primary);
+  border-block-end-color: var(--success);
+}
+
+/* Determinate meter tied to a stated quantity. */
+.iw-meter {
+  display: grid;
+  gap: var(--space-detail);
+}
+
+.iw-meter-track {
+  height: var(--space-compact);
+  background: var(--surface-grouped);
+  border: var(--edge-boundary-essential) solid var(--border-essential);
+  border-radius: var(--edge-radius-authored);
+  overflow: hidden;
+}
+
+.iw-meter-fill {
+  height: 100%;
+  background: var(--identity);
+}
+
+/* ==========================================================================
+   13. Catalog components (C36-C79)
+   ==========================================================================
+   The classes below cover the components admitted on platform convention.
+   Each one styles a native control or a plain container around one: the
+   behaviour stays with the platform, only the appearance is ours.
+   ========================================================================== */
+
+/* C37 Divider with an optional label. A rule that says what it separates. */
+.iw-divider {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: var(--space-compact);
+  margin-block: var(--space-standard);
+  font-size: var(--font-size-label-dense);
+  color: var(--text-secondary);
+}
+
+.iw-divider::after {
+  content: "";
+  height: var(--edge-boundary-essential);
+  background: var(--rule-subtle);
+}
+
+/* C38 Card. A surface that carries one subject and its actions. */
+.iw-card {
+  display: grid;
+  gap: var(--space-compact);
+  padding: var(--space-standard);
+  background: var(--surface-primary);
+  border: var(--edge-boundary-essential) solid var(--border-essential);
+  border-radius: var(--edge-radius-authored);
+}
+
+.iw-card-title {
+  margin: 0;
+  font-size: var(--font-size-section-title);
+  font-weight: var(--font-weight-title);
+}
+
+/* C39 Avatar. Initials by default; an image only when one exists. */
+.iw-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--iw-avatar-size, 2rem);
+  block-size: var(--iw-avatar-size, 2rem);
+  border-radius: 50%;
+  border: var(--edge-boundary-essential) solid var(--border-essential);
+  background: var(--surface-grouped);
+  font-size: var(--font-size-label-dense);
+  font-weight: var(--font-weight-title);
+}
+
+.iw-identity-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-compact);
+}
+
+/* C40 Skeleton. A placeholder with the shape of the content it waits for. */
+.iw-skeleton {
+  display: block;
+  block-size: var(--space-standard);
+  background: var(--surface-grouped);
+  border: var(--edge-boundary-essential) solid var(--rule-subtle);
+  border-radius: var(--edge-radius-authored);
+}
+
+.iw-skeleton + .iw-skeleton {
+  margin-block-start: var(--space-compact);
+}
+
+/* C41 Tag. A user-applied label, removable where the user applied it. */
+.iw-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-detail);
+  padding: 0 var(--space-compact);
+  border: var(--edge-boundary-essential) solid var(--border-essential);
+  border-radius: var(--edge-radius-authored);
+  background: var(--surface-grouped);
+  font-size: var(--font-size-label-dense);
+}
+
+/* C42 Tooltip and C66 shortcut hint. Supporting text, never the only route. */
+.iw-kbd {
+  font-family: var(--font-data);
+  font-size: var(--font-size-label-dense);
+  padding: 0 var(--space-detail);
+  border: var(--edge-boundary-essential) solid var(--border-essential);
+  border-radius: var(--edge-radius-authored);
+  background: var(--surface-grouped);
+}
+
+.iw-shortcut-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-compact);
+  align-items: baseline;
+}
+
+/* C67 Icon. Sized from the icon scale rather than from the text around it, and
+   coloured by inheritance so it follows every contrast decision already made for
+   that text. The inline size is a floor: dense contexts keep it instead of
+   shrinking, because the drawings stop resolving before the type does. */
+.iw-icon {
+  inline-size: var(--icon-size-inline);
+  block-size: var(--icon-size-inline);
+  vertical-align: -0.125em;
+  flex: none;
+}
+
+.iw-icon--standard {
+  inline-size: var(--icon-size-standard);
+  block-size: var(--icon-size-standard);
+}
+
+.iw-icon--prominent {
+  inline-size: var(--icon-size-prominent);
+  block-size: var(--icon-size-prominent);
+}
+
+/* C68 Image or thumbnail. The frame holds its ratio before the image arrives. */
+.iw-figure {
+  margin: 0;
+  display: grid;
+  gap: var(--space-detail);
+  max-inline-size: 30rem;
+}
+
+.iw-figure-frame {
+  aspect-ratio: 16 / 9;
+  border: var(--edge-boundary-essential) solid var(--border-essential);
+  background: var(--surface-grouped);
+  overflow: hidden;
+}
+
+.iw-figure-frame > img {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* C69 Count badge. The number is decoration here; the host carries it in words. */
+.iw-count-host {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-detail);
+}
+
+.iw-count {
+  border: var(--edge-boundary-essential) solid var(--border-essential);
+  border-radius: 1em;
+  padding: 0 0.4em;
+  font-family: var(--font-data);
+  font-size: var(--font-size-label-dense);
+}
+
+/* C70 Metric tile. One quantity, its period, and how it moved. */
+.iw-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--iw-metric-min, 14rem)), 1fr));
+  gap: var(--space-compact);
+}
+
+.iw-metric {
+  margin: 0;
+  display: grid;
+  gap: var(--space-detail);
+  padding: var(--space-compact);
+  border: var(--edge-boundary-essential) solid var(--border-essential);
+  min-inline-size: 0;
+}
+
+.iw-metric-label {
+  color: var(--text-secondary);
+  font-size: var(--font-size-label-dense);
+}
+
+.iw-metric-value {
+  margin: 0;
+  font-family: var(--font-data);
+  font-size: var(--font-size-heading);
+}
+
+.iw-metric-period {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-label-dense);
+}
+
+/* C71 Sparkline. One ink, no axes, and the numbers live in the text beside it. */
+.iw-sparkline {
+  inline-size: 100%;
+  block-size: 2rem;
+  color: var(--text-primary);
+}
+
+/* C72 Bar comparison. A table of labelled numbers; the bars are length only. */
+.iw-comparison {
+  inline-size: 100%;
+  border-collapse: collapse;
+}
+
+.iw-comparison caption {
+  text-align: start;
+  color: var(--text-secondary);
+  padding-block-end: var(--space-detail);
+}
+
+.iw-comparison th,
+.iw-comparison td {
+  padding: var(--space-detail) var(--space-compact);
+  text-align: start;
+  font-weight: inherit;
+}
+
+.iw-comparison td {
+  font-family: var(--font-data);
+}
+
+.iw-bar {
+  display: block;
+  block-size: 0.5rem;
+  inline-size: var(--iw-bar-length, 0%);
+  background: var(--text-primary);
+  margin-block-end: var(--space-detail);
+}
+
+/* C43 Slider. The native range plus the value it stands for, as text. */
+.iw-range {
+  inline-size: 100%;
+  max-inline-size: 22rem;
+  accent-color: var(--identity);
+}
+
+/* C47/C48 Combo box and multi-select. Native list semantics, our spacing. */
+.iw-option-list {
+  list-style: none;
+  margin: 0;
+  padding: var(--space-compact);
+  display: grid;
+  gap: var(--space-compact);
+  border: var(--edge-boundary-essential) solid var(--border-essential);
+  border-radius: var(--edge-radius-authored);
+  background: var(--surface-primary);
+}
+
+/* C50 Segmented control. One row of radios that behaves as one control. */
+.iw-segmented {
+  display: inline-flex;
+  border: var(--edge-boundary-essential) solid var(--border-essential);
+  border-radius: var(--edge-radius-authored);
+  overflow: hidden;
+}
+
+.iw-segmented label {
+  padding: var(--space-compact) var(--space-dense);
+  font-size: var(--font-size-label-dense);
+  border-inline-start: var(--edge-boundary-essential) solid var(--border-essential);
+}
+
+.iw-segmented label:first-of-type {
+  border-inline-start: 0;
+}
+
+.iw-segmented input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.iw-segmented label:has(input:checked) {
+  background: var(--identity);
+  color: var(--identity-ink);
+  font-weight: var(--font-weight-title);
+}
+
+.iw-segmented label:has(input:focus-visible) {
+  outline: var(--edge-focus-ring) solid var(--focus-ring);
+  outline-offset: calc(var(--edge-focus-ring) * -1);
+}
+
+/* C52 Tree view. Structure carried by indentation and expanded state. */
+.iw-tree,
+.iw-tree ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.iw-tree ul {
+  padding-inline-start: var(--space-standard);
+  border-inline-start: var(--edge-boundary-essential) solid var(--rule-subtle);
+  margin-inline-start: var(--space-compact);
+}
+
+.iw-tree [role="treeitem"] > span {
+  display: inline-block;
+  padding: var(--space-detail) 0;
+}
+
+/* C55/C56 Progress and activity. Every wait names what it is waiting for. */
+.iw-progress {
+  inline-size: 100%;
+  max-inline-size: 22rem;
+  block-size: var(--space-compact);
+  accent-color: var(--identity);
+}
+
+.iw-activity {
+  display: flex;
+  align-items: center;
+  gap: var(--space-compact);
+}
+
+.iw-activity-mark {
+  inline-size: 1rem;
+  block-size: 1rem;
+  border: var(--edge-state-emphasis) solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: iw-spin 1s linear infinite;
+}
+
+@keyframes iw-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .iw-activity-mark {
+    animation: none;
+    border-right-color: currentColor;
+  }
+}
+
+/* C57/C59/C60 Popover, drawer, and coach mark: three surfaces, one edge. */
+.iw-surface {
+  padding: var(--space-dense);
+  background: var(--surface-primary);
+  border: var(--edge-boundary-essential) solid var(--border-essential);
+  border-radius: var(--edge-radius-authored);
+  display: grid;
+  gap: var(--space-compact);
+  justify-items: start;
+}
+
+.iw-surface--coach {
+  border-inline-start-width: var(--edge-state-emphasis);
+  border-inline-start-color: var(--identity);
+}
+
+/* C61 Accordion. Sibling disclosures presented as one list of headings. */
+.iw-accordion {
+  border: var(--edge-boundary-essential) solid var(--border-essential);
+  border-radius: var(--edge-radius-authored);
+  overflow: hidden;
+}
+
+.iw-accordion-heading {
+  margin: 0;
+  font-size: inherit;
+}
+
+.iw-accordion-trigger {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-compact);
+  inline-size: 100%;
+  text-align: start;
+  padding: var(--space-dense);
+  background: none;
+  border: 0;
+  border-block-end: var(--edge-boundary-essential) solid var(--rule-subtle);
+  color: inherit;
+  font: inherit;
+  font-weight: var(--font-weight-title);
+  cursor: pointer;
+}
+
+.iw-accordion-panel {
+  padding: var(--space-dense);
+  border-block-end: var(--edge-boundary-essential) solid var(--rule-subtle);
+}
+
+/* C62 Context menu. The same actions the visible control already offers. */
+.iw-menu {
+  list-style: none;
+  margin: 0;
+  padding: var(--space-compact);
+  display: grid;
+  gap: var(--space-detail);
+  background: var(--surface-primary);
+  border: var(--edge-boundary-essential) solid var(--border-essential);
+  border-radius: var(--edge-radius-authored);
+  min-inline-size: 12rem;
+}
+
+.iw-menu [role="menuitem"] {
+  display: block;
+  inline-size: 100%;
+  text-align: start;
+  padding: var(--space-compact);
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.iw-menu [role="menuitem"][aria-disabled="true"] {
+  color: var(--text-secondary);
+  cursor: default;
+}
+
+.iw-menu [role="menuitem"]:hover:not([aria-disabled="true"]) {
+  background: var(--surface-grouped);
+}
+
+/* C63 Split view. A divider that is a control, not a decoration. */
+.iw-split {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) auto minmax(0, 3fr);
+  gap: var(--space-dense);
+  border: var(--edge-boundary-essential) solid var(--border-essential);
+  border-radius: var(--edge-radius-authored);
+  padding: var(--space-dense);
+}
+
+.iw-split-divider {
+  inline-size: var(--edge-state-emphasis);
+  background: var(--border-essential);
+  border: 0;
+  padding: 0;
+  cursor: col-resize;
+}
+
+@media (max-width: 47.9375rem) {
+  .iw-split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .iw-split-divider {
+    display: none;
+  }
+}
+
+/* C65 Colour picker. The swatch is decorative; the value is the text. */
+.iw-swatch {
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  border: var(--edge-boundary-essential) solid var(--border-essential);
+  border-radius: var(--edge-radius-authored);
+}
+
+/* ==========================================================================
+   14. Utilities
+   ========================================================================== */
+
+.iw-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.iw-skip-link {
+  position: absolute;
+  inset-inline-start: var(--space-standard);
+  inset-block-start: calc(var(--space-standard) * -4);
+  z-index: 10;
+  padding: var(--space-compact) var(--space-standard);
+  background: var(--surface-primary);
+  border: var(--edge-boundary-essential) solid var(--border-essential);
+  color: var(--text-primary);
+}
+
+.iw-skip-link:focus {
+  inset-block-start: var(--space-standard);
+}
+
+.iw-rule {
+  border: none;
+  border-block-start: var(--edge-boundary-essential) solid var(--rule-subtle);
+  margin-block: var(--space-standard);
+}
+
+/* A field that spans every column of an iw-form-grid. */
+.iw-field--full {
+  grid-column: 1 / -1;
+}
+
+/* ==========================================================================
+   15. Environment adaptation
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .iw-root *,
+  .iw-root *::before,
+  .iw-root *::after {
+    transition-duration: var(--motion-duration-reduced) !important;
+    animation-duration: var(--motion-duration-reduced) !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/*
+ * Forced colors: hand every colour decision back to the user's palette and keep
+ * the non-colour channels (markers, edges, weight) doing the work.
+ */
+/* --------------------------------------------------------------------------
+   C73-C79 Commands. Dialog, toggle button, icon button, button group, split
+   button, menu bar, and inline message. Each one wraps a native control; the
+   modality, the pressed state, and the menu semantics stay with the platform.
+   -------------------------------------------------------------------------- */
+
+/* C73 Dialog. `<dialog>` owns modality, focus, and Escape. */
+.iw-dialog {
+  max-inline-size: min(32rem, calc(100vw - 2rem));
+  padding: var(--space-section);
+  background: var(--surface-primary);
+  color: var(--text-primary);
+  border: var(--edge-boundary-essential) solid var(--border-essential);
+  border-radius: var(--edge-radius-authored);
+}
+
+.iw-dialog::backdrop {
+  background: rgb(0 0 0 / 45%);
+}
+
+.iw-dialog-title {
+  margin: 0 0 var(--space-detail);
+  font-size: var(--font-size-section-title);
+  line-height: var(--line-height-section-title);
+}
+
+.iw-dialog-description {
+  margin: 0 0 var(--space-group);
+  max-inline-size: var(--measure-prose);
+  color: var(--text-secondary);
+}
+
+.iw-dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-dense);
+  justify-content: flex-end;
+  margin-block-start: var(--space-group);
+}
+
+/* C74 Toggle button. The label names the mode; `aria-pressed` carries state,
+   and the inset rule repeats it without relying on colour. */
+.iw-toggle-button[aria-pressed="true"] {
+  background: var(--surface-grouped);
+  border-color: var(--border-essential);
+  box-shadow: inset var(--edge-signature) 0 0 0 var(--identity);
+}
+
+/* C75 Icon button. Square and never below the pointer target size. */
+.iw-icon-button {
+  display: inline-grid;
+  place-items: center;
+  min-inline-size: var(--target-pointer);
+  min-block-size: var(--target-pointer);
+  padding: var(--space-detail);
+}
+
+.iw-icon-button > svg {
+  inline-size: var(--icon-size-inline);
+  block-size: var(--icon-size-inline);
+  display: block;
+}
+
+/* C76 Button group. Related actions share one border and one accessible name. */
+.iw-button-group {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.iw-button-group > * + * {
+  margin-inline-start: -1px;
+}
+
+/* C77 Split button. A default action and a menu of variants, joined. */
+.iw-split-button {
+  display: inline-flex;
+  position: relative;
+  inline-size: fit-content;
+}
+
+.iw-split-button > .iw-split-button-menu {
+  margin-inline-start: -1px;
+}
+
+.iw-split-button > .iw-menu {
+  position: absolute;
+  inset-block-start: 100%;
+  inset-inline-end: 0;
+  z-index: 5;
+}
+
+/* C78 Menu bar. One tab stop; arrow keys move between titles. */
+.iw-menubar {
+  display: flex;
+  flex-wrap: wrap;
+  position: relative;
+  gap: var(--space-detail);
+  border-block-end: var(--edge-boundary-subtle) solid var(--border-subtle);
+  padding-block-end: var(--space-detail);
+}
+
+.iw-menubar > [role="menuitem"] {
+  padding: var(--space-detail) var(--space-dense);
+  background: none;
+  border: var(--edge-boundary-subtle) solid transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.iw-menubar > [role="menuitem"]:hover,
+.iw-menubar > [role="menuitem"][aria-expanded="true"] {
+  border-color: var(--border-essential);
+  background: var(--surface-grouped);
+}
+
+.iw-menubar .iw-menu {
+  position: absolute;
+  inset-block-start: 100%;
+  inset-inline-start: 0;
+  z-index: 5;
+}
+
+.iw-menubar .iw-menu[hidden],
+.iw-split-button .iw-menu[hidden] {
+  display: none;
+}
+
+/* C79 Inline message. The severity is a word before it is a colour. */
+.iw-inline-message {
+  display: grid;
+  gap: var(--space-detail);
+  justify-items: start;
+  padding: var(--space-dense);
+  background: var(--surface-grouped);
+  border: var(--edge-boundary-subtle) solid var(--border-subtle);
+  border-inline-start: var(--edge-signature) solid var(--identity);
+}
+
+.iw-inline-message[data-severity="error"] {
+  border-inline-start-color: var(--status-critical);
+}
+
+.iw-inline-message[data-severity="warning"] {
+  border-inline-start-color: var(--status-caution);
+}
+
+.iw-inline-message[data-severity="success"] {
+  border-inline-start-color: var(--status-affirmative);
+}
+
+.iw-inline-message-severity {
+  margin: 0;
+  font-weight: var(--font-weight-emphasis);
+}
+
+.iw-inline-message-body {
+  margin: 0;
+  max-inline-size: var(--measure-prose);
+}
+
+/* --------------------------------------------------------------------------
+   C80-C86 Capacity, periods, hierarchy, and stepping. A meter, a date range,
+   a month grid, a tree grid, an inline edit, a skip link, and a stepper.
+   -------------------------------------------------------------------------- */
+
+/* C80 Meter. A level within a fixed capacity; the number beside it is the
+   statement, the bar only the aid. */
+.iw-meter {
+  inline-size: 12rem;
+  block-size: 0.5rem;
+}
+
+.iw-meter-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-dense);
+  margin: 0;
+}
+
+/* C81 Date range. Two fields, one legend, one shared error. */
+.iw-daterange {
+  display: grid;
+  gap: var(--space-detail);
+  padding: var(--space-dense);
+  border: var(--edge-boundary-subtle) solid var(--border-subtle);
+  border-radius: var(--edge-radius-authored);
+}
+
+.iw-daterange > legend {
+  padding-inline: var(--space-detail);
+  font-weight: var(--font-weight-emphasis);
+}
+
+/* C82 Calendar grid. One month, seven columns, one tab stop. */
+.iw-calendar {
+  display: grid;
+  gap: var(--space-detail);
+  justify-items: start;
+}
+
+.iw-calendar-grid {
+  border-collapse: collapse;
+}
+
+.iw-calendar-grid th,
+.iw-calendar-grid td {
+  inline-size: var(--target-standard-control);
+  block-size: var(--target-standard-control);
+  padding: 0;
+  text-align: center;
+}
+
+.iw-calendar-grid td > button {
+  inline-size: 100%;
+  block-size: 100%;
+  background: none;
+  border: var(--edge-boundary-subtle) solid transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.iw-calendar-grid td > button:hover {
+  border-color: var(--border-essential);
+}
+
+.iw-calendar-grid td[aria-selected="true"] > button {
+  background: var(--surface-grouped);
+  box-shadow: inset 0 calc(-1 * var(--edge-signature)) 0 0 var(--identity);
+}
+
+.iw-calendar-grid td > button[aria-disabled="true"] {
+  color: var(--text-secondary);
+  text-decoration: line-through;
+  cursor: default;
+}
+
+/* C83 Tree grid. Indentation and a marker carry the level; colour never does. */
+.iw-treegrid {
+  inline-size: 100%;
+  border-collapse: collapse;
+}
+
+.iw-treegrid th,
+.iw-treegrid td {
+  text-align: start;
+  padding: var(--space-detail) var(--space-dense);
+  border-block-end: var(--edge-boundary-subtle) solid var(--border-subtle);
+}
+
+.iw-treegrid tbody tr[aria-level="2"] > th {
+  padding-inline-start: calc(var(--space-dense) * 2);
+}
+
+.iw-treegrid tbody tr[aria-level="3"] > th {
+  padding-inline-start: calc(var(--space-dense) * 3);
+}
+
+.iw-treegrid tbody tr[aria-expanded="true"] > th::before {
+  content: "▾ ";
+}
+
+.iw-treegrid tbody tr[aria-expanded="false"] > th::before {
+  content: "▸ ";
+}
+
+/* C84 Inline edit. The trigger is a control, never a hover-revealed underline. */
+.iw-inline-edit,
+.iw-stepper {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-dense);
+  margin: 0;
+}
+
+.iw-inline-edit-label {
+  color: var(--text-secondary);
+}
+
+/* C85 Skip link. Present in the accessibility tree at all times, visible on
+   focus. The hiding technique is the one C04 already uses. */
+.iw-skip-link {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.iw-skip-link:focus-visible {
+  position: static;
+  inline-size: auto;
+  block-size: auto;
+  overflow: visible;
+  clip-path: none;
+  display: inline-block;
+  padding: var(--space-detail) var(--space-dense);
+  background: var(--surface-primary);
+  border: var(--edge-boundary-essential) solid var(--border-essential);
+}
+
+/* C86 Stepper. Both controls stay at the platform target size. */
+.iw-stepper > button {
+  min-inline-size: var(--target-pointer);
+  min-block-size: var(--target-pointer);
+}
+
+.iw-stepper > input {
+  inline-size: 5rem;
+}
+
+@media (forced-colors: active) {
+  .iw-button,
+  .iw-input,
+  .iw-select,
+  .iw-textarea,
+  .iw-region,
+  .iw-callout,
+  .iw-badge,
+  .iw-table-wrap,
+  .iw-card,
+  .iw-avatar,
+  .iw-tag,
+  .iw-kbd,
+  .iw-accordion,
+  .iw-menu,
+  .iw-menubar .iw-menu,
+  .iw-dialog,
+  .iw-inline-message,
+  .iw-daterange,
+  .iw-treegrid th,
+  .iw-treegrid td,
+  .iw-skip-link:focus-visible,
+  .iw-split,
+  .iw-surface,
+  .iw-option-list,
+  .iw-segmented,
+  .iw-swatch,
+  .iw-figure-frame,
+  .iw-count,
+  .iw-metric,
+  .iw-skeleton {
+    border-color: CanvasText;
+  }
+
+  .iw-split-divider,
+  .iw-divider::after {
+    background: CanvasText;
+  }
+
+  /* The bar and the line are drawn in one ink, so the system colour is enough;
+     both are redundant to the numbers beside them in any case. */
+  .iw-bar {
+    background: CanvasText;
+    outline: 1px solid CanvasText;
+  }
+
+  .iw-sparkline {
+    color: CanvasText;
+  }
+
+  .iw-segmented label:has(input:checked) {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+  }
+
+  .iw-root :focus-visible {
+    outline-color: Highlight;
+  }
+
+  .iw-nav a[aria-current],
+  .iw-tab[aria-selected="true"],
+  .iw-table tbody tr[aria-selected="true"] {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+  }
+
+  .iw-meter-fill {
+    background: Highlight;
+  }
+
+  .iw-calendar-grid td[aria-selected="true"] > button {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+  }
+
+  .iw-toggle-button[aria-pressed="true"] {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+  }
+
+  /* The native radio indicator is the only selection cue here, so let the
+     system draw it rather than the accent colour. */
+  .iw-radio-group .iw-radio {
+    forced-color-adjust: auto;
+  }
+}
+
+/* 14. Extended catalog, C87-C97. Consumable classes for real applications:
+   tag input, listbox, avatar group, presence, code block, drop zone, scroll
+   area, command palette, inline confirmation, character count, inset callout. */
+
+.iw-tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-compact);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.iw-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-detail);
+  border: 1px solid var(--border-essential);
+  background: none;
+  color: inherit;
+  font: inherit;
+  padding: 2px var(--space-compact);
+  min-block-size: var(--target-pointer);
+}
+
+.iw-listbox {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--border-essential);
+  max-block-size: 16rem;
+  overflow-y: auto;
+}
+
+.iw-listbox > [role="option"] {
+  padding: var(--space-detail) var(--space-dense);
+  min-block-size: var(--target-pointer);
+}
+
+.iw-listbox > [role="option"][aria-selected="true"]::before {
+  content: "✓ ";
+}
+
+.iw-avatar-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-compact);
+}
+
+.iw-avatar-group > ul {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.iw-avatar-group li {
+  inline-size: 32px;
+  block-size: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--surface-primary);
+  background: var(--surface-grouped);
+  display: grid;
+  place-items: center;
+  font-size: var(--font-size-caption);
+  margin-inline-start: -8px;
+}
+
+.iw-avatar-group li:first-child {
+  margin-inline-start: 0;
+}
+
+.iw-presence::before {
+  display: inline-block;
+  inline-size: 1.25em;
+}
+
+.iw-presence[data-state="available"]::before {
+  content: "●";
+}
+
+.iw-presence[data-state="busy"]::before {
+  content: "⊖";
+}
+
+.iw-presence[data-state="away"]::before {
+  content: "○";
+}
+
+.iw-presence[data-state="offline"]::before {
+  content: "⊘";
+}
+
+.iw-presence[data-state="unknown"]::before {
+  content: "?";
+}
+
+.iw-code-block {
+  display: grid;
+  gap: var(--space-detail);
+  justify-items: start;
+}
+
+.iw-code-block pre {
+  margin: 0;
+  padding: var(--space-dense);
+  border: 1px solid var(--border-essential);
+  background: var(--surface-grouped);
+  font-family: var(--font-numeric, ui-monospace, monospace);
+  white-space: pre;
+  overflow-x: auto;
+}
+
+.iw-drop-zone {
+  display: grid;
+  gap: var(--space-detail);
+  padding: var(--space-standard);
+  border: 1px dashed var(--border-essential);
+  min-block-size: 96px;
+}
+
+.iw-drop-zone[data-dragging="true"] {
+  border-style: solid;
+  border-width: var(--edge-signature);
+}
+
+.iw-scroll-area {
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  border: 1px solid var(--border-essential);
+  padding: var(--space-dense);
+}
+
+.iw-scroll-area:focus-visible {
+  outline: var(--edge-focus-width, 3px) solid var(--focus);
+  outline-offset: var(--edge-focus-offset, 3px);
+}
+
+.iw-palette {
+  inline-size: min(32rem, calc(100vw - 32px));
+  padding: var(--space-standard);
+  border: 1px solid var(--border-essential);
+  background: var(--surface-primary);
+  color: var(--text-primary);
+}
+
+.iw-palette ul {
+  margin: var(--space-dense) 0;
+  padding: 0;
+  list-style: none;
+  max-block-size: 16rem;
+  overflow-y: auto;
+}
+
+.iw-inline-confirm {
+  display: grid;
+  gap: var(--space-compact);
+  max-inline-size: 24rem;
+  padding: var(--space-dense);
+  border: 1px solid var(--border-essential);
+  background: var(--surface-primary);
+}
+
+.iw-character-count {
+  display: block;
+  font-size: var(--font-size-caption);
+  color: var(--text-secondary);
+  min-block-size: 1.5em;
+}
+
+.iw-character-count[data-over="true"] {
+  color: var(--status-critical);
+  font-weight: var(--font-weight-emphasis);
+}
+
+.iw-inset {
+  border-inline-start: var(--edge-signature) solid var(--identity);
+  padding-inline-start: var(--space-standard);
+  padding-block: var(--space-dense);
+  background: var(--surface-grouped);
+  max-inline-size: var(--measure-prose);
+}
+
+@media (forced-colors: active) {
+  .iw-tag,
+  .iw-listbox,
+  .iw-scroll-area,
+  .iw-palette,
+  .iw-inline-confirm,
+  .iw-drop-zone,
+  .iw-code-block pre {
+    border-color: CanvasText;
+  }
+
+  .iw-avatar-group li {
+    border-color: Canvas;
+    outline: 1px solid CanvasText;
+  }
+
+  .iw-inset {
+    border-inline-start-color: CanvasText;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   C98-C111. The last of the catalogue. Two groups, one rule: the state must
+   survive greyscale, the operation must survive the absence of a gesture, and
+   the position must survive not being able to count shapes.
+   --------------------------------------------------------------------------- */
+
+/* C98 Rating */
+.iw-rating {
+  display: grid;
+  gap: var(--space-detail, 4px);
+  justify-items: start;
+  border: var(--edge-boundary-essential, 1px) solid var(--border-essential);
+  padding: var(--space-dense, 12px);
+  margin: 0;
+}
+
+.iw-rating-scale {
+  display: flex;
+  gap: var(--space-detail, 4px);
+  color: var(--identity);
+  font-size: 1.25em;
+}
+
+.iw-rating-scale label {
+  display: grid;
+  place-items: center;
+  min-inline-size: var(--target-pointer, 24px);
+  min-block-size: var(--target-pointer, 24px);
+}
+
+.iw-rating-empty {
+  color: var(--text-quiet);
+}
+
+/* C99 Transfer list */
+.iw-transfer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-dense, 12px);
+  align-items: start;
+}
+
+@media (min-width: 900px) {
+  .iw-transfer {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  }
+}
+
+.iw-transfer-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: var(--edge-boundary-essential, 1px) solid var(--border-essential);
+  min-block-size: 6rem;
+  max-block-size: 12rem;
+  overflow-y: auto;
+}
+
+.iw-transfer-list [role="option"] {
+  padding: var(--space-detail, 4px) var(--space-dense, 12px);
+  min-block-size: var(--target-pointer, 24px);
+}
+
+.iw-transfer-list [role="option"][aria-selected="true"]::before {
+  content: "✓ ";
+}
+
+.iw-transfer-list [role="option"][aria-selected="false"]::before {
+  content: "  ";
+  white-space: pre;
+}
+
+.iw-transfer-moves {
+  display: grid;
+  gap: var(--space-compact, 8px);
+  align-content: center;
+}
+
+/* C100 Notification centre */
+.iw-notifications {
+  display: grid;
+  gap: var(--space-compact, 8px);
+  justify-items: start;
+}
+
+.iw-notifications-panel {
+  border: var(--edge-boundary-essential, 1px) solid var(--border-essential);
+  background: var(--surface-primary);
+  padding: var(--space-dense, 12px);
+  max-inline-size: 24rem;
+}
+
+.iw-notifications-list {
+  margin: var(--space-compact, 8px) 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: var(--space-detail, 4px);
+}
+
+.iw-notifications-list .is-unread {
+  font-weight: 600;
+}
+
+.iw-notifications-list .is-unread::before {
+  content: "● ";
+}
+
+.iw-notifications-list .is-read::before {
+  content: "  ";
+  white-space: pre;
+}
+
+/* C101 Selection card grid */
+.iw-cardgrid {
+  display: grid;
+  gap: var(--space-compact, 8px);
+}
+
+.iw-cardgrid [role="row"] {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: var(--space-compact, 8px);
+}
+
+.iw-card {
+  display: grid;
+  gap: var(--space-detail, 4px);
+  padding: var(--space-dense, 12px);
+  border: var(--edge-boundary-essential, 1px) solid var(--border-essential);
+  min-block-size: 4.5rem;
+}
+
+.iw-card[aria-selected="true"] {
+  border-width: var(--edge-signature, 3px);
+}
+
+.iw-card[aria-selected="true"] .iw-card-name::before {
+  content: "✓ ";
+}
+
+.iw-card-fact {
+  color: var(--text-quiet);
+  font-size: var(--font-size-caption, 12px);
+}
+
+/* C102 Virtualised list */
+.iw-virtual-block {
+  display: grid;
+  gap: var(--space-detail, 4px);
+}
+
+.iw-virtual {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  block-size: 6rem;
+  overflow-y: auto;
+  border: var(--edge-boundary-essential, 1px) solid var(--border-essential);
+}
+
+.iw-virtual li {
+  padding-inline: var(--space-dense, 12px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* C103 One-time code */
+.iw-otp {
+  font-family: var(--font-numeric, ui-monospace, monospace);
+  letter-spacing: 0.5em;
+  inline-size: 9rem;
+}
+
+/* C104 Bottom sheet */
+.iw-sheet {
+  display: grid;
+  gap: var(--space-compact, 8px);
+  justify-items: start;
+  inline-size: min(100%, 32rem);
+  border: var(--edge-boundary-essential, 1px) solid var(--border-essential);
+  background: var(--surface-primary);
+  padding: var(--space-standard, 16px);
+  padding-block-end: calc(var(--space-standard, 16px) + env(safe-area-inset-bottom, 0px));
+}
+
+.iw-sheet-grabber {
+  inline-size: 2.5rem;
+  block-size: 4px;
+  justify-self: center;
+  background: var(--border-essential);
+}
+
+/* C105 Tab bar */
+.iw-tabbar ul {
+  display: flex;
+  margin: 0;
+  padding: var(--space-compact, 8px) 0;
+  padding-block-end: calc(var(--space-compact, 8px) + env(safe-area-inset-bottom, 0px));
+  list-style: none;
+  border-block-start: var(--edge-boundary-essential, 1px) solid var(--border-essential);
+}
+
+.iw-tabbar li {
+  flex: 1 1 0;
+  min-inline-size: 0;
+}
+
+.iw-tabbar a {
+  display: grid;
+  /* Without an explicit track the auto column takes the max-content width of a
+     long label and pushes the row past a narrow viewport. */
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  gap: 2px;
+  padding: var(--space-detail, 4px);
+  min-block-size: var(--target-pointer, 24px);
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
+.iw-tabbar a[aria-current="page"] {
+  color: var(--identity);
+  font-weight: 600;
+  box-shadow: inset 0 3px 0 0 currentColor;
+}
+
+.iw-tabbar-label {
+  font-size: var(--font-size-caption, 12px);
+  text-align: center;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+/* C106 Navigation rail */
+.iw-rail ul {
+  display: grid;
+  gap: var(--space-detail, 4px);
+  margin: 0;
+  padding: var(--space-compact, 8px);
+  list-style: none;
+  inline-size: max-content;
+  border-inline-end: var(--edge-boundary-essential, 1px) solid var(--border-essential);
+}
+
+.iw-rail a {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding: var(--space-compact, 8px);
+  min-inline-size: 4.5rem;
+  min-block-size: var(--target-standard-control, 40px);
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
+.iw-rail a[aria-current="page"] {
+  color: var(--identity);
+  font-weight: 600;
+  box-shadow: inset 3px 0 0 0 currentColor;
+}
+
+.iw-rail-label {
+  font-size: var(--font-size-caption, 12px);
+  text-align: center;
+}
+
+/* C107 Floating action button */
+.iw-fab-block {
+  display: grid;
+  gap: var(--space-compact, 8px);
+  justify-items: start;
+}
+
+.iw-fab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-compact, 8px);
+  min-block-size: 48px;
+  padding-inline: var(--space-standard, 16px);
+  border: var(--edge-boundary-essential, 1px) solid var(--identity);
+  background: var(--identity);
+  color: var(--identity-ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+/* C108 Swipe actions */
+.iw-swipe-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: var(--space-detail, 4px);
+}
+
+.iw-swipe-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-compact, 8px);
+  padding: var(--space-compact, 8px);
+  border-block-end: var(--edge-boundary-subtle, 1px) solid var(--border-quiet);
+}
+
+.iw-swipe-actions {
+  display: flex;
+  gap: var(--space-compact, 8px);
+}
+
+/* C109 Pull to refresh */
+.iw-refresh {
+  display: grid;
+  gap: var(--space-detail, 4px);
+  justify-items: start;
+}
+
+/* C110 Page indicator */
+.iw-pages {
+  display: grid;
+  gap: var(--space-detail, 4px);
+  justify-items: start;
+}
+
+.iw-pages-dots {
+  display: flex;
+  gap: var(--space-compact, 8px);
+}
+
+.iw-page-dot {
+  inline-size: var(--target-pointer, 24px);
+  block-size: var(--target-pointer, 24px);
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+
+.iw-page-dot::before {
+  content: "";
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: 50%;
+  border: var(--edge-boundary-essential, 1px) solid var(--border-essential);
+}
+
+.iw-page-dot[aria-current="true"]::before {
+  inline-size: 12px;
+  block-size: 12px;
+  background: var(--identity);
+  border-color: var(--identity);
+}
+
+/* C111 Share action */
+.iw-share {
+  display: grid;
+  gap: var(--space-detail, 4px);
+  justify-items: start;
+}
+
+@media (forced-colors: active) {
+  .iw-card[aria-selected="true"],
+  .iw-transfer-list [role="option"][aria-selected="true"] {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+  }
+
+  .iw-fab {
+    background: ButtonFace;
+    color: ButtonText;
+    border-color: ButtonText;
+  }
+
+  .iw-page-dot[aria-current="true"]::before {
+    background: CanvasText;
+    border-color: CanvasText;
+  }
+
+  .iw-tabbar a[aria-current="page"],
+  .iw-rail a[aria-current="page"] {
+    color: Highlight;
+  }
+}
+
+} /* end @layer instrument-workshop */
