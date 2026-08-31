@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.2.0 - 2026-08-31
+
 - Added Next Space and Previous Space preset actions so spaces can be switched from a mouse button (#28).
 - Added system-reserved shortcut recording through a temporary keyboard event tap, so combinations such as Control + Arrow can be captured instead of being swallowed by macOS (#28).
 - Added support for several mice on one computer: each connected mouse can have its own model, profiles, global overrides, and mappings, tied to its hardware identity so they survive reconnecting (#30).
