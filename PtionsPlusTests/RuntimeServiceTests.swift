@@ -545,17 +545,22 @@ final class ApplicationDiscoveryServiceTests: XCTestCase {
 
 private final class FakeMappingResolver: MappingResolving {
     var mapping: ButtonMapping?
+    var mappingsByDevice: [String?: ButtonMapping] = [:]
     var availableButtons = Set(MouseButton.allCases)
 
     init(mapping: ButtonMapping?) {
         self.mapping = mapping
     }
 
-    func resolvedMapping(for button: MouseButton, bundleIdentifier: String?) -> ButtonMapping? {
-        mapping
+    func resolvedMapping(
+        for button: MouseButton,
+        bundleIdentifier: String?,
+        deviceID: String?
+    ) -> ButtonMapping? {
+        mappingsByDevice[deviceID] ?? mapping
     }
 
-    func isButtonAvailable(_ button: MouseButton) -> Bool {
+    func isButtonAvailable(_ button: MouseButton, deviceID: String?) -> Bool {
         availableButtons.contains(button)
     }
 }

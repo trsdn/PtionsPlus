@@ -161,64 +161,127 @@ struct ConfigurationValidationResult {
 
 enum ConfigurationValidator {
     static func validate(_ configuration: AppConfiguration) -> ConfigurationValidationResult {
-        var messages: [String] = []
+        var messages = validateScope(
+            profiles: configuration.profiles,
+            globalButtons: configuration.globalButtons,
+            scopeLabel: nil
+        )
 
-        let defaultProfiles = configuration.profiles.filter(\.isDefault)
-        if defaultProfiles.count != 1 {
-            messages.append("Expected exactly one Default profile, found \(defaultProfiles.count).")
+        if !duplicates(in: configuration.devices.map(\.id)).isEmpty {
+            messages.append("Each mouse may only have one configuration.")
         }
 
-        let duplicateProfileIDs = duplicates(in: configuration.profiles.map(\.id))
-        if !duplicateProfileIDs.isEmpty {
-            messages.append("Profile identifiers must be unique.")
-        }
-
-        let bundleIdentifiers = configuration.profiles.compactMap(\.bundleIdentifier)
-        let duplicateBundleIdentifiers = duplicates(in: bundleIdentifiers)
-        if !duplicateBundleIdentifiers.isEmpty {
-            messages.append("App profiles must have unique bundle identifiers.")
-        }
-
-        var mappingIDs = Set<UUID>()
-        for profile in configuration.profiles {
-            let duplicateButtons = duplicates(in: profile.mappings.map(\.button))
-            if !duplicateButtons.isEmpty {
-                messages.append("\(profile.name) contains duplicate button mappings.")
-            }
-
-            for mapping in profile.mappings {
-                if !mappingIDs.insert(mapping.id).inserted {
-                    messages.append("Button mapping identifiers must be unique.")
-                    break
-                }
-                if mapping.shortcut != nil && mapping.systemAction != nil {
-                    messages.append("\(profile.name) contains a mapping with both a shortcut and preset action.")
-                }
-                if mapping.holdWhilePressed && mapping.shortcut == nil {
-                    messages.append("\(profile.name) contains Push-to-Talk without a shortcut.")
-                }
-            }
-        }
-
-        if Set(configuration.globalButtons).count != configuration.globalButtons.count {
-            messages.append("Global override buttons must be unique.")
+        for device in configuration.devices {
+            messages.append(contentsOf: validateScope(
+                profiles: device.profiles,
+                globalButtons: device.globalButtons,
+                scopeLabel: device.name
+            ))
         }
 
         return ConfigurationValidationResult(messages: Array(Set(messages)).sorted())
     }
 
+    private static func validateScope(
+        profiles: [AppProfile],
+        globalButtons: [MouseButton],
+        scopeLabel: String?
+    ) -> [String] {
+        var messages: [String] = []
+        func scoped(_ message: String) -> String {
+            guard let scopeLabel else { return message }
+            return "\(scopeLabel): \(message)"
+        }
+
+        let defaultProfiles = profiles.filter(\.isDefault)
+        if defaultProfiles.count != 1 {
+            messages.append(
+                scoped("Expected exactly one Default profile, found \(defaultProfiles.count).")
+            )
+        }
+
+        let duplicateProfileIDs = duplicates(in: profiles.map(\.id))
+        if !duplicateProfileIDs.isEmpty {
+            messages.append(scoped("Profile identifiers must be unique."))
+        }
+
+        let bundleIdentifiers = profiles.compactMap(\.bundleIdentifier)
+        let duplicateBundleIdentifiers = duplicates(in: bundleIdentifiers)
+        if !duplicateBundleIdentifiers.isEmpty {
+            messages.append(scoped("App profiles must have unique bundle identifiers."))
+        }
+
+        var mappingIDs = Set<UUID>()
+        for profile in profiles {
+            let duplicateButtons = duplicates(in: profile.mappings.map(\.button))
+            if !duplicateButtons.isEmpty {
+                messages.append(scoped("\(profile.name) contains duplicate button mappings."))
+            }
+
+            for mapping in profile.mappings {
+                if !mappingIDs.insert(mapping.id).inserted {
+                    messages.append(scoped("Button mapping identifiers must be unique."))
+                    break
+                }
+                if mapping.shortcut != nil && mapping.systemAction != nil {
+                    messages.append(
+                        scoped("\(profile.name) contains a mapping with both a shortcut and preset action.")
+                    )
+                }
+                if mapping.holdWhilePressed && mapping.shortcut == nil {
+                    messages.append(scoped("\(profile.name) contains Push-to-Talk without a shortcut."))
+                }
+            }
+        }
+
+        if Set(globalButtons).count != globalButtons.count {
+            messages.append(scoped("Global override buttons must be unique."))
+        }
+
+        return messages
+    }
+
     static func repair(_ configuration: AppConfiguration) -> AppConfiguration {
         var repaired = configuration
         repaired.schemaVersion = AppConfiguration.currentSchemaVersion
-        repaired.globalButtons = Array(Set(configuration.globalButtons))
-            .sorted { $0.rawValue < $1.rawValue }
 
+        let sharedScope = repairScope(
+            profiles: configuration.profiles,
+            globalButtons: configuration.globalButtons
+        )
+        repaired.profiles = sharedScope.profiles
+        repaired.globalButtons = sharedScope.globalButtons
+
+        var seenDeviceIDs = Set<String>()
+        var repairedDevices: [MouseDeviceConfiguration] = []
+        for device in configuration.devices {
+            guard seenDeviceIDs.insert(device.id).inserted else {
+                continue
+            }
+            var repairedDevice = device
+            let scope = repairScope(
+                profiles: device.profiles,
+                globalButtons: device.globalButtons
+            )
+            repairedDevice.profiles = scope.profiles
+            repairedDevice.globalButtons = scope.globalButtons
+            repairedDevices.append(repairedDevice)
+        }
+        repaired.devices = repairedDevices
+
+        return repaired
+    }
+
+    private static func repairScope(
+        profiles: [AppProfile],
+        globalButtons: [MouseButton]
+    ) -> (profiles: [AppProfile], globalButtons: [MouseButton]) {
         var usedProfileIDs = Set<UUID>()
         var defaultProfile: AppProfile?
         var appProfiles: [AppProfile] = []
         var appProfileIndices: [String: Int] = [:]
 
-        for originalProfile in configuration.profiles {
+        for originalProfile in profiles {
             var profile = normalizedProfile(originalProfile)
             if !usedProfileIDs.insert(profile.id).inserted {
                 profile.id = UUID()
@@ -246,19 +309,22 @@ enum ConfigurationValidator {
             }
         }
 
-        repaired.profiles = [defaultProfile ?? AppProfile.makeDefault()] + appProfiles
+        var repairedProfiles = [defaultProfile ?? AppProfile.makeDefault()] + appProfiles
 
         var usedMappingIDs = Set<UUID>()
-        for profileIndex in repaired.profiles.indices {
-            for mappingIndex in repaired.profiles[profileIndex].mappings.indices {
-                if !usedMappingIDs.insert(repaired.profiles[profileIndex].mappings[mappingIndex].id).inserted {
-                    repaired.profiles[profileIndex].mappings[mappingIndex].id = UUID()
-                    usedMappingIDs.insert(repaired.profiles[profileIndex].mappings[mappingIndex].id)
+        for profileIndex in repairedProfiles.indices {
+            for mappingIndex in repairedProfiles[profileIndex].mappings.indices {
+                if !usedMappingIDs.insert(repairedProfiles[profileIndex].mappings[mappingIndex].id).inserted {
+                    repairedProfiles[profileIndex].mappings[mappingIndex].id = UUID()
+                    usedMappingIDs.insert(repairedProfiles[profileIndex].mappings[mappingIndex].id)
                 }
             }
         }
 
-        return repaired
+        return (
+            repairedProfiles,
+            Array(Set(globalButtons)).sorted { $0.rawValue < $1.rawValue }
+        )
     }
 
     private static func normalizedProfile(_ profile: AppProfile) -> AppProfile {

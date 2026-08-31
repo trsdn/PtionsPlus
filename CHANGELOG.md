@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Added Next Space and Previous Space preset actions so spaces can be switched from a mouse button (#28).
+- Added system-reserved shortcut recording through a temporary keyboard event tap, so combinations such as Control + Arrow can be captured instead of being swallowed by macOS (#28).
+- Added support for several mice on one computer: each connected mouse can have its own model, profiles, global overrides, and mappings, tied to its hardware identity so they survive reconnecting (#30).
+- Added IOKit based mouse discovery and per-event device attribution, with a graceful fallback to the shared configuration when Input Monitoring is not granted (#30).
+- Added configuration schema version 4 with per-device scopes, validation, and repair; version 3 files keep working unchanged.
+- Added the originating mouse to the Debug monitor output.
+
 ## 1.1.4 - 2026-07-28
 
 - Added schema-aware, validated, transactional configuration persistence with explicit backed-up recovery.

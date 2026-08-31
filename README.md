@@ -28,17 +28,19 @@ You have a mouse with extra buttons. The vendor's companion app is 200 MB, phone
 
 **Per-app profiles** — Different mappings for every app. Safari gets browser navigation, Xcode gets build shortcuts, everything else gets your defaults.
 
+**Multiple mice** — Every connected mouse is detected and can carry its own model, profiles, and mappings, tied to the hardware so they survive disconnecting and reconnecting. Mice without their own setup fall back to a shared configuration.
+
 **System actions** — Mission Control, App Expose, Show Desktop, and Launchpad use a dynamically detected CoreDock integration with graceful fallback when unavailable.
 
-**Shortcut recorder** — Click "Assign", press your key combo. Supports all modifier combinations.
+**Shortcut recorder** — Click "Assign", press your key combo. Supports all modifier combinations, including system-reserved shortcuts such as Control + Arrow that macOS would otherwise swallow.
 
-**16 preset actions** — Spotlight, Screenshot Tool, Notification Center, Lock Screen, and more. Logical shortcuts adapt to the active keyboard layout.
+**18 preset actions** — Next/Previous Space, Spotlight, Screenshot Tool, Notification Center, Lock Screen, and more. Logical shortcuts adapt to the active keyboard layout.
 
 **Supported mouse models** — Manually select MX Master 4/3/3S/2S, MX Anywhere 3, MX Ergo, MX Vertical, G502, G604, or a generic 3/5-button model.
 
 **Launch at login** — Native `SMAppService` integration.
 
-**Debug monitor** — Live view of raw mouse events for troubleshooting.
+**Debug monitor** — Live view of raw mouse events, including the mouse that produced them, for troubleshooting.
 
 ## Supported Mice
 
@@ -127,6 +129,12 @@ On first launch, Ptions+ will prompt for Accessibility permissions. This is requ
 
 **System Settings** → **Privacy & Security** → **Accessibility** → enable **Ptions+**
 
+### Grant Input Monitoring Access (optional)
+
+Input Monitoring is only needed to tell several connected mice apart. Without it, Ptions+ still lists your mice but every one of them uses the shared mappings.
+
+**System Settings** → **Privacy & Security** → **Input Monitoring** → enable **Ptions+**
+
 ## How It Works
 
 ```
@@ -136,17 +144,33 @@ Mouse Button Press
   CGEventTap (EventTapService)
        │
        ▼
+  Device Attribution (HIDMouseDeviceService)
+       │
+       ▼
   Active App Lookup (ActiveAppMonitor)
        │
        ▼
-  Profile Match (MappingStore)
+  Profile Match (MappingStore, scoped to the mouse)
        │
        ├── Has mapping? → Coordinated input / available system action → Suppress event pair
        │
        └── No mapping?  → Pass through
 ```
 
-A session-level `CGEventTap` intercepts `otherMouseDown` / `otherMouseUp` events. A deterministic state machine keeps each down/up suppression decision paired, coordinates held shortcuts, and passes unsupported model buttons through. Mapped buttons either simulate a keyboard shortcut via `CGEvent` posting or trigger an available system action.
+A session-level `CGEventTap` intercepts `otherMouseDown` / `otherMouseUp` events. A deterministic state machine keeps each down/up suppression decision paired per mouse, coordinates held shortcuts, and passes unsupported model buttons through. Mapped buttons either simulate a keyboard shortcut via `CGEvent` posting or trigger an available system action.
+
+CoreGraphics events carry no hardware identity, so an `IOHIDManager` running on its own run loop records raw HID button reports and matches them against the events seen by the tap. When a report cannot be matched — for example while Input Monitoring is missing — the shared configuration is used.
+
+## Multiple Mice
+
+Settings has a scope selector above the tabs:
+
+- **All Mice (Shared)** — the fallback configuration used by every mouse without its own setup.
+- **A specific mouse** — its own model, profiles, global overrides, and mappings.
+
+Use **General → Connected Mice → Configure Separately** to give a mouse its own mappings, seeded from the shared configuration. **Use Shared** deletes them again.
+
+Mice are identified by vendor, product, and serial number, so mappings survive disconnecting and reconnecting. Hardware that reports no serial number cannot be told apart from an identical second unit; both share the same configuration, and settings flags this.
 
 ## Configuration
 
@@ -185,11 +209,14 @@ PtionsPlus/
 ├── PtionsApp.swift              # Entry point, AppDelegate, lifecycle
 ├── Model/
 │   ├── ButtonMapping.swift      # Data models: profiles, mappings, mice
+│   ├── MouseDevice.swift        # Device identity and per-mouse configuration
 │   ├── MappingStore.swift       # Transactional state and profile lookup
 │   └── ConfigurationPersistence.swift
 ├── Services/
 │   ├── EventTapService.swift    # CGEventTap lifecycle and diagnostics
 │   ├── EventStateMachine.swift  # Paired mouse-event decisions
+│   ├── MouseDeviceService.swift # IOKit discovery and device attribution
+│   ├── HotKeyCaptureTap.swift   # Records system-reserved shortcuts
 │   ├── KeySimulator.swift       # Coordinated CGEvent and preset execution
 │   ├── RuntimeServiceCoordinator.swift
 │   ├── LaunchAtLoginService.swift

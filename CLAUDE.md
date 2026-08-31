@@ -56,7 +56,8 @@ Core event flow:
 ```text
 CGEventTap
   -> EventTapService translates the event
-  -> EventStateMachine resolves the mapping and preserves down/up state
+  -> HIDMouseDeviceService attributes it to a physical mouse
+  -> EventStateMachine resolves the mapping and preserves down/up state per mouse
   -> SystemEventActionExecutor coordinates keyboard state or preset actions
   -> suppress or pass through using the original down-event decision
 ```
@@ -65,12 +66,29 @@ Important components:
 
 - `MappingStore` publishes only configurations that were validated and atomically persisted.
 - `ConfigurationRepository` distinguishes missing, corrupt, unsupported, invalid, and unwritable configuration states.
-- `EventStateMachine` owns paired press state and held shortcut release.
+- `EventStateMachine` owns paired press state, keyed by device plus button, and held shortcut release.
 - `KeyboardStateCoordinator` reference-counts overlapping keys and modifiers.
 - `CoreDockClient` resolves the private Dock symbol dynamically; unavailable actions fail safely.
 - `KeyboardLayoutResolver` maps logical preset characters through the active input source.
+- `HotKeyCaptureTap` captures system-reserved shortcuts while recording and falls back to the responder chain.
+- `HIDMouseDeviceService` discovers mice through IOKit and attributes button events to them.
 - `LaunchAtLoginViewModel` uses `SMAppService.mainApp.status` as its source of truth.
 - `ApplicationDiscoveryService` scans installed apps off the main thread and retains manual selection.
+
+## Multiple Mice
+
+`AppConfiguration` holds a shared scope (`mouseModel`, `profiles`, `globalButtons`) plus optional per-device
+scopes in `devices`. Resolution rule:
+
+```text
+event device has a MouseDeviceConfiguration -> use that scope
+otherwise                                   -> use the shared scope
+```
+
+- Devices are identified by vendor, product, and serial number, so configurations survive reconnects.
+- Hardware without a serial number cannot be distinguished from an identical unit and shares one scope.
+- Device discovery needs no extra permission; attribution needs Input Monitoring and degrades to the shared scope without it.
+- `MappingStore.editingDeviceID` is UI state only. Runtime resolution always takes an explicit device id.
 
 ## Constraints
 
@@ -80,7 +98,7 @@ Important components:
 - Logi Options+ or other software that captures the same buttons must be disabled.
 - Mouse model selection is manual. Buttons outside the selected model remain saved but are inactive.
 - Recorded custom shortcuts store physical key codes. Semantic presets resolve logical characters for the active keyboard layout.
-- Spotlight and Notification Center presets use the documented default macOS shortcut; users with reassigned shortcuts should record a custom shortcut.
+- Spotlight, Notification Center, and space switching presets use the documented default macOS shortcut; users with reassigned shortcuts should record a custom shortcut.
 
 ## Persistence
 

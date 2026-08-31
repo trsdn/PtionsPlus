@@ -245,11 +245,11 @@ final class MappingStoreTests: XCTestCase {
         XCTAssertEqual(impact.activeMappingCount, 2)
         XCTAssertEqual(impact.globalOverrideCount, 1)
         XCTAssertTrue(store.setMouseModel(.generic3))
-        XCTAssertFalse(store.isButtonAvailable(.button6))
+        XCTAssertFalse(store.isButtonAvailable(.button6, deviceID: nil))
         XCTAssertNotNil(store.defaultProfile.mappings.first { $0.button == .button6 }?.systemAction)
 
         XCTAssertTrue(store.setMouseModel(.mxMaster4))
-        XCTAssertTrue(store.isButtonAvailable(.button6))
+        XCTAssertTrue(store.isButtonAvailable(.button6, deviceID: nil))
         XCTAssertEqual(
             store.defaultProfile.mappings.first { $0.button == .button6 }?.systemAction,
             .copy

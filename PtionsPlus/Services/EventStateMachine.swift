@@ -6,8 +6,12 @@ enum EventDisposition: Equatable {
 }
 
 protocol MappingResolving {
-    func resolvedMapping(for button: MouseButton, bundleIdentifier: String?) -> ButtonMapping?
-    func isButtonAvailable(_ button: MouseButton) -> Bool
+    func resolvedMapping(
+        for button: MouseButton,
+        bundleIdentifier: String?,
+        deviceID: String?
+    ) -> ButtonMapping?
+    func isButtonAvailable(_ button: MouseButton, deviceID: String?) -> Bool
 }
 
 protocol EventActionExecuting: AnyObject {
@@ -16,6 +20,11 @@ protocol EventActionExecuting: AnyObject {
     func releaseHeldShortcut(_ shortcut: KeyboardShortcut)
     func performPresetAction(_ action: PresetAction) -> Bool
     func releaseAllHeldInput()
+}
+
+private struct ButtonPressKey: Hashable {
+    let deviceID: String?
+    let button: MouseButton
 }
 
 private struct ButtonPressState {
@@ -27,7 +36,10 @@ private struct ButtonPressState {
 final class EventStateMachine {
     private let mappingResolver: MappingResolving
     private let actionExecutor: EventActionExecuting
-    private var activePresses: [MouseButton: ButtonPressState] = [:]
+    private var activePresses: [ButtonPressKey: ButtonPressState] = [:]
+    /// Preserves press order so an unattributed release can still be paired with
+    /// the oldest matching press for that button.
+    private var pressOrder: [ButtonPressKey] = []
 
     init(mappingResolver: MappingResolving, actionExecutor: EventActionExecuting) {
         self.mappingResolver = mappingResolver
@@ -37,12 +49,17 @@ final class EventStateMachine {
     func handle(
         button: MouseButton,
         isDown: Bool,
-        bundleIdentifier: String?
+        bundleIdentifier: String?,
+        deviceID: String? = nil
     ) -> EventDisposition {
         if isDown {
-            return handleDown(button: button, bundleIdentifier: bundleIdentifier)
+            return handleDown(
+                button: button,
+                bundleIdentifier: bundleIdentifier,
+                deviceID: deviceID
+            )
         }
-        return handleUp(button: button)
+        return handleUp(button: button, deviceID: deviceID)
     }
 
     func stop() {
@@ -52,30 +69,30 @@ final class EventStateMachine {
             }
         }
         activePresses.removeAll()
+        pressOrder.removeAll()
         actionExecutor.releaseAllHeldInput()
     }
 
     private func handleDown(
         button: MouseButton,
-        bundleIdentifier: String?
+        bundleIdentifier: String?,
+        deviceID: String?
     ) -> EventDisposition {
-        if var existing = activePresses[button] {
+        let key = ButtonPressKey(deviceID: deviceID, button: button)
+        if var existing = activePresses[key] {
             existing.depth += 1
-            activePresses[button] = existing
+            activePresses[key] = existing
             return existing.disposition
         }
 
-        guard mappingResolver.isButtonAvailable(button),
+        guard mappingResolver.isButtonAvailable(button, deviceID: deviceID),
               let mapping = mappingResolver.resolvedMapping(
                 for: button,
-                bundleIdentifier: bundleIdentifier
+                bundleIdentifier: bundleIdentifier,
+                deviceID: deviceID
               ),
               mapping.isActive else {
-            activePresses[button] = ButtonPressState(
-                depth: 1,
-                disposition: .passThrough,
-                heldShortcut: nil
-            )
+            store(ButtonPressState(depth: 1, disposition: .passThrough, heldShortcut: nil), for: key)
             return .passThrough
         }
 
@@ -99,42 +116,71 @@ final class EventStateMachine {
             disposition = .passThrough
         }
 
-        activePresses[button] = ButtonPressState(
-            depth: 1,
-            disposition: disposition,
-            heldShortcut: heldShortcut
+        store(
+            ButtonPressState(depth: 1, disposition: disposition, heldShortcut: heldShortcut),
+            for: key
         )
         return disposition
     }
 
-    private func handleUp(button: MouseButton) -> EventDisposition {
-        guard var press = activePresses[button] else {
+    private func handleUp(button: MouseButton, deviceID: String?) -> EventDisposition {
+        guard let key = matchingPressKey(for: button, deviceID: deviceID),
+              var press = activePresses[key] else {
             return .passThrough
         }
 
         if press.depth > 1 {
             press.depth -= 1
-            activePresses[button] = press
+            activePresses[key] = press
             return press.disposition
         }
 
-        activePresses.removeValue(forKey: button)
+        activePresses.removeValue(forKey: key)
+        pressOrder.removeAll { $0 == key }
         if let shortcut = press.heldShortcut {
             actionExecutor.releaseHeldShortcut(shortcut)
         }
         return press.disposition
     }
+
+    private func matchingPressKey(
+        for button: MouseButton,
+        deviceID: String?
+    ) -> ButtonPressKey? {
+        let exact = ButtonPressKey(deviceID: deviceID, button: button)
+        if activePresses[exact] != nil {
+            return exact
+        }
+        return pressOrder.first { $0.button == button }
+    }
+
+    private func store(_ state: ButtonPressState, for key: ButtonPressKey) {
+        if activePresses[key] == nil {
+            pressOrder.append(key)
+        }
+        activePresses[key] = state
+    }
 }
 
 extension MappingStore: MappingResolving {
-    func resolvedMapping(for button: MouseButton, bundleIdentifier: String?) -> ButtonMapping? {
+    func resolvedMapping(
+        for button: MouseButton,
+        bundleIdentifier: String?,
+        deviceID: String?
+    ) -> ButtonMapping? {
         guard isConfigurationUsable else {
             return nil
         }
-        return mapping(for: button, in: profileFor(bundleIdentifier: bundleIdentifier))
+        return runtimeMapping(
+            for: button,
+            bundleIdentifier: bundleIdentifier,
+            deviceID: deviceID
+        )
     }
 
-    func isButtonAvailable(_ button: MouseButton) -> Bool {
-        isConfigurationUsable && configuration.mouseModel.availableButtons.contains(button)
+    func isButtonAvailable(_ button: MouseButton, deviceID: String?) -> Bool {
+        isConfigurationUsable && runtimeModel(forDeviceID: deviceID)
+            .availableButtons
+            .contains(button)
     }
 }
