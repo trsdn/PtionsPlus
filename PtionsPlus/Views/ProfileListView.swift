@@ -8,7 +8,7 @@ struct ProfileListView: View {
     var body: some View {
         List(selection: $selectedProfileId) {
             Section("Default") {
-                ForEach(store.configuration.profiles.filter { $0.isDefault }) { profile in
+                ForEach(store.editingConfiguration.profiles.filter { $0.isDefault }) { profile in
                     Label(profile.name, systemImage: "globe")
                         .accessibilityIdentifier("profile.default.\(profile.id.uuidString)")
                         .tag(profile.id)
@@ -16,7 +16,7 @@ struct ProfileListView: View {
             }
 
             Section("App-Specific") {
-                ForEach(store.configuration.profiles.filter { !$0.isDefault }) { profile in
+                ForEach(store.editingConfiguration.profiles.filter { !$0.isDefault }) { profile in
                     Label(profile.name, systemImage: "app")
                         .accessibilityIdentifier("profile.app.\(profile.id.uuidString)")
                         .tag(profile.id)
@@ -41,7 +41,7 @@ struct ProfileListView: View {
         }
         .sheet(isPresented: $showingAppPicker) {
             AppPickerView(
-                configuredBundleIdentifiers: Set(store.configuration.profiles.compactMap(\.bundleIdentifier))
+                configuredBundleIdentifiers: Set(store.editingConfiguration.profiles.compactMap(\.bundleIdentifier))
             ) { bundleId, appName in
                 let profile = AppProfile(
                     name: appName,
@@ -55,7 +55,9 @@ struct ProfileListView: View {
             }
         }
         .onAppear {
-            if selectedProfileId == nil {
+            let profiles = store.editingConfiguration.profiles
+            if selectedProfileId == nil
+                || !profiles.contains(where: { $0.id == selectedProfileId }) {
                 selectedProfileId = store.defaultProfile.id
             }
         }

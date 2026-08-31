@@ -11,12 +11,14 @@ struct DebugEvent: Identifiable {
     let timestamp: Date
     let buttonNumber: Int64
     let isDown: Bool
+    let deviceName: String?
 
     var displayString: String {
         let direction = isDown ? "DOWN" : "UP"
         let buttonName = MouseButton(rawValue: Int(buttonNumber))?.displayName
             ?? "Button \(buttonNumber)"
-        return "[\(Self.formatter.string(from: timestamp))] \(buttonName) \(direction)"
+        let source = deviceName.map { " [\($0)]" } ?? ""
+        return "[\(Self.formatter.string(from: timestamp))] \(buttonName) \(direction)\(source)"
     }
 }
 
@@ -54,7 +56,8 @@ final class DebugMonitorModel: ObservableObject {
         events.append(DebugEvent(
             timestamp: mouseEvent.timestamp,
             buttonNumber: mouseEvent.buttonNumber,
-            isDown: mouseEvent.isDown
+            isDown: mouseEvent.isDown,
+            deviceName: mouseEvent.deviceName
         ))
         if events.count > Self.capacity {
             events.removeFirst(events.count - Self.capacity)

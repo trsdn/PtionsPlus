@@ -19,6 +19,10 @@ struct ShortcutRecorderView: NSViewRepresentable {
         nsView.onRecord = onRecord
         nsView.onCancel = onCancel
     }
+
+    static func dismantleNSView(_ nsView: ShortcutRecorderField, coordinator: ()) {
+        nsView.endCapture()
+    }
 }
 
 final class ShortcutRecorderField: NSView {
@@ -27,15 +31,27 @@ final class ShortcutRecorderField: NSView {
 
     private let label = NSTextField(labelWithString: "Press shortcut...")
     private var pendingModifierOnlyShortcut: KeyboardShortcut?
+    private let hotKeyCapture: HotKeyCapturing
 
-    override init(frame frameRect: NSRect) {
-        super.init(frame: frameRect)
+    init(hotKeyCapture: HotKeyCapturing = HotKeyCaptureTap()) {
+        self.hotKeyCapture = hotKeyCapture
+        super.init(frame: .zero)
         setup()
     }
 
+    override convenience init(frame frameRect: NSRect) {
+        self.init(hotKeyCapture: HotKeyCaptureTap())
+        self.frame = frameRect
+    }
+
     required init?(coder: NSCoder) {
+        hotKeyCapture = HotKeyCaptureTap()
         super.init(coder: coder)
         setup()
+    }
+
+    deinit {
+        hotKeyCapture.stop()
     }
 
     private func setup() {
@@ -60,6 +76,43 @@ final class ShortcutRecorderField: NSView {
 
     override var acceptsFirstResponder: Bool { true }
 
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        if window == nil {
+            endCapture()
+        } else {
+            beginCapture()
+        }
+    }
+
+    func endCapture() {
+        hotKeyCapture.stop()
+    }
+
+    func beginCapture() {
+        guard !hotKeyCapture.isCapturing else {
+            return
+        }
+        hotKeyCapture.start { [weak self] event in
+            self?.handleCapturedEvent(event) ?? .passThrough
+        }
+    }
+
+    func handleCapturedEvent(_ event: NSEvent) -> HotKeyCaptureDisposition {
+        switch event.type {
+        case .keyDown:
+            handleKeyDown(keyCode: event.keyCode, modifiers: modifiers(from: event))
+            return .suppress
+        case .keyUp:
+            return .suppress
+        case .flagsChanged:
+            handleFlagsChanged(modifiers: modifiers(from: event))
+            return .passThrough
+        default:
+            return .passThrough
+        }
+    }
+
     private func modifiers(from event: NSEvent) -> KeyboardShortcut.ModifierFlags {
         KeyboardShortcut.ModifierFlags(
             command: event.modifierFlags.contains(.command),
@@ -70,28 +123,27 @@ final class ShortcutRecorderField: NSView {
         )
     }
 
-    override func keyDown(with event: NSEvent) {
-        let keyCode = event.keyCode
-
+    func handleKeyDown(keyCode: UInt16, modifiers: KeyboardShortcut.ModifierFlags) {
         if keyCode == UInt16(kVK_Escape) {
+            endCapture()
             onCancel?()
             return
         }
 
         pendingModifierOnlyShortcut = nil
-        let modifiers = modifiers(from: event)
 
         let shortcut = KeyboardShortcut(keyCode: keyCode, modifiers: modifiers)
         label.stringValue = shortcut.displayString
+        endCapture()
         onRecord?(shortcut)
     }
 
-    override func flagsChanged(with event: NSEvent) {
-        let modifiers = modifiers(from: event)
+    func handleFlagsChanged(modifiers: KeyboardShortcut.ModifierFlags) {
         if modifiers.isEmpty {
             if let shortcut = pendingModifierOnlyShortcut {
                 label.stringValue = shortcut.displayString
                 pendingModifierOnlyShortcut = nil
+                endCapture()
                 onRecord?(shortcut)
                 return
             }
@@ -109,6 +161,14 @@ final class ShortcutRecorderField: NSView {
 
         pendingModifierOnlyShortcut = nil
         label.stringValue = modifiers.displayComponents.joined()
+    }
+
+    override func keyDown(with event: NSEvent) {
+        handleKeyDown(keyCode: event.keyCode, modifiers: modifiers(from: event))
+    }
+
+    override func flagsChanged(with event: NSEvent) {
+        handleFlagsChanged(modifiers: modifiers(from: event))
     }
 
     override func performKeyEquivalent(with event: NSEvent) -> Bool {

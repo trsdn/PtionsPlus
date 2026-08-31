@@ -35,6 +35,10 @@
 		D1E2F3A4B5C6000400000104 /* LaunchAtLoginService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1E2F3A4B5C6000400000204 /* LaunchAtLoginService.swift */; };
 		D1E2F3A4B5C6000400000105 /* ApplicationDiscoveryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1E2F3A4B5C6000400000205 /* ApplicationDiscoveryService.swift */; };
 		D1E2F3A4B5C6000400000106 /* RuntimeServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1E2F3A4B5C6000400000206 /* RuntimeServiceTests.swift */; };
+		E1F2A3B4C5D6000500000101 /* MouseDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1F2A3B4C5D6000500000201 /* MouseDevice.swift */; };
+		E1F2A3B4C5D6000500000102 /* HotKeyCaptureTap.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1F2A3B4C5D6000500000202 /* HotKeyCaptureTap.swift */; };
+		E1F2A3B4C5D6000500000103 /* MouseDeviceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1F2A3B4C5D6000500000203 /* MouseDeviceService.swift */; };
+		E1F2A3B4C5D6000500000104 /* MouseDeviceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1F2A3B4C5D6000500000204 /* MouseDeviceTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -87,6 +91,10 @@
 		D1E2F3A4B5C6000400000204 /* LaunchAtLoginService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchAtLoginService.swift; sourceTree = "<group>"; };
 		D1E2F3A4B5C6000400000205 /* ApplicationDiscoveryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationDiscoveryService.swift; sourceTree = "<group>"; };
 		D1E2F3A4B5C6000400000206 /* RuntimeServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuntimeServiceTests.swift; sourceTree = "<group>"; };
+		E1F2A3B4C5D6000500000201 /* MouseDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MouseDevice.swift; sourceTree = "<group>"; };
+		E1F2A3B4C5D6000500000202 /* HotKeyCaptureTap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotKeyCaptureTap.swift; sourceTree = "<group>"; };
+		E1F2A3B4C5D6000500000203 /* MouseDeviceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MouseDeviceService.swift; sourceTree = "<group>"; };
+		E1F2A3B4C5D6000500000204 /* MouseDeviceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MouseDeviceTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -157,6 +165,7 @@
 				A1B2C3D4E5F60001000002BB /* ButtonMapping.swift */,
 				A1B2C3D4E5F60001000002CC /* MappingStore.swift */,
 				D1E2F3A4B5C6000400000201 /* ConfigurationPersistence.swift */,
+				E1F2A3B4C5D6000500000201 /* MouseDevice.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -172,6 +181,8 @@
 				D1E2F3A4B5C6000400000203 /* RuntimeServiceCoordinator.swift */,
 				D1E2F3A4B5C6000400000204 /* LaunchAtLoginService.swift */,
 				D1E2F3A4B5C6000400000205 /* ApplicationDiscoveryService.swift */,
+				E1F2A3B4C5D6000500000202 /* HotKeyCaptureTap.swift */,
+				E1F2A3B4C5D6000500000203 /* MouseDeviceService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -205,6 +216,7 @@
 			children = (
 				B1C2D3E4F5A6000200000202 /* MappingStoreTests.swift */,
 				D1E2F3A4B5C6000400000206 /* RuntimeServiceTests.swift */,
+				E1F2A3B4C5D6000500000204 /* MouseDeviceTests.swift */,
 			);
 			path = PtionsPlusTests;
 			sourceTree = "<group>";
@@ -369,6 +381,9 @@
 				D1E2F3A4B5C6000400000103 /* RuntimeServiceCoordinator.swift in Sources */,
 				D1E2F3A4B5C6000400000104 /* LaunchAtLoginService.swift in Sources */,
 				D1E2F3A4B5C6000400000105 /* ApplicationDiscoveryService.swift in Sources */,
+				E1F2A3B4C5D6000500000101 /* MouseDevice.swift in Sources */,
+				E1F2A3B4C5D6000500000102 /* HotKeyCaptureTap.swift in Sources */,
+				E1F2A3B4C5D6000500000103 /* MouseDeviceService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -378,6 +393,7 @@
 			files = (
 				B1C2D3E4F5A6000200000101 /* MappingStoreTests.swift in Sources */,
 				D1E2F3A4B5C6000400000106 /* RuntimeServiceTests.swift in Sources */,
+				E1F2A3B4C5D6000500000104 /* MouseDeviceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -11,7 +11,7 @@ struct ProfileEditorView: View {
 
     private var actionCategories: [(String, [PresetAction])] {
         let grouped = Dictionary(grouping: PresetAction.allCases, by: \.category)
-        let order = ["System", "macOS", "Window", "Navigation", "General"]
+        let order = ["System", "Spaces", "macOS", "Window", "Navigation", "General"]
         return order.compactMap { cat in
             guard let actions = grouped[cat] else { return nil }
             return (cat, actions)
@@ -41,7 +41,7 @@ struct ProfileEditorView: View {
                         .foregroundStyle(.secondary)
                 }
 
-                ForEach(store.configuration.mouseModel.availableButtons) { button in
+                ForEach(store.editingConfiguration.model.availableButtons) { button in
                     ButtonMappingRow(
                         store: store,
                         profile: profile,
@@ -85,7 +85,7 @@ struct ProfileEditorView: View {
                 pendingConflictCount = 0
             }
         } message: { button in
-            Text("\(button.displayName(for: store.configuration.mouseModel)) is already configured in \(pendingConflictCount) app profile(s). Enabling Override Apps will force the Default mapping for this button until you turn it off.")
+            Text("\(button.displayName(for: store.editingConfiguration.model)) is already configured in \(pendingConflictCount) app profile(s). Enabling Override Apps will force the Default mapping for this button until you turn it off.")
         }
     }
 
@@ -167,7 +167,7 @@ private struct ButtonMappingRow: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .top, spacing: 16) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(button.displayName(for: store.configuration.mouseModel))
+                    Text(button.displayName(for: store.editingConfiguration.model))
                         .font(.body.weight(.semibold))
 
                     Text(helperText)

@@ -9,6 +9,7 @@ struct MouseButtonEvent {
     let buttonNumber: Int64
     let isDown: Bool
     let timestamp: Date
+    var deviceName: String? = nil
 }
 
 enum EventTapStatus: Equatable {
@@ -110,13 +111,15 @@ final class EventTapService: ObservableObject {
     private let appMonitor: ActiveAppMonitor
     private let eventStateMachine: EventStateMachine
     private let backend: EventTapBackend
+    private let deviceAttributor: MouseDeviceAttributing?
     private var diagnosticsSubscribers: [UUID: (MouseButtonEvent) -> Void] = [:]
 
     init(
         store: MappingStore,
         appMonitor: ActiveAppMonitor,
         actionExecutor: EventActionExecuting = SystemEventActionExecutor(),
-        backend: EventTapBackend = SystemEventTapBackend()
+        backend: EventTapBackend = SystemEventTapBackend(),
+        deviceAttributor: MouseDeviceAttributing? = nil
     ) {
         self.appMonitor = appMonitor
         eventStateMachine = EventStateMachine(
@@ -124,6 +127,7 @@ final class EventTapService: ObservableObject {
             actionExecutor: actionExecutor
         )
         self.backend = backend
+        self.deviceAttributor = deviceAttributor
     }
 
     @discardableResult
@@ -204,10 +208,15 @@ final class EventTapService: ObservableObject {
 
         let buttonNumber = event.getIntegerValueField(.mouseEventButtonNumber)
         let isDown = type == .otherMouseDown
+        let device = deviceAttributor?.device(
+            forButtonNumber: buttonNumber,
+            isDown: isDown
+        )
         deliverDiagnostic(MouseButtonEvent(
             buttonNumber: buttonNumber,
             isDown: isDown,
-            timestamp: Date()
+            timestamp: Date(),
+            deviceName: device?.name
         ))
 
         guard let button = MouseButton(rawValue: Int(buttonNumber)) else {
@@ -217,7 +226,8 @@ final class EventTapService: ObservableObject {
         let disposition = processMouseButton(
             button: button,
             isDown: isDown,
-            bundleIdentifier: appMonitor.activeBundleIdentifier
+            bundleIdentifier: appMonitor.activeBundleIdentifier,
+            deviceID: device?.id
         )
         switch disposition {
         case .passThrough:
@@ -235,12 +245,14 @@ final class EventTapService: ObservableObject {
     func processMouseButton(
         button: MouseButton,
         isDown: Bool,
-        bundleIdentifier: String?
+        bundleIdentifier: String?,
+        deviceID: String? = nil
     ) -> EventDisposition {
         eventStateMachine.handle(
             button: button,
             isDown: isDown,
-            bundleIdentifier: bundleIdentifier
+            bundleIdentifier: bundleIdentifier,
+            deviceID: deviceID
         )
     }
 

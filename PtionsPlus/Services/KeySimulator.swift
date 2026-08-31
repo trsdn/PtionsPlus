@@ -468,6 +468,16 @@ final class PresetActionExecutor {
 
     private func shortcut(for action: PresetAction) -> KeyboardShortcut? {
         switch action {
+        case .nextSpace:
+            return KeyboardShortcut(
+                keyCode: UInt16(kVK_RightArrow),
+                modifiers: .init(control: true)
+            )
+        case .previousSpace:
+            return KeyboardShortcut(
+                keyCode: UInt16(kVK_LeftArrow),
+                modifiers: .init(control: true)
+            )
         case .notificationCenter:
             return logicalShortcut("n", additionalModifiers: .init(function: true))
         case .spotlight:

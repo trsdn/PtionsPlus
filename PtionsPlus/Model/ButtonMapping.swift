@@ -66,8 +66,7 @@ enum MouseModel: String, Codable, CaseIterable, Identifiable {
         }
     }
 
-    var buttonNames: [MouseButton: String] {
-        switch self {
+    var buttonNames: [MouseButton: String] {        switch self {
         case .mxMaster4:
             return [.middle: "Middle Click", .back: "Thumb Back", .forward: "Thumb Forward", .button5: "Front Thumb", .button6: "Thumb Gesture"]
         case .mxMaster3, .mxMaster3s, .mxMaster2s:
@@ -82,6 +81,28 @@ enum MouseModel: String, Codable, CaseIterable, Identifiable {
         default:
             return [:]
         }
+    }
+
+    /// Best matching model for a product name reported by macOS, falling back to
+    /// a generic five button layout for unknown hardware.
+    static func bestGuess(forProductName productName: String) -> MouseModel {
+        let normalized = normalizedModelKey(productName)
+        guard !normalized.isEmpty else {
+            return .generic5
+        }
+
+        let candidates = allCases
+            .filter { $0 != .generic3 && $0 != .generic5 }
+            .sorted { normalizedModelKey($0.displayName).count > normalizedModelKey($1.displayName).count }
+
+        for candidate in candidates where normalized.contains(normalizedModelKey(candidate.displayName)) {
+            return candidate
+        }
+        return .generic5
+    }
+
+    private static func normalizedModelKey(_ value: String) -> String {
+        value.lowercased().filter { $0.isLetter || $0.isNumber }
     }
 }
 
@@ -199,6 +220,9 @@ enum PresetAction: String, CaseIterable, Identifiable, Codable {
     case appExpose = "app_expose"
     case showDesktop = "show_desktop"
     case launchpad = "launchpad"
+    // Space switching actions
+    case nextSpace = "next_space"
+    case previousSpace = "previous_space"
     // Keyboard shortcut actions
     case notificationCenter = "notification_center"
     case spotlight = "spotlight"
@@ -221,6 +245,8 @@ enum PresetAction: String, CaseIterable, Identifiable, Codable {
         case .appExpose: return "App Exposé"
         case .showDesktop: return "Show Desktop"
         case .launchpad: return "Launchpad"
+        case .nextSpace: return "Next Space"
+        case .previousSpace: return "Previous Space"
         case .notificationCenter: return "Notification Center"
         case .spotlight: return "Spotlight"
         case .screenshotTool: return "Screenshot Tool"
@@ -240,6 +266,8 @@ enum PresetAction: String, CaseIterable, Identifiable, Codable {
         switch self {
         case .missionControl, .appExpose, .showDesktop, .launchpad:
             return "System"
+        case .nextSpace, .previousSpace:
+            return "Spaces"
         case .notificationCenter, .spotlight, .screenshotTool, .lockScreen:
             return "macOS"
         case .fullscreenToggle, .minimizeWindow:
@@ -263,7 +291,7 @@ enum PresetAction: String, CaseIterable, Identifiable, Codable {
 
     var usesDefaultSystemShortcut: Bool {
         switch self {
-        case .notificationCenter, .spotlight, .screenshotTool:
+        case .notificationCenter, .spotlight, .screenshotTool, .nextSpace, .previousSpace:
             return true
         default:
             return false
@@ -363,16 +391,35 @@ struct AppProfile: Codable, Identifiable {
             }
         )
     }
+
+    /// Copy that keeps every mapping but takes fresh identifiers, so it can live
+    /// alongside the profile it was copied from.
+    func copyWithNewIdentifiers() -> AppProfile {
+        AppProfile(
+            name: name,
+            bundleIdentifier: bundleIdentifier,
+            mappings: mappings.map { mapping in
+                ButtonMapping(
+                    button: mapping.button,
+                    shortcut: mapping.shortcut,
+                    systemAction: mapping.systemAction,
+                    holdWhilePressed: mapping.holdWhilePressed
+                )
+            }
+        )
+    }
 }
 
 struct AppConfiguration: Codable {
-    static let currentSchemaVersion = 3
+    static let currentSchemaVersion = 4
 
     var schemaVersion: Int = currentSchemaVersion
     var profiles: [AppProfile]
     var isEnabled: Bool = true
     var mouseModel: MouseModel = .mxMaster3
     var globalButtons: [MouseButton] = []
+    /// Per-mouse overrides. Mice without an entry use the shared configuration above.
+    var devices: [MouseDeviceConfiguration] = []
 
     enum CodingKeys: String, CodingKey {
         case schemaVersion
@@ -380,6 +427,7 @@ struct AppConfiguration: Codable {
         case isEnabled
         case mouseModel
         case globalButtons
+        case devices
     }
 
     init(
@@ -387,13 +435,15 @@ struct AppConfiguration: Codable {
         profiles: [AppProfile],
         isEnabled: Bool = true,
         mouseModel: MouseModel = .mxMaster3,
-        globalButtons: [MouseButton] = []
+        globalButtons: [MouseButton] = [],
+        devices: [MouseDeviceConfiguration] = []
     ) {
         self.schemaVersion = schemaVersion
         self.profiles = profiles
         self.isEnabled = isEnabled
         self.mouseModel = mouseModel
         self.globalButtons = globalButtons
+        self.devices = devices
     }
 
     init(from decoder: Decoder) throws {
@@ -403,9 +453,55 @@ struct AppConfiguration: Codable {
         isEnabled = try container.decodeIfPresent(Bool.self, forKey: .isEnabled) ?? true
         mouseModel = try container.decodeIfPresent(MouseModel.self, forKey: .mouseModel) ?? .mxMaster3
         globalButtons = try container.decodeIfPresent([MouseButton].self, forKey: .globalButtons) ?? []
+        devices = try container.decodeIfPresent(
+            [MouseDeviceConfiguration].self,
+            forKey: .devices
+        ) ?? []
     }
 
     static var empty: AppConfiguration {
         AppConfiguration(profiles: [AppProfile.makeDefault()])
+    }
+
+    func deviceConfiguration(withID deviceID: String?) -> MouseDeviceConfiguration? {
+        guard let deviceID else {
+            return nil
+        }
+        return devices.first { $0.id == deviceID }
+    }
+
+    /// Configuration used for a mouse, falling back to the shared one when the
+    /// device is unknown or has no dedicated entry.
+    func resolvedConfiguration(for deviceID: String?) -> ResolvedMouseConfiguration {
+        guard let device = deviceConfiguration(withID: deviceID) else {
+            return ResolvedMouseConfiguration(
+                deviceID: nil,
+                model: mouseModel,
+                profiles: profiles,
+                globalButtons: globalButtons
+            )
+        }
+
+        return ResolvedMouseConfiguration(
+            deviceID: device.id,
+            model: device.model,
+            profiles: device.profiles,
+            globalButtons: device.globalButtons
+        )
+    }
+
+    /// Applies a mutation to either the shared configuration or one device entry.
+    mutating func mutateScope(
+        _ deviceID: String?,
+        _ body: (inout MouseModel, inout [AppProfile], inout [MouseButton]) -> Void
+    ) {
+        guard let deviceID,
+              let index = devices.firstIndex(where: { $0.id == deviceID }) else {
+            body(&mouseModel, &profiles, &globalButtons)
+            return
+        }
+        var device = devices[index]
+        body(&device.model, &device.profiles, &device.globalButtons)
+        devices[index] = device
     }
 }
