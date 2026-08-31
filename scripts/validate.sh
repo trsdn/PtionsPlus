@@ -48,6 +48,17 @@ xcb() {
     >/dev/null
 }
 
+# UI tests need a real code signature, so they cannot reuse xcb.
+ui_tests() {
+  xcodebuild \
+    -project PtionsPlus.xcodeproj \
+    -scheme "Ptions+" \
+    -configuration Debug \
+    -destination "platform=macOS" \
+    test -only-testing:PtionsPlusUITests \
+    >/dev/null
+}
+
 run_step "Shell syntax" bash -c 'for f in scripts/*.sh; do bash -n "$f" || exit 1; done'
 run_step "Documentation references" bash scripts/check-documentation.sh
 run_step "Version and product identity" bash scripts/verify-version.sh
@@ -58,12 +69,7 @@ run_step "Static analysis" xcb -configuration Debug analyze
 
 if [ "$FAST" -eq 0 ]; then
   run_step "Release build" xcb -configuration Release build
-  run_step "UI smoke tests" xcodebuild \
-    -project PtionsPlus.xcodeproj \
-    -scheme "Ptions+" \
-    -configuration Debug \
-    -destination "platform=macOS" \
-    test -only-testing:PtionsPlusUITests >/dev/null
+  run_step "UI smoke tests" ui_tests
 fi
 
 printf '\n'
