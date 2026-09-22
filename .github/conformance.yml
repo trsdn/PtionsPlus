@@ -1,6 +1,6 @@
-standard_version: "1.6.0"
-assessed_on: "2026-08-31"
-state: "Healthy"
+standard_version: "1.21.0"
+assessed_on: "2026-09-22"
+state: "Needs work"
 evidence: "docs/self-assessment.md"
 
 criteria:
@@ -17,6 +17,9 @@ criteria:
   B11: pass
   B12: pass
   B13: pass
+  B14: pass
+  B15: na
+  B16: pass
   P01: pass
   P02: pass
   P03: pass
@@ -26,6 +29,10 @@ criteria:
   P07: pass
   P08: pass
   P09: pass
+  P10: pass
+  P11: pass
+  P12: pass
+  P13: pass
   S01: pass
   S02: pass
   S03: pass
@@ -36,22 +43,28 @@ criteria:
   S08: pass
   S09: pass
   S10: pass
+  S11: pass
+  S12: pass
+  S13: na
   D01: na
   D02: na
   D03: na
   D04: na
   D05: na
   D06: na
-  R01: pass
+  R01: partial
   R02: pass
   R03: pass
   R04: pass
   R05: pass
   R06: pass
+  R07: pass
+  R08: pass
+  R09: pass
   I01: pass
-  I02: pass
-  I03: pass
-  I04: pass
+  I02: fail
+  I03: fail
+  I04: partial
   I05: pass
   I06: pass
   T01: na
@@ -63,10 +76,11 @@ criteria:
   W02: pass
   W03: pass
   W04: pass
-  W05: pass
-  W06: pass
+  W05: na
+  W06: na
   W07: pass
   W08: pass
+  W09: pass
   G01: pass
   G02: pass
   G03: pass
