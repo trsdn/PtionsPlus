@@ -46,7 +46,10 @@ version in this document.
 
 ### Recorded deviations
 
-None. The site uses the design language as published.
+`assets/site.css`, added 2026-09-22 and not vendored, overrides the `--identity`
+and `--identity-ink` tokens to a project-specific accent colour, loaded after
+these files. It is the only deviation from the design language as published;
+everything else here is unmodified.
 
 ## IBM Plex
 

@@ -119,6 +119,21 @@ from a maintainer in the current task.
 - Never echo, log, or paste the values of `MACOS_CERTIFICATE`,
   `MACOS_CERTIFICATE_PWD`, `APPLE_ID`, `APPLE_TEAM_ID`, or
   `APPLE_APP_PASSWORD`.
+- **If one of these is exposed**, stop and tell the maintainer (`@trsdn`)
+  immediately; do not attempt to rotate it yourself. What replaces each one:
+  - `MACOS_CERTIFICATE` / `MACOS_CERTIFICATE_PWD` — revoke the Developer ID
+    Application certificate in the Apple Developer portal, export a new `.p12`
+    with a new password, and replace both GitHub repository secrets.
+  - `APPLE_APP_PASSWORD` — revoke the app-specific password at
+    [appleid.apple.com](https://appleid.apple.com), generate a new one, and
+    replace the GitHub repository secret.
+  - `APPLE_ID` / `APPLE_TEAM_ID` — these identify the account and team rather
+    than authenticate on their own; if the Apple ID password itself is
+    exposed, change it at appleid.apple.com and re-enable two-factor
+    authentication.
+  - Any GitHub repository secret above is replaced from the repository's
+    **Settings → Secrets and variables → Actions**, which only `@trsdn` can
+    reach.
 - Do not modify keychain state outside `scripts/sign-release.sh` and the
   release workflow, which create and delete a temporary keychain.
 
