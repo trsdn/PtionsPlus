@@ -86,6 +86,22 @@ release ships a `.sha256` file, so you can verify what you downloaded:
 shasum -a 256 -c Ptions+.dmg.sha256
 ```
 
+Ptions+ is built and published only by [`release.yml`](.github/workflows/release.yml)
+from the tagged commit, signed with a Developer ID Application certificate, and
+notarised by Apple. That ties the app you downloaded to this repository, and you
+can check both yourself:
+
+```bash
+codesign --verify --deep --strict --verbose=2 Ptions+.app
+spctl --assess --type execute --verbose Ptions+.app
+```
+
+The first confirms the signature has not been altered since Apple notarised it;
+the second confirms Apple's notarisation ticket is attached and macOS's launch
+policy accepts it. Neither command proves the *source* matched the tag beyond
+what the release workflow itself already did; there is no separate build
+provenance record such as an artifact attestation.
+
 Drag `Ptions+.app` to `/Applications` and open it.
 
 ### Grant Accessibility Access

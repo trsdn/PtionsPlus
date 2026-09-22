@@ -1,0 +1,27 @@
+/*
+ * Ptions+ site override.
+ *
+ * Hand-authored, not vendored: it is not machine-owned and is not covered by
+ * docs/assets/VENDORED.md's re-vendoring procedure. It loads after the vendored
+ * Instrument Workshop files and overrides only the accent colour, so the site
+ * is not left at the shared design language's own default palette (see
+ * docs/assets/VENDORED.md, "Recorded deviations").
+ *
+ * The accent is a cool slate blue, distinct from the vendored design
+ * language's default green, chosen for a precision-input utility rather than
+ * for any other project that shares the vendored base. Both variants keep
+ * body-text contrast above 10:1 against their background, well past the 4.5:1
+ * this project holds itself to under X03.
+ */
+
+:root {
+  --identity: #2d4159;
+  --identity-ink: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --identity: #9fb8d9;
+    --identity-ink: #101826;
+  }
+}
