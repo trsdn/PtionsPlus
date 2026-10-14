@@ -58,7 +58,7 @@ jobs:
           scripts/changelog.sh release-notes "$RELEASE_TAG" --output dist/release-notes.md
 
       - name: Upload release notes
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: PtionsPlus-release-notes
           path: dist/release-notes.md
@@ -151,7 +151,7 @@ jobs:
           fi
 
       - name: Upload verified release assets
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: PtionsPlus-release-assets
           path: |
